@@ -1,0 +1,8 @@
+{
+  "label": "Catalogs",
+  "position": 5,
+  "link": {
+    "type": "doc",
+    "id": "control-plane/catalogs/index"
+  }
+}

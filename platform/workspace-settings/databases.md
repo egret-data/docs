@@ -4,33 +4,105 @@ sidebar_position: 4
 
 # Databases
 
-A database connection tells the workspace how to reach a query engine. It is configured under **Manage → Workspace settings → Engines**.
+A **database connection** (shown in the UI as an *engine connection*) tells the workspace how to reach a query engine. SQL Lab, datasets, charts and dashboards run their queries through these connections. They are configured under **Manage → Workspace settings → Connections → Engines**.
 
-![Engine connections](/img/platform/settings-databases.png)
+![The Engines page of the Docs sandbox workspace with one connection](/img/platform/admin/ws-engines.png)
 
-The table lists each connection's **Name**, **Engine**, **Host:Port**, **Status** and **Secret**. Use **Test** to check reachability (a new connection shows *Unknown* until tested), **Edit** and **Delete**.
+*Query engine connections this workspace can use in SQL Lab and charts.* The page needs workspace-admin rights; without them it says *Requires workspace-admin to manage engines.* A new workspace says *No engines connected yet.*
+
+## The connection list
+
+A summary strip counts the **connections**, how many are **ok** and how many are in **error**. **Search connections…** filters by name. If the workspace has engines assigned by the platform admins, they appear in a **Provisioned by egret** section above **Your connections**; those are read-only (*Provisioned by egret — read-only*).
+
+| Column | Meaning |
+|---|---|
+| **Name** | The connection name, for example `trino-sandbox`. |
+| **Engine** | `trino` or `starrocks`. |
+| **Host:Port** | Where it listens. |
+| **Status** | The last known state: **Unknown** for a new connection, then **ok** or an error after a test. |
+| **Secret** | **Configured** when a password is stored, **Not set** otherwise. |
+| **Actions** | **Test**, **Edit** and **Delete** (each icon is labelled with the connection name). |
+
+Two icons next to a name flag how queries run: *Queries run as the signed-in user (per-user delegation)* and *Row filters and column masks are applied per user at the engine*.
+
+A connection can show **Show catalogs**: the catalogs of a provisioned engine, with their **Catalog**, **Kind**, **Storage** and **Secret**.
 
 ## Add a connection
 
-Press **Add connection**.
+1. Press **Add connection**.
+2. Fill the fields below.
+3. Press **Add connection**. Until **Name**, **Host** and **Port** are filled the button is disabled with *Fill in name, host, port*.
 
-![The Add engine connection dialog](/img/platform/settings-add-connection.png)
+![The Add engine connection dialog](/img/platform/admin/ws-add-connection.png)
 
-| Field | Meaning |
+The dialog is *Connect a Trino or StarRocks query engine. Egret validates reachability on save.*
+
+### Connection fields
+
+| Field | Meaning | Default |
+|---|---|---|
+| **Name** | A label, for example `prod-trino`. Required. | |
+| **Engine** | **Trino** or **StarRocks**. | Trino |
+| **Host** | The host, for example `trino.corp.local`. Required. | |
+| **Port** | The port, for example `8080`. Required. | |
+| **User** | Optional user name sent to the engine. | |
+| **HTTP scheme** | `http` or `https` (Trino). | |
+| **Catalog** | Optional default catalog. | |
+| **Schema** | Optional default schema. | |
+
+### How queries run as people
+
+Three switches decide whose identity the engine sees. They interact: read them together.
+
+| Switch | What it does | Requires |
+|---|---|---|
+| **Run queries as the logged-in user** (impersonation) | The engine runs each query as the person who started it, so the engine's own grants and policies apply to them. | Trino impersonation and Ranger. For StarRocks: *a StarRocks service user configured for EXECUTE AS + Ranger*. Shown for Trino and StarRocks only. |
+| **Per-user delegation** | *Run queries as the signed-in user (requires SSO).* Egret presents a per-user engine JWT, so the engine knows the person. | An SSO sign-in. |
+| **Governed data** | Declares that the engine filters rows and masks columns per user. *Row filters and column masks are applied per user at the engine. Data API endpoints on this connection must run queries as the caller.* | |
+
+If **Governed data** is on while neither delegation nor impersonation is, the text changes to *Data API endpoints on this connection cannot be run or published until per-user delegation or impersonation is on, and any already published stop serving.* Turning it on is how you make sure a published Data API endpoint never answers with a service account's wider view of governed data.
+
+:::warning
+Without impersonation or delegation, egret sends the connection's own identity to the engine, not the person's, so per-user row filters and column masks cannot tell people apart. Turn on one of the two for governed data.
+:::
+
+### Secret
+
+Choose how the password is held:
+
+| Option | Does |
 |---|---|
-| **Name** | A label, for example `prod-trino`. |
-| **Engine** | **Trino** or **StarRocks**. |
-| **Host**, **Port** | Where the engine listens. |
-| **User** | Optional user name sent to the engine. |
-| **HTTP scheme** | `http` or `https` (Trino). |
-| **Catalog**, **Schema** | Optional defaults. |
-| **Run queries as the logged-in user** | Impersonation. Requires Trino impersonation and Ranger. |
-| **Per-user delegation** | Run queries as the signed-in user's own identity (requires SSO). |
-| **Governed data** | The engine applies row filters and column masks per user. Data API endpoints on a governed connection must run queries as the caller. |
-| **Secret** | A saved credential for the connection. |
+| **Select a secret** | Leaves the connection without a password (**Not set**). |
+| **＋ New secret** | Creates a secret inline and references it. |
+| An existing secret (for example `demo-rustfs-secret`) | References a platform [secret](../control-plane/secrets.md). |
 
-Egret validates reachability when you save.
+## Test a connection
+
+Press the **Test connection for \<name\>** icon. Egret runs a probe and shows **OK** next to the row or an error. The **Status** column shows *Unknown* until the page is reloaded after a test.
+
+## Edit a connection
+
+Press **Edit**. The dialog is *Update the connection details. Leave password blank to keep the current secret.* It carries all the fields, including **Governed data**, because saving replaces the whole connection. Closing a changed form asks *Discard unsaved changes?*
+
+## Delete a connection
+
+Press **Delete**. The dialog says *This engine connection will be removed. Any SQL Lab tabs or charts that reference it may break.* A toast says *Connection deleted*.
 
 :::warning Trino setup
 Trino must accept forwarded headers (`http-server.process-forwarded=true`). Without it Trino returns HTTP 406 and Egret shows *502 Bad Gateway*.
 :::
+
+## Example
+
+On the demo instance, the workspace `default` connects to the demo Trino (`localhost:8091`, catalog `tpch`) as `trino-demo`. To connect another workspace to the same Trino, add a connection with Host `localhost`, Port `8091`, **User** `docs`, **Catalog** `tpch` and **Schema** `tiny`, leave the three switches off, and press **Test**.
+
+## Limits and known issues
+
+- Egret validates reachability on save, but a new connection shows **Unknown** until you press **Test**.
+- Only Trino and StarRocks connections can be added here. External engines for Governance are registered in the Control Plane (see [Register an external engine](../control-plane/query-engines/register-external.md)).
+
+## Further reading
+
+- [Secrets](../control-plane/secrets.md)
+- [Query engines](../control-plane/query-engines/index.md)
+- [How permissions work](../data-governance/concepts.md)
