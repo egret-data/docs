@@ -95,7 +95,7 @@ const config: Config = {
         {
           title: 'Docs',
           items: [
-            {label: 'Platform', to: '/platform/introduction/overview'},
+            {label: 'Platform', to: '/platform/get-started/overview'},
             {label: 'Engine', to: '/engine/introduction'},
           ],
         },

@@ -1,4 +1,8 @@
-# Known issues and gaps
+---
+sidebar_position: 10
+---
+
+# Known issues and roadmap
 
 A running list, collected while writing these docs, of defects, rough UX and missing pieces found
 in the product. Entries are recorded, not fixed here; they feed the product roadmap.

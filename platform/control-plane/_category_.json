@@ -1,0 +1,9 @@
+{
+  "label": "Control plane",
+  "position": 7,
+  "link": {
+    "type": "generated-index",
+    "description": "Control plane",
+    "slug": "/control-plane"
+  }
+}

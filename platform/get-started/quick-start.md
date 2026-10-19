@@ -1,3 +1,7 @@
+---
+sidebar_position: 3
+---
+
 # Run locally
 
 Prerequisites: Rust (see `rust-toolchain.toml`), Node.js, Docker and [`just`](https://github.com/casey/just).
