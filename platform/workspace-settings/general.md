@@ -4,15 +4,55 @@ sidebar_position: 1
 
 # General
 
-**Manage → Workspace settings → General** shows the workspace's identity.
+**Manage → Workspace settings → General** shows the identity of the workspace you are in: its name, slug and id. It is read-only, because a workspace's name and lifecycle are managed centrally by platform admins.
 
-![Workspace general settings](/img/platform/settings-general.png)
+![The General page of the Docs sandbox workspace](/img/platform/admin/ws-general.png)
+
+## Open Workspace settings
+
+1. Open the workspace in the **Explorer**.
+2. In the left sidebar, under **MANAGE**, choose **Workspace settings**.
+3. The settings have their own left menu with three groups:
+
+| Group | Pages |
+|---|---|
+| **ACCESS** | [Members](./members.md), [Roles & permissions](./roles-and-permissions.md), [Access requests](./access-requests.md), [Shared objects](./shared-objects.md) |
+| **CONNECTIONS** | [Engines](./databases.md) |
+| **WORKSPACE** | [Notifications](./notifications.md), **General** |
+
+The page header reads *Manage members, access, and configuration for \<workspace name\>.* Which pages you see depends on your workspace role and permissions; a person who cannot manage members does not get the Members page.
+
+## What General shows
+
+*This workspace's identity. Name and lifecycle are managed centrally.*
 
 | Field | Meaning |
 |---|---|
-| **Name** | The display name, shown in the workspace picker. |
-| **Slug** | The short identifier used in URLs and the API, for example `default`. |
-| **Workspace ID** | The immutable UUID. |
+| **Name** | The display name, for example *Docs sandbox*. |
+| **Slug** | The immutable identifier used in URLs, for example `docs-sandbox` (the address is `/explore/docs-sandbox/...`). |
+| **Workspace ID** | The UUID. Use it when you call the API or contact support. |
 
-This page is **read-only**. Renaming or deleting a workspace is a platform-admin action in the
-[Control Plane](../control-plane/workspaces), so a change cannot be made by accident from inside the workspace.
+The panel says *Read-only — managed in the Control Plane.* and a second note explains: *Renaming or deleting a workspace is a platform-admin action and lives in the Control Plane, not here — so an accidental change from inside a workspace can't take it down.* **Manage workspaces in the Control Plane →** opens [Control Plane → Workspaces](../control-plane/workspaces/index.md) for platform admins.
+
+## Change the workspace name
+
+The name can be changed only by a platform admin:
+
+1. Go to **Control Plane → Infrastructure → Workspaces** and open the workspace.
+2. Press **Rename**, type the new name and press **Save**.
+
+The slug does not change, so links keep working. See [Workspaces](../control-plane/workspaces/index.md#rename-a-workspace).
+
+## Which modules does this workspace have?
+
+The sidebar of a workspace shows only the modules that platform admins have enabled for it. To see or change the module switches (SQL Lab, Datasets, Charts, Dashboards, Data Apps, Alerts & Reports, Data API, Workflows and workflow extensions), ask a platform admin to open **Control Plane → Workspaces → \<workspace\> → Features** (see [Workspace details](../control-plane/workspaces/workspace-detail.md#features)).
+
+## Limits and known issues
+
+- Nothing on this page can be edited.
+- The slug cannot be changed after a workspace is created.
+
+## Further reading
+
+- [Members](./members.md)
+- [Workspaces in the Control Plane](../control-plane/workspaces/index.md)

@@ -1,0 +1,8 @@
+{
+  "label": "Access control",
+  "position": 6,
+  "link": {
+    "type": "doc",
+    "id": "control-plane/access-control/index"
+  }
+}
