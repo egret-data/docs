@@ -1,10 +1,10 @@
 ---
-sidebar_position: 1
+sidebar_position: 3
 ---
 
-# Databases
+# Roles & permissions
 
-Register Trino and StarRocks connections.
+Workspace roles and what they allow.
 
 :::note Draft
 This page is a skeleton and will be written against a running instance, with screenshots.

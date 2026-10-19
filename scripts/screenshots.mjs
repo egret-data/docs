@@ -3,7 +3,7 @@
 // Logs in ONCE (the login endpoint is rate limited to 5 attempts / 5 min) and reuses the session.
 // Output: static/img/platform/<id>.png at 1440x900. Only ever point this at a seeded demo instance.
 import {chromium} from 'playwright';
-import {mkdirSync} from 'node:fs';
+import {existsSync, mkdirSync} from 'node:fs';
 import {shots} from './shots.mjs';
 
 const BASE = process.env.BASE ?? 'http://localhost:5180';
@@ -14,7 +14,16 @@ const only = new Set(process.argv.slice(2));
 
 mkdirSync(OUT, {recursive: true});
 const browser = await chromium.launch();
-const ctx = await browser.newContext({viewport: {width: 1440, height: 900}, deviceScaleFactor: 1});
+// STATE: optional path to a Playwright storage-state file. When it exists the saved session is reused
+// (no login at all); when it does not, we log in once and write it. This keeps repeated runs under
+// the login rate limit.
+const STATE = process.env.STATE;
+const reuse = STATE && existsSync(STATE);
+const ctx = await browser.newContext({
+  viewport: {width: 1440, height: 900},
+  deviceScaleFactor: 1,
+  ...(reuse ? {storageState: STATE} : {}),
+});
 const page = await ctx.newPage();
 
 // The login page itself is a screenshot, taken before signing in.
@@ -25,11 +34,14 @@ if (wanted('login')) {
   console.log('login');
 }
 
+if (!reuse) {
 await page.goto(`${BASE}/login`, {waitUntil: 'networkidle'});
-await page.getByLabel(/email/i).fill(EMAIL);
-await page.getByLabel(/password/i).fill(PASSWORD);
+await page.getByPlaceholder('Email').fill(EMAIL);
+await page.getByPlaceholder('Password').fill(PASSWORD);
 await page.getByRole('button', {name: /sign in|log in/i}).click();
 await page.waitForURL((u) => !u.pathname.startsWith('/login'), {timeout: 30000});
+if (STATE) await ctx.storageState({path: STATE});
+}
 
 for (const s of shots) {
   if (s.id === 'login' || !wanted(s.id)) continue;
