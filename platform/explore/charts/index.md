@@ -4,7 +4,7 @@ sidebar_position: 1
 
 # Charts
 
-A chart is a saved question about a [dataset](../datasets-and-metrics.md): which dimensions to group by, which metrics to measure, how to draw the result. Charts are the building blocks of [dashboards](../dashboards.md), and they can be sent on a schedule by a subscription.
+A chart is a saved question about a [dataset](../datasets-and-metrics/index.md): which dimensions to group by, which metrics to measure, how to draw the result. Charts are the building blocks of [dashboards](../dashboards/index.md), and they can be sent on a schedule by a subscription.
 
 ![The Charts list with its toolbar, search box, type filter and the chart rows](/img/platform/charts/list.png)
 
@@ -137,6 +137,6 @@ Charts do not have a separate filter builder. Filters come from drilling into a 
 ## Further reading
 
 - [The chart editor](./the-chart-editor.md)
-- [Datasets & metrics](../datasets-and-metrics.md)
-- [Dashboards](../dashboards.md)
-- [Alerts & reports](../alerts-and-reports.md)
+- [Datasets & metrics](../datasets-and-metrics/index.md)
+- [Dashboards](../dashboards/index.md)
+- [Alerts & reports](../alerts-and-reports/index.md)

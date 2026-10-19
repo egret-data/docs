@@ -4,7 +4,7 @@ sidebar_position: 1
 
 # Dashboards
 
-A dashboard puts several [charts](../charts.md) on one page, next to text, links and filters, so a team can read a topic at a glance. You build it once from saved charts, and everyone with access sees the same layout and the same live data.
+A dashboard puts several [charts](../charts/index.md) on one page, next to text, links and filters, so a team can read a topic at a glance. You build it once from saved charts, and everyone with access sees the same layout and the same live data.
 
 ![The Dashboards list with two folders, a certified dashboard and a starred one](/img/platform/dashboards/list.png)
 
@@ -106,6 +106,6 @@ Under the header you find, in order: the tab bar (only when the dashboard has tw
 
 ## Further reading
 
-- [Charts](../charts.md) for building the charts you place on a dashboard
+- [Charts](../charts/index.md) for building the charts you place on a dashboard
 - [Edit a dashboard](./editing.md)
-- [Alerts & reports](../alerts-and-reports.md)
+- [Alerts & reports](../alerts-and-reports/index.md)

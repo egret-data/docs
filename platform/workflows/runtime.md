@@ -75,4 +75,4 @@ Script and plugin tasks also need a `container_runner`, and the image on the pla
 
 - [Workflow concepts](./concepts.md)
 - [Configuration](../deploy-operate/configuration.md)
-- [Troubleshooting](../deploy-operate/troubleshooting.md)
+- [Troubleshooting](../deploy-operate/troubleshooting/index.md)

@@ -92,5 +92,5 @@ Because tabs live in the browser, clearing site data or switching browsers gives
 ## Further reading
 
 - [Datasets & metrics](../datasets-and-metrics/index.md)
-- [Charts](../charts.md)
+- [Charts](../charts/index.md)
 - [Databases](../../workspace-settings/databases.md)
