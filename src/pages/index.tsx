@@ -8,7 +8,7 @@ import styles from './index.module.css';
 const products = [
   {
     title: 'Egret Platform',
-    to: '/platform/introduction/overview',
+    to: '/platform/get-started/overview',
     body: 'One governed data foundation for many teams: isolated workspaces, BI and exploration, an Iceberg catalog, access policy, data APIs and workflows.',
     cta: 'Read the platform docs',
   },
@@ -21,12 +21,14 @@ const products = [
 ];
 
 const topics = [
-  {title: 'Quick start', to: '/platform/quick-start/local', body: 'Run Egret on your machine in minutes.'},
-  {title: 'Deployment', to: '/platform/deployment/overview', body: 'Docker Compose and Kubernetes.'},
-  {title: 'Guides', to: '/platform/guides', body: 'Workspaces, BI, governance, data APIs, workflows.'},
-  {title: 'Administration', to: '/platform/administration', body: 'Identity, roles, engines, audit.'},
-  {title: 'Reference', to: '/platform/reference', body: 'Configuration, REST API, permissions.'},
-  {title: 'Known issues', to: '/platform/known-issues', body: 'What is rough or missing today.'},
+  {title: 'Get started', to: '/platform/get-started/overview', body: 'Concepts, quick start and a tour of the UI.'},
+  {title: 'Deploy & operate', to: '/platform/deploy-operate/local', body: 'Docker Compose, Kubernetes, configuration, upgrades.'},
+  {title: 'Explore (BI)', to: '/platform/explore', body: 'Databases, SQL Lab, datasets, charts, dashboards, apps.'},
+  {title: 'Data API', to: '/platform/data-api', body: 'Turn a SELECT into a governed REST endpoint.'},
+  {title: 'Workflows', to: '/platform/workflows', body: 'Flows, triggers, executions and namespaces.'},
+  {title: 'Data governance', to: '/platform/data-governance', body: 'Policies, people, classifications and lineage.'},
+  {title: 'Control plane', to: '/platform/control-plane', body: 'Workspaces, engines, secrets, storage, catalogs, audit.'},
+  {title: 'Reference', to: '/platform/reference', body: 'REST API, configuration keys, permissions.'},
 ];
 
 export default function Home(): ReactNode {
@@ -43,10 +45,10 @@ export default function Home(): ReactNode {
             on an open Iceberg lakehouse.
           </p>
           <div className={styles.actions}>
-            <Link className="button button--primary button--lg" to="/platform/quick-start/local">
+            <Link className="button button--primary button--lg" to="/platform/get-started/quick-start">
               Get started
             </Link>
-            <Link className="button button--secondary button--lg" to="/platform/introduction/overview">
+            <Link className="button button--secondary button--lg" to="/platform/get-started/overview">
               What is Egret?
             </Link>
           </div>

@@ -1,0 +1,9 @@
+{
+  "label": "Explore (BI)",
+  "position": 3,
+  "link": {
+    "type": "generated-index",
+    "description": "Explore (BI)",
+    "slug": "/explore"
+  }
+}
