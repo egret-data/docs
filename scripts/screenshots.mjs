@@ -26,11 +26,15 @@ const ctx = await browser.newContext({
 });
 const page = await ctx.newPage();
 
-// The login page itself is a screenshot, taken before signing in.
+// The login page itself is a screenshot, taken in a clean (signed-out) context: with a reused session
+// /login would redirect straight into the app.
 const wanted = (id) => only.size === 0 || only.has(id);
 if (wanted('login')) {
-  await page.goto(`${BASE}/login`, {waitUntil: 'networkidle'});
-  await page.screenshot({path: `${OUT}login.png`});
+  const clean = await browser.newContext({viewport: {width: 1440, height: 900}});
+  const loginPage = await clean.newPage();
+  await loginPage.goto(`${BASE}/login`, {waitUntil: 'networkidle'});
+  await loginPage.screenshot({path: `${OUT}login.png`});
+  await clean.close();
   console.log('login');
 }
 

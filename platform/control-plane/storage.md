@@ -4,8 +4,8 @@ sidebar_position: 4
 
 # Storage
 
-Object storage connections and browser.
+Global storage connections: S3-compatible object stores available to catalogs and workspaces across the platform.
 
-:::note Draft
-This page is a skeleton and will be written against a running instance, with screenshots.
-:::
+![Storage](/img/platform/control-plane-storage.png)
+
+For each connection the table shows its **Purpose**, **Provider**, **Bucket**, **Endpoint** and whether a **Secret** is configured. **Add connection** creates one; open a connection to browse its objects.

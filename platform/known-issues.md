@@ -26,3 +26,12 @@ and missing pieces. Entries are **recorded, not fixed**; they feed the product r
 | KI-012 | Workspace settings | UX | S3 | The Notifications page does not follow the layout of the other settings tabs: the heading is offset, and Encryption is an unstyled native select. |
 | KI-013 | Workflows | UX | S1 | With the default config the workflow worker is **off**. *Run* succeeds and the execution sits in *Running* indefinitely (one waited 53 s until the worker was enabled). Only the Triggers page warns; Run, Flow and Executions give no hint. |
 | KI-014 | Workflows | UX | S3 | A new flow shows *Version —* in its header, and *Run* says it runs "the saved draft"; it is unclear what a version is until **Create version** is pressed. |
+| KI-015 | Governance | Missing | S2 | **Data Lineage** is in the sidebar but is a placeholder page with no functionality. |
+| KI-016 | Control Plane | Defect | S3 | `/control-plane/config` renders a completely blank page inside the shell. |
+| KI-017 | Audit log | UX | S2 | Every page view writes `*:read allow` rows, so the audit log is dominated by routine reads and hides grant changes. Offer a default filter or separate reads from changes. |
+| KI-018 | Access overview | UX | S3 | *Recent changes* identifies the actor by an id prefix (`by 6d60b4c4`) instead of a name. |
+| KI-019 | Roles | Consistency | S3 | Control Plane → Roles lists four workspace roles (including `data_api_invoker`); Workspace settings → Roles & permissions lists three. Verify whether the fourth is hidden on purpose. |
+| KI-020 | People & groups | UX | S3 | Every user shows *No username yet*, even users who signed in through SSO. |
+| KI-021 | Control Plane | Defect? | S3 | verify: a group (`platform-admins`) mapped from the identity provider gives its member no platform role (Users shows no role for `admin-sso`). Check whether group-to-role mapping is expected to be configured separately. |
+| KI-022 | Engines | Limitation | S2 | Engine provisioning (**Add engine**) needs Kubernetes. On a Docker-only setup the only way to attach an engine is **Register external engine**, and the UI does not say so. |
+
