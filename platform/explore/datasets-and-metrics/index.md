@@ -4,7 +4,7 @@ sidebar_position: 2
 
 # Datasets & metrics
 
-A **dataset** is a table or a SQL query that you register in a workspace and describe once: which columns exist, how they are named and formatted, and which calculations (metrics) people may use. [Charts](../charts.md) and dashboards are built on datasets, never on raw tables, so the definitions live in one place and every chart that uses them stays consistent.
+A **dataset** is a table or a SQL query that you register in a workspace and describe once: which columns exist, how they are named and formatted, and which calculations (metrics) people may use. [Charts](../charts/index.md) and dashboards are built on datasets, never on raw tables, so the definitions live in one place and every chart that uses them stays consistent.
 
 ![The Datasets list](/img/platform/sql-datasets/datasets-list.png)
 
@@ -101,5 +101,5 @@ The tab you are on is kept in the address (`?tab=metrics`), so a link opens the 
 ## Further reading
 
 - [SQL Lab](../sql-lab/index.md)
-- [Charts](../charts.md)
-- [Dashboards](../dashboards.md)
+- [Charts](../charts/index.md)
+- [Dashboards](../dashboards/index.md)
