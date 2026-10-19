@@ -1,0 +1,55 @@
+id: order-routing
+namespace: docs.demo
+inputs:
+  - id: amount
+    type: INT
+    defaults: 1200
+  - id: tier
+    type: STRING
+    defaults: gold
+tasks:
+  - id: big_order
+    type: io.kestra.plugin.core.flow.If
+    condition: "{{ inputs.amount > 1000 }}"
+    then:
+      - id: flag_review
+        type: io.kestra.plugin.core.log.Log
+        message: "Order of {{ inputs.amount }} needs review"
+    else:
+      - id: auto_approve
+        type: io.kestra.plugin.core.log.Log
+        message: "Order auto-approved"
+  - id: by_tier
+    type: io.kestra.plugin.core.flow.Switch
+    value: "{{ inputs.tier }}"
+    cases:
+      gold:
+        - id: gold_perks
+          type: io.kestra.plugin.core.log.Log
+          message: "Gold perks applied"
+      silver:
+        - id: silver_perks
+          type: io.kestra.plugin.core.log.Log
+          message: "Silver perks applied"
+    defaults:
+      - id: no_perks
+        type: io.kestra.plugin.core.log.Log
+        message: "No perks"
+  - id: notify
+    type: io.kestra.plugin.core.flow.Parallel
+    tasks:
+      - id: notify_sales
+        type: io.kestra.plugin.core.log.Log
+        message: "Sales notified"
+      - id: notify_finance
+        type: io.kestra.plugin.core.log.Log
+        message: "Finance notified"
+  - id: wrap_up
+    type: io.kestra.plugin.core.flow.Sequential
+    tasks:
+      - id: step_one
+        type: io.kestra.plugin.core.log.Log
+        message: "Step one"
+      - id: step_two
+        type: io.kestra.plugin.core.log.Log
+        message: "Step two"

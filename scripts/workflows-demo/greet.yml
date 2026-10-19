@@ -1,0 +1,38 @@
+id: greet-customer
+namespace: docs.demo
+description: Greets a customer and shows how inputs, variables and expressions combine.
+labels:
+  team: docs
+  tier: demo
+inputs:
+  - id: customer
+    type: STRING
+    displayName: Customer name
+    description: Who to greet.
+    defaults: Ada Lovelace
+  - id: orders
+    type: INT
+    defaults: 5
+  - id: vip
+    type: BOOL
+    defaults: false
+  - id: channel
+    type: SELECT
+    values: [email, sms, chat]
+    defaults: email
+variables:
+  greeting: Hello
+tasks:
+  - id: say_hello
+    type: io.kestra.plugin.core.log.Log
+    message: "{{ vars.greeting }}, {{ inputs.customer | upper }}! You have {{ inputs.orders }} orders."
+  - id: summary
+    type: io.kestra.plugin.core.debug.Return
+    format: "{{ inputs.customer }} via {{ inputs.channel }} (vip={{ inputs.vip }}) at {{ now() | date('yyyy-MM-dd') }}"
+  - id: echo
+    type: io.kestra.plugin.core.log.Log
+    message: "Summary was: {{ outputs.summary.value }}"
+outputs:
+  - id: summaryText
+    type: STRING
+    value: "{{ outputs.summary.value }}"

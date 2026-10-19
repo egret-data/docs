@@ -1,0 +1,16 @@
+id: add-numbers
+namespace: docs.demo
+inputs:
+  - id: a
+    type: INT
+  - id: b
+    type: INT
+tasks:
+  - id: sum
+    type: io.kestra.plugin.core.output.OutputValues
+    values:
+      total: "{{ inputs.a + inputs.b }}"
+outputs:
+  - id: total
+    type: INT
+    value: "{{ outputs.sum.values.total }}"

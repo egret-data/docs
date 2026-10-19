@@ -1,0 +1,15 @@
+id: assert-and-vars
+namespace: docs.demo
+tasks:
+  - id: set
+    type: io.kestra.plugin.core.execution.SetVariables
+    variables:
+      region: emea
+  - id: check
+    type: io.kestra.plugin.core.execution.Assert
+    conditions:
+      - "{{ vars.region == 'emea' }}"
+  - id: label
+    type: io.kestra.plugin.core.execution.Labels
+    labels:
+      checked: "true"

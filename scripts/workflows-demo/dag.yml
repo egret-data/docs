@@ -1,0 +1,22 @@
+id: dag-example
+namespace: docs.demo
+tasks:
+  - id: pipeline
+    type: io.kestra.plugin.core.flow.Dag
+    tasks:
+      - task:
+          id: extract
+          type: io.kestra.plugin.core.log.Log
+          message: extract
+      - task:
+          id: transform
+          type: io.kestra.plugin.core.log.Log
+          message: transform
+        dependsOn:
+          - extract
+      - task:
+          id: load
+          type: io.kestra.plugin.core.log.Log
+          message: load
+        dependsOn:
+          - transform

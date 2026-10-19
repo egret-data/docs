@@ -1,0 +1,31 @@
+id: error-blocks
+namespace: docs.demo
+tasks:
+  - id: guarded
+    type: io.kestra.plugin.core.flow.Sequential
+    tasks:
+      - id: risky
+        type: io.kestra.plugin.core.execution.Fail
+        errorMessage: step failed
+    errors:
+      - id: handle_block_error
+        type: io.kestra.plugin.core.log.Log
+        message: handled inside the block
+        level: WARN
+  - id: soft
+    type: io.kestra.plugin.core.flow.AllowFailure
+    tasks:
+      - id: soft_fail
+        type: io.kestra.plugin.core.execution.Fail
+    finally:
+      - id: soft_cleanup
+        type: io.kestra.plugin.core.log.Log
+        message: block finally ran
+  - id: never_reached
+    type: io.kestra.plugin.core.log.Log
+    message: not reached
+errors:
+  - id: flow_error
+    type: io.kestra.plugin.core.log.Log
+    level: ERROR
+    message: flow-level error handler

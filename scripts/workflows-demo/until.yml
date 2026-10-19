@@ -1,0 +1,13 @@
+id: loop-until-example
+namespace: docs.demo
+tasks:
+  - id: wait_for_it
+    type: io.kestra.plugin.core.flow.LoopUntil
+    condition: "{{ outputs.wait_for_it.iterationCount >= 3 }}"
+    checkFrequency:
+      interval: PT1S
+      maxIterations: 5
+    tasks:
+      - id: tick
+        type: io.kestra.plugin.core.log.Log
+        message: "Check number {{ outputs.wait_for_it.iterationCount }}"

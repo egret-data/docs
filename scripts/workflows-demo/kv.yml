@@ -1,0 +1,14 @@
+id: kv-roundtrip
+namespace: docs.demo
+tasks:
+  - id: save
+    type: io.kestra.plugin.core.kv.Set
+    key: last_run_note
+    value: "written by {{ flow.id }}"
+    kvType: STRING
+  - id: read_back
+    type: io.kestra.plugin.core.kv.Get
+    key: last_run_note
+  - id: show
+    type: io.kestra.plugin.core.log.Log
+    message: "KV says: {{ outputs.read_back.value }} / {{ kv('last_run_note') }}"

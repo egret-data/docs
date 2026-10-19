@@ -1,0 +1,20 @@
+id: flaky-import
+namespace: docs.demo
+description: Fails on purpose to show retries, errors and finally.
+tasks:
+  - id: import_rows
+    type: io.kestra.plugin.core.execution.Fail
+    errorMessage: "Source system returned 503"
+    retry:
+      type: constant
+      interval: PT1S
+      maxAttempts: 3
+errors:
+  - id: notify_failure
+    type: io.kestra.plugin.core.log.Log
+    level: ERROR
+    message: "Import {{ execution.id }} failed in flow {{ flow.id }}"
+finally:
+  - id: always_runs
+    type: io.kestra.plugin.core.log.Log
+    message: "Cleanup done"

@@ -1,0 +1,17 @@
+id: order-webhook
+namespace: docs.demo
+description: Starts when an external system calls the webhook.
+inputs:
+  - id: source
+    type: STRING
+    defaults: unknown
+tasks:
+  - id: handle
+    type: io.kestra.plugin.core.log.Log
+    message: "Order received from {{ inputs.source }}"
+triggers:
+  - id: incoming
+    type: io.kestra.plugin.core.trigger.Webhook
+    key: orders-demo-key
+    inputs:
+      source: webhook

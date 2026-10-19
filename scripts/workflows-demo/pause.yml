@@ -1,0 +1,11 @@
+id: approval-gate
+namespace: docs.demo
+tasks:
+  - id: before
+    type: io.kestra.plugin.core.log.Log
+    message: Waiting for approval
+  - id: gate
+    type: io.kestra.plugin.core.flow.Pause
+  - id: after
+    type: io.kestra.plugin.core.log.Log
+    message: Approved

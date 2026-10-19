@@ -1,0 +1,12 @@
+id: allow-failure-block
+namespace: docs.demo
+tasks:
+  - id: optional_block
+    type: io.kestra.plugin.core.flow.AllowFailure
+    tasks:
+      - id: may_fail
+        type: io.kestra.plugin.core.execution.Fail
+        errorMessage: expected
+  - id: after
+    type: io.kestra.plugin.core.log.Log
+    message: still runs

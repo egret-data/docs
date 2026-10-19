@@ -1,0 +1,11 @@
+id: namespace-file-download
+namespace: docs.demo
+tasks:
+  - id: download
+    type: io.kestra.plugin.core.namespace.DownloadFiles
+    namespace: docs.demo
+    files:
+      - /data/targets.csv
+  - id: show
+    type: io.kestra.plugin.core.log.Log
+    message: "Downloaded {{ outputs.download.files | keys | first }}"

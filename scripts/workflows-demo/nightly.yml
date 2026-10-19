@@ -1,0 +1,15 @@
+id: nightly-heartbeat
+namespace: docs.demo
+description: Logs a heartbeat on a schedule.
+labels:
+  purpose: heartbeat
+tasks:
+  - id: beat
+    type: io.kestra.plugin.core.log.Log
+    message: "Heartbeat from {{ flow.id }} at {{ now() | date('HH:mm:ss') }}"
+triggers:
+  - id: every_minute
+    type: io.kestra.plugin.core.trigger.Schedule
+    description: Fires once a minute (UTC)
+    cron: "* * * * *"
+    timezone: UTC

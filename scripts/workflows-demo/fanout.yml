@@ -1,0 +1,15 @@
+id: fan-out-regions
+namespace: docs.demo
+description: Runs one group of tasks per region with Loop (Kestra's ForEach).
+tasks:
+  - id: per_region
+    type: io.kestra.plugin.core.flow.Loop
+    values: ["emea", "apac", "amer"]
+    concurrencyLimit: 2
+    tasks:
+      - id: announce
+        type: io.kestra.plugin.core.log.Log
+        message: "Processing {{ item.value }} (index {{ item.index }})"
+      - id: pause_a_bit
+        type: io.kestra.plugin.core.flow.Sleep
+        duration: PT1S
