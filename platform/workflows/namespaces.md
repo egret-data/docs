@@ -4,8 +4,8 @@ sidebar_position: 3
 
 # Namespaces
 
-Organise flows and share variables.
+Namespaces organise flows, namespace files and key-value pairs.
 
-:::note Draft
-This page is a skeleton and will be written against a running instance, with screenshots.
-:::
+![Namespaces](/img/platform/workflows-namespaces.png)
+
+A namespace appears when a flow, a namespace file or a key-value key is created in it. Its parents (split by dots, so `company.team` has the parent `company`) are listed too.

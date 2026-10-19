@@ -4,8 +4,8 @@ sidebar_position: 5
 
 # Shared objects
 
-Items shared into or out of the workspace.
+**Workspace settings → Shared objects** lists everything shared inside the workspace and who can access it.
 
-:::note Draft
-This page is a skeleton and will be written against a running instance, with screenshots.
-:::
+![Shared objects](/img/platform/settings-shares.png)
+
+Until something is shared the page shows *Nothing shared in this workspace yet.*

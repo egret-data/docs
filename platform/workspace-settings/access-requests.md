@@ -4,8 +4,8 @@ sidebar_position: 6
 
 # Access requests
 
-Request and approve access.
+**Workspace settings → Access requests** is where workspace admins handle people asking to join.
 
-:::note Draft
-This page is a skeleton and will be written against a running instance, with screenshots.
-:::
+![Access requests](/img/platform/settings-requests.png)
+
+Approve a request to add the person, optionally **time-boxed**, or deny it. With no requests waiting the page shows *No pending requests.*
