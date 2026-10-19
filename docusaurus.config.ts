@@ -5,7 +5,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 const config: Config = {
   title: 'Egret',
   tagline: 'One governed data platform and a Rust lakehouse engine',
-  favicon: 'img/favicon.ico',
+  favicon: 'img/favicon.svg',
 
   future: {v4: true},
 
@@ -24,6 +24,28 @@ const config: Config = {
     locales: ['en', 'vi'],
     localeConfigs: {en: {label: 'English'}, vi: {label: 'Tiếng Việt'}},
   },
+
+  headTags: [
+    {tagName: 'link', attributes: {rel: 'preconnect', href: 'https://fonts.googleapis.com'}},
+    {tagName: 'link', attributes: {rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: 'anonymous'}},
+  ],
+  stylesheets: [
+    'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap',
+  ],
+
+  themes: [
+    [
+      '@easyops-cn/docusaurus-search-local',
+      {
+        hashed: true,
+        language: ['en'],
+        indexBlog: false,
+        docsRouteBasePath: ['platform', 'engine'],
+        docsDir: ['platform', 'engine'],
+        highlightSearchTermsOnTargetPage: true,
+      },
+    ],
+  ],
 
   presets: [
     [
@@ -56,6 +78,7 @@ const config: Config = {
   ],
 
   themeConfig: {
+    colorMode: {respectPrefersColorScheme: true},
     navbar: {
       title: 'Egret',
       logo: {alt: 'Egret', src: 'img/logo.svg'},
