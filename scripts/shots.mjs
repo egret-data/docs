@@ -20,6 +20,12 @@ export const baseShots = [
   {id: 'data-api-clients', path: `${ws}/data-api/clients`},
   {id: 'data-api-activity', path: `${ws}/data-api/activity`},
   {id: 'workflows-flows', path: '/explore/default/workflows/flows'},
+  {id: 'data-api-endpoint-new', path: `${ws}/data-api/endpoints/new`, settle: 1500},
+  {id: 'data-api-client-new', path: `${ws}/data-api/clients/new`, settle: 1200},
+  {id: 'workflows-flow-new', path: `${ws}/workflows/flows/new`, settle: 2500},
+  {id: 'workflows-executions', path: `${ws}/workflows/executions`},
+  {id: 'workflows-namespaces', path: `${ws}/workflows/namespaces`},
+  {id: 'workflows-triggers', path: `${ws}/workflows/triggers`},
   {id: 'governance-overview', path: '/governance'},
   {id: 'control-plane-workspaces', path: '/control-plane/workspaces'},
   {id: 'control-plane-engines', path: '/control-plane/engines'},
@@ -36,6 +42,26 @@ const openRow = (name) => async (page) => {
   await page.waitForLoadState('networkidle');
 };
 export const detailShots = [
+  {id: 'workflows-flow-detail', path: `${ws}/workflows/flows`, prepare: openRow('hello'), settle: 2000},
+  {
+    id: 'workflows-execution-overview',
+    path: `${ws}/workflows/executions`,
+    prepare: async (page) => {
+      await page.getByText(/^[0-9a-f]{8}$/).first().click();
+      await page.waitForLoadState('networkidle');
+    },
+    settle: 2000,
+  },
+  {
+    id: 'workflows-execution-logs',
+    path: `${ws}/workflows/executions`,
+    prepare: async (page) => {
+      await page.getByText(/^[0-9a-f]{8}$/).first().click();
+      await page.waitForLoadState('networkidle');
+      await page.getByRole('tab', {name: 'Logs'}).click();
+    },
+    settle: 2500,
+  },
   {id: 'explore-dataset-detail', path: `${ws}/datasets`, prepare: openRow('orders'), settle: 1500},
   {id: 'explore-chart-editor', path: `${ws}/charts`, prepare: openRow('Revenue by order status'), settle: 4000},
   {id: 'explore-dashboard-view', path: `${ws}/dashboards`, prepare: openRow('Sales overview'), settle: 5000},

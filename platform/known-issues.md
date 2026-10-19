@@ -23,3 +23,6 @@ and missing pieces. Entries are **recorded, not fixed**; they feed the product r
 | KI-009 | Charts API | Docs | S3 | Creating a chart through the API requires `params.version = 2` and a `settings` object; the axis mapping lives in `settings`, not in `spec.dimensions`. Charts created with only `spec` load with the X-axis empty. Document the payload. |
 | KI-010 | Dashboards | Docs | S3 | The dashboard grid is 24 columns wide; this is not stated anywhere in the UI or API reference. |
 | KI-011 | Databases | UX | S3 | A newly created connection shows status *Unknown* until **Test** is pressed, even though creation already validated reachability. |
+| KI-012 | Workspace settings | UX | S3 | The Notifications page does not follow the layout of the other settings tabs: the heading is offset, and Encryption is an unstyled native select. |
+| KI-013 | Workflows | UX | S1 | With the default config the workflow worker is **off**. *Run* succeeds and the execution sits in *Running* indefinitely (one waited 53 s until the worker was enabled). Only the Triggers page warns; Run, Flow and Executions give no hint. |
+| KI-014 | Workflows | UX | S3 | A new flow shows *Version —* in its header, and *Run* says it runs "the saved draft"; it is unclear what a version is until **Create version** is pressed. |
