@@ -4,7 +4,13 @@
 // Output: static/img/platform/<id>.png at 1440x900. Only ever point this at a seeded demo instance.
 import {chromium} from 'playwright';
 import {existsSync, mkdirSync} from 'node:fs';
-import {shots} from './shots.mjs';
+import {dirname} from 'node:path';
+import {readdirSync} from 'node:fs';
+
+// Every file in scripts/shots/ exports `shots` (one array of shot definitions). Each docs area owns its own
+// file, so areas can be written in parallel without editing one shared registry.
+const shotFiles = readdirSync(new URL('./shots/', import.meta.url)).filter((f) => f.endsWith('.mjs')).sort();
+const shots = (await Promise.all(shotFiles.map((f) => import(`./shots/${f}`)))).flatMap((m) => m.shots ?? []);
 
 const BASE = process.env.BASE ?? 'http://localhost:5180';
 const EMAIL = process.env.EGRET_ADMIN_EMAIL ?? 'admin@egret.local';
@@ -52,6 +58,8 @@ for (const s of shots) {
   await page.goto(`${BASE}${s.path}`, {waitUntil: 'networkidle'});
   if (s.prepare) await s.prepare(page);
   await page.waitForTimeout(s.settle ?? 800);
+  // ids may contain a sub-folder, e.g. 'charts/bar-data'
+  mkdirSync(dirname(`${OUT}${s.id}.png`), {recursive: true});
   await page.screenshot({path: `${OUT}${s.id}.png`, fullPage: s.fullPage ?? false});
   console.log(s.id);
 }
