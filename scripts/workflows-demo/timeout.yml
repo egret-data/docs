@@ -1,0 +1,21 @@
+id: timeout-and-runif
+namespace: docs.demo
+tasks:
+  - id: slow_call
+    type: io.kestra.plugin.core.flow.Sleep
+    duration: PT30S
+    timeout: PT3S
+    allowFailure: true
+  - id: only_on_prod
+    type: io.kestra.plugin.core.log.Log
+    message: Skipped when runIf is false
+    runIf: "{{ vars.env == 'prod' }}"
+  - id: disabled_step
+    type: io.kestra.plugin.core.log.Log
+    message: never printed
+    disabled: true
+  - id: finish
+    type: io.kestra.plugin.core.log.Log
+    message: Done
+variables:
+  env: dev

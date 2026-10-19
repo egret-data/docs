@@ -1,0 +1,14 @@
+id: call-subflow
+namespace: docs.demo
+tasks:
+  - id: add
+    type: io.kestra.plugin.core.flow.Subflow
+    namespace: docs.demo
+    flowId: add-numbers
+    wait: true
+    inputs:
+      a: 20
+      b: 22
+  - id: show
+    type: io.kestra.plugin.core.log.Log
+    message: "Subflow state: {{ outputs.add.state }}"

@@ -1,0 +1,16 @@
+id: storage-files
+namespace: docs.demo
+tasks:
+  - id: write
+    type: io.kestra.plugin.core.storage.Write
+    content: |
+      alpha
+      beta
+      gamma
+    extension: .txt
+  - id: size
+    type: io.kestra.plugin.core.storage.Size
+    uri: "{{ outputs.write.uri }}"
+  - id: show
+    type: io.kestra.plugin.core.log.Log
+    message: "file size is {{ outputs.size.size }} bytes"

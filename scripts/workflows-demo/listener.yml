@@ -1,0 +1,15 @@
+id: after-heartbeat
+namespace: docs.demo
+description: Runs after every successful nightly-heartbeat execution.
+tasks:
+  - id: react
+    type: io.kestra.plugin.core.log.Log
+    message: The heartbeat finished successfully
+triggers:
+  - id: on_heartbeat
+    type: io.kestra.plugin.core.trigger.Flow
+    states:
+      - SUCCESS
+    dependsOn:
+      - namespace: docs.demo
+        flowId: nightly-heartbeat

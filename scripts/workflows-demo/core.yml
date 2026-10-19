@@ -1,0 +1,74 @@
+id: core-tasks-tour
+namespace: docs.demo
+tasks:
+  - id: write_a
+    type: io.kestra.plugin.core.storage.Write
+    content: |
+      id,region
+      1,emea
+      2,apac
+      2,apac
+    extension: .csv
+  - id: write_b
+    type: io.kestra.plugin.core.storage.Write
+    content: |
+      3,amer
+    extension: .csv
+  - id: concat
+    type: io.kestra.plugin.core.storage.Concat
+    files:
+      - "{{ outputs.write_a.uri }}"
+      - "{{ outputs.write_b.uri }}"
+    extension: .csv
+  - id: reverse
+    type: io.kestra.plugin.core.storage.Reverse
+    from: "{{ outputs.concat.uri }}"
+  - id: split
+    type: io.kestra.plugin.core.storage.Split
+    from: "{{ outputs.concat.uri }}"
+    rows: 2
+  - id: show_split
+    type: io.kestra.plugin.core.log.Log
+    message: "split into {{ outputs.split.uris | length }} files"
+  - id: upload
+    type: io.kestra.plugin.core.namespace.UploadFiles
+    namespace: docs.demo
+    destination: /exports/
+    filesMap:
+      regions.csv: "{{ outputs.concat.uri }}"
+  - id: download
+    type: io.kestra.plugin.core.namespace.DownloadFiles
+    namespace: docs.demo
+    files:
+      - /data/targets.csv
+  - id: kv_set
+    type: io.kestra.plugin.core.kv.Set
+    key: core_tour_counter
+    value: 7
+    kvType: NUMBER
+    ttl: PT1H
+  - id: kv_keys
+    type: io.kestra.plugin.core.kv.GetKeys
+    prefix: core_tour
+  - id: kv_delete
+    type: io.kestra.plugin.core.kv.Delete
+    key: core_tour_counter
+  - id: vars
+    type: io.kestra.plugin.core.execution.SetVariables
+    variables:
+      stage: done
+  - id: label
+    type: io.kestra.plugin.core.execution.Labels
+    labels:
+      stage: "{{ vars.stage }}"
+  - id: nap
+    type: io.kestra.plugin.core.flow.Sleep
+    duration: PT1S
+  - id: check
+    type: io.kestra.plugin.core.execution.Assert
+    conditions:
+      - "{{ vars.stage == 'done' }}"
+      - "{{ outputs.split.uris | length > 1 }}"
+  - id: end
+    type: io.kestra.plugin.core.execution.Exit
+    state: WARNING

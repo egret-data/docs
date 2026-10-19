@@ -1,0 +1,17 @@
+id: broken-draft
+namespace: docs.demo
+description: A draft with mistakes, to show the Problems tab.
+tasks:
+  - id: collect
+    type: io.kestra.plugin.core.flow.ForEach
+    values: ["a", "b"]
+    tasks:
+      - id: inner
+        type: io.kestra.plugin.core.log.Log
+        message: "{{ item.value }}"
+  - id: fetch
+    type: io.kestra.plugin.core.http.Request
+    uri: https://example.com
+  - id: export
+    type: io.kestra.plugin.scripts.python.Script
+    script: print("hi")
