@@ -4,8 +4,8 @@ sidebar_position: 5
 
 # Classifications
 
-Tags, classification and tag-based policy.
+**Governance → Classifications** defines the tags used to classify data and BI objects.
 
-:::note Draft
-This page is a skeleton and will be written against a running instance, with screenshots.
-:::
+![Classifications](/img/platform/governance-classifications.png)
+
+The header counts **tags**, **gated** tags and **tagged BI objects**. For each tag the table shows its **Key**, **Description**, the BI objects carrying it and its **Clearance**. **New tag** creates one.

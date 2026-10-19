@@ -4,8 +4,8 @@ sidebar_position: 6
 
 # Lineage
 
-Data lineage.
-
-:::note Draft
-This page is a skeleton and will be written against a running instance, with screenshots.
+:::caution Not available yet
+**Governance → Data Lineage** is currently a placeholder page. It is listed in the sidebar but has no functionality.
 :::
+
+![The lineage placeholder](/img/platform/governance-lineage.png)

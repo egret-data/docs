@@ -28,7 +28,7 @@ The Trino bundled with `just up` already has this enabled. If you bring your own
 
 ## Sign in
 
-Open the app and sign in with the local administrator created at first start.
+When single sign-on is configured the sign-in page offers **Sign in with SSO** and an **Admin sign-in (break-glass)** link for the local administrator. Without SSO it shows an email and password form.
 
 ![The sign-in page](/img/platform/login.png)
 
