@@ -1,10 +1,10 @@
 ---
-sidebar_position: 3
+sidebar_position: 2
 ---
 
-# Clients & auth
+# Members
 
-Clients, tokens and access.
+Who belongs to the workspace.
 
 :::note Draft
 This page is a skeleton and will be written against a running instance, with screenshots.

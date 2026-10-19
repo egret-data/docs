@@ -1,11 +1,11 @@
 ---
-sidebar_position: 7
+sidebar_position: 5
 ---
 
 # Apps
 
-Publish data apps built with marimo.
+Apps are dashboards written in code that query your data **as each viewer**, so governance applies per person.
 
-:::note Draft
-This page is a skeleton and will be written against a running instance, with screenshots.
-:::
+![The apps list](/img/platform/explore-apps.png)
+
+Press **+ App** (or **Create your first app**) to start one. An app has a view page and an edit page.
