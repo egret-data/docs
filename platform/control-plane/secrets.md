@@ -4,8 +4,8 @@ sidebar_position: 3
 
 # Secrets
 
-Typed, encrypted secrets.
+Global named secrets that storage and database connections across the platform can reference. **Values are never displayed.**
 
-:::note Draft
-This page is a skeleton and will be written against a running instance, with screenshots.
-:::
+![Secrets](/img/platform/control-plane-secrets.png)
+
+The table shows each secret's name and its keys (for example `password`, `username`), its **Type** (for example `kubernetes.io/basic-auth`), **Used by** (how many connections reference it) and creation date. A secret that is in use cannot be deleted. **Add secret** creates one.
