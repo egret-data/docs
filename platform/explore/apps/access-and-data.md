@@ -102,7 +102,6 @@ The `subprocess` launcher runs every app process inside the Egret container as t
 
 - There is no public sharing and no embedding.
 - A shared-in user who is not a workspace member has no list to find the app from.
-- On the demo stack, viewers' apps stop opening (they stay on *Starting the app…*) about five minutes after the first viewer opened one, until Egret is restarted: the idle reaper cannot stop the app process.
 
 ## Further reading
 
