@@ -1,6 +1,6 @@
 // Screenshots for the admin areas: Governance, Control plane, Workspace settings.
-// Ids are prefixed `admin/`. The shots assume the objects created by the steps listed in .backlog/admin.md
-// (see .backlog/admin.md): profile docs-trino-policy bound to engine docs-trino, grant/rules/tag on
+// Ids are prefixed `admin/`. The shots assume the objects created by the steps listed in scripts/shots/admin-demo-data.md
+// (see scripts/shots/admin-demo-data.md): profile docs-trino-policy bound to engine docs-trino, grant/rules/tag on
 // demo_catalog.analytics.sessions, workspaces "Docs sandbox" and "Finance analytics", role finance_reporter,
 // a pending access request in Finance analytics, secret docs-warehouse-password.
 const gov = '/governance';

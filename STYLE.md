@@ -86,9 +86,9 @@ Rules for the template:
 
 ## Known issues
 
-Defects, rough UX and gaps you find while documenting go in your area's backlog file (`.backlog/<area>.md`, one row per
-finding: `Area | Type | Severity | Description | Evidence`). They are **recorded, not fixed**. Severity: S1 blocks a task,
-S2 wrong or misleading with a workaround, S3 polish. The lead merges backlog files into `platform/known-issues.md`.
+Defects, rough UX and gaps you find while documenting go straight into `platform/known-issues.md` as a new row
+(next free `KI-` id, in the area's section). They are **recorded, not fixed**. Severity: S1 blocks a task, S2 wrong or
+misleading with a workaround, S3 polish.
 
 ## Vietnamese
 
