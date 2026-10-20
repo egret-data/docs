@@ -15,7 +15,7 @@ Two places offer **Download OpenAPI**:
 - **Endpoints** list, top right: the document for every live endpoint the chosen account may invoke.
 - An endpoint's **Response** tab: the contract of that one endpoint.
 
-![The Download OpenAPI dialog with a service account chosen](/img/platform/data-api/openapi-dialog.png)
+![The Download OpenAPI dialog over the endpoints list, with orders-reporting-bot chosen](/img/platform/data-api/openapi-dialog.png)
 
 1. Press **Download OpenAPI**.
 2. Under **Service account**, choose the account the document is for. The dialog says *Choose a service account. The document lists every live endpoint that account may invoke.* (From an endpoint: *Choose the service account this document describes invoke rights for.*)
@@ -37,23 +37,23 @@ The management API offers the same for administrators: `GET /api/ws/{workspace}/
 
 ## What the document contains
 
-From the walk-through workspace, for the service account `orders-reporting-bot`:
+From the walk-through workspace on the demo stack (port 8080), for the service account `orders-reporting-bot`. `partner-sandbox`, whose only grant is on the disabled **Legacy order export**, gets an empty `paths` object:
 
 ```json
 {
   "openapi": "3.0.3",
   "info": { "title": "Data API", "version": "1.0.0" },
-  "servers": [{ "url": "http://localhost:8080/data-api/v1/default" }],
+  "servers": [{ "url": "http://egret.localtest.me:8080/data-api/v1/default" }],
   "security": [{ "egret_oauth2": [] }],
   "components": {
     "securitySchemes": {
       "egret_oauth2": {
         "type": "oauth2",
-        "flows": { "clientCredentials": { "tokenUrl": "http://localhost:8080/oauth/token", "scopes": {} } }
+        "flows": { "clientCredentials": { "tokenUrl": "http://egret.localtest.me:8080/oauth/token", "scopes": {} } }
       }
     }
   },
-  "paths": { "/customers/top": {}, "/orders/by-status": {}, "/orders/page": {}, "/reports/yearly": {} }
+  "paths": { "/customers/top": {}, "/orders/by-status": {}, "/orders/lookup": {}, "/orders/page": {}, "/orders/status-totals": {}, "/reports/yearly": {} }
 }
 ```
 

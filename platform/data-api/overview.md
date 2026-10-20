@@ -8,7 +8,7 @@ The Data API turns a SQL query into a REST endpoint. You write the query, declar
 
 Use it when a consumer that is not a person (a nightly job, a partner's backend, a mobile app, a spreadsheet macro) needs the answer to a query that you control. For a person who wants to look at data, use [Charts](../explore/charts) and [Dashboards](../explore/dashboards) instead.
 
-![The endpoints list with six live endpoints](/img/platform/data-api/endpoints-list.png)
+![The endpoints list with eight endpoints: six live, Customer spend as a draft and Legacy order export disabled](/img/platform/data-api/endpoints-list.png)
 
 ## The pieces
 

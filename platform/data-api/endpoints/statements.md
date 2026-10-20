@@ -6,7 +6,7 @@ sidebar_position: 3
 
 An endpoint normally runs one query. When a response needs more than one result set, for example a page of rows and the total count for a pager, add more **statements**. When the SQL itself must change shape depending on the caller's parameters in a way `{% if %}` cannot express, build it with a short script.
 
-![The Query tab of an endpoint with two statements, rows and total](/img/platform/data-api/endpoint-statements.png)
+![The Query tab of Orders page with two statements, rows and total, and the rows statement selected](/img/platform/data-api/endpoint-statements.png)
 
 ## Add a statement
 
