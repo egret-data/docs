@@ -16,10 +16,10 @@ Lineage tells you which tables a view reads and which views read a table. Egret 
 
 The working lineage view is the **Lineage** tab on a table, view or materialized view in **Governance → Data**.
 
-![The Lineage tab of the sessions table: it reads from nothing and nothing reads it](/img/platform/admin/gov-table-lineage.png)
+![The Lineage tab of the sessions table: no recorded readers, and a warning that one view's lineage could not be computed](/img/platform/admin/gov-table-lineage.png)
 
 - **Reads from** lists the base tables of a view.
-- **Read by** lists the views and materialized views that read a table. An empty list says *No view or materialized view reads this table*, or *No reader is known* when the lineage is incomplete.
+- **Read by** lists the views and materialized views that read a table. An empty list says *No view or materialized view reads this table*. When a view's lineage is missing, the tab warns instead: *This list may be incomplete. 1 view in egret's catalogs has lineage egret does not know (failed or not yet computed); it may read this table* and *No reader is known.*
 - A table with no record says *egret has no lineage recorded for this object*.
 
 Each view carries how its lineage was obtained:
@@ -34,7 +34,9 @@ Lineage here is table-level, not column-level: it says which tables a view reads
 
 ## Why it matters for governance
 
-When a view is created in an egret catalog, egret uses its lineage to tag the view with the classifications of its base tables. If lineage fails to compute, the Governance overview raises a **view lineage failed** finding. See [View exposure](./classifications/view-exposure.md) and [Data](./data/index.md#lineage).
+When a view is created in an egret catalog, egret uses its lineage to tag the view with the classifications of its base tables. If lineage fails to compute, the Governance overview raises a **view lineage failed** finding.
+
+On the demo stack the view `demo_warehouse.analytics.revenue_by_country` reads `sessions`, but egret could not compute its lineage: reading the view through the provisioned engine was refused with *Access Denied: Cannot access catalog demo_warehouse*. So the **Lineage** tab of `sessions` shows the warning above instead of the view, and the view is listed on the tag's **View exposure** tab as *may read classified data*. See [View exposure](./classifications/view-exposure.md) and [Data](./data/index.md#lineage).
 
 ## Further reading
 

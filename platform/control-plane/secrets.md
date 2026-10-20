@@ -6,13 +6,15 @@ sidebar_position: 3
 
 A **secret** is a named, stored credential that other settings reference by name instead of holding the value themselves: the secret access key of a storage connection, the password of a JDBC catalog, the password of a database connection. **Control Plane → Infrastructure → Secrets** manages them. **Values are never displayed** after you save them.
 
-![The Secrets list with two secrets](/img/platform/admin/cp-secrets.png)
+![The Secrets list: the secrets you created and the ones egret creates for engines and catalog clients](/img/platform/admin/cp-secrets.png)
 
 You need **secret:read** to open the page; creating, rotating and deleting need the matching permissions.
 
 ## The secret list
 
 A strip counts the **secrets**.
+
+The list also shows the secrets egret creates and manages itself: `engine-internal-<engine id>-…` (the Trino internal-communication secret), `engine-monitor-…` (the egret-monitor password for the native Trino monitor), `engine-tls-…` (the coordinator keystore) for every provisioned engine, and `catalog-client-…` (a Catalog Client credential an engine presents to egret's catalog). Leave them alone: rotating or deleting one breaks the engine or client that uses it. On a 1440-pixel-wide screen the **Used by** and **Created** columns are cut off at the right; scroll the table sideways.
 
 | Column | Meaning |
 |---|---|
@@ -44,7 +46,7 @@ A strip counts the **secrets**.
 
 ## The secret page
 
-![A secret's details: name, type and keys; no values](/img/platform/admin/cp-secret-detail.png)
+![A secret's details: name, description, type and keys; no values](/img/platform/admin/cp-secret-detail.png)
 
 The header shows the name, type and *USED BY n connection(s)*, with **Rotate value** and **Delete**. Tabs:
 

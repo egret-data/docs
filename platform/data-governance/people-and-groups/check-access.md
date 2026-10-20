@@ -6,7 +6,7 @@ sidebar_position: 1
 
 The **Check access** tab on a person, group or role page asks the engines a precise question: can this principal perform this action on this target? It uses the same evaluator as [Explain access](../data/explain-access.md), but lets you choose any catalog, schema, table or column and either action.
 
-![Check access for member-sso: the action and the target pickers](/img/platform/admin/gov-person-check.png)
+![Check access for Member SSO on demo_warehouse.analytics.customers: No policy matched on docs-trino](/img/platform/admin/gov-person-check.png)
 
 Check access needs **policy:read**. A user with no username cannot be checked: the tab says *No username yet, so no engine knows this user.* Grant them something first so a username is allocated.
 
@@ -19,6 +19,8 @@ Check access needs **policy:read**. A user with no username cannot be checked: t
 5. Press **Explain**.
 
 The result is the same per-profile answer as the Data page's **Who can read?**: a verdict (**Allowed**, **Refused by a deny item**, **Refused by deny-all-else**, **No policy matched**, **Undecidable**), the deciding grant or policy, and the tags that could decide. See [Explain access](../data/explain-access.md#read-the-result-for-a-user) for what each means.
+
+On the demo stack, **read** on `demo_warehouse.analytics.customers` for `member-sso` answers **No policy matched** on `docs-trino` (*Nobody granted this — not the same as somebody forbidding it.*), while `demo_warehouse.analytics.sessions` answers **Allowed** with **View grant** and the Ranger policy `perm-grant-d7441a5e-…`. A query on `customers` as her is refused by the engine.
 
 ## Check a group or role
 

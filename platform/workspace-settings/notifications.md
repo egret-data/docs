@@ -6,7 +6,7 @@ sidebar_position: 7
 
 **Workspace settings → Workspace → Notifications** sets how the workspace sends alerts and reports: the SMTP relay and from-address for email, and one Slack bot for Slack messages. Every workspace has its own settings, so two teams never share an identity or a sending reputation.
 
-![The Notifications page: SMTP settings and Slack settings](/img/platform/admin/ws-notifications.png)
+![The Notifications page with SMTP settings for the demo mail catcher and the Slack section](/img/platform/admin/ws-notifications.png)
 
 *Alerts and reports in this workspace send mail through this relay, as this from-address.* Changing the settings needs the workspace permission to manage SMTP (the API checks it on every save). The destinations themselves (an email recipient list, a Slack channel) are chosen on each alert or report in [Alerts & Reports](../explore/alerts-and-reports).
 
@@ -18,7 +18,7 @@ sidebar_position: 7
 |---|---|
 | **SMTP host** | The relay's host name, for example `smtp.example.com`. Required. |
 | **Port** | The relay's port. Default `587`. |
-| **Encryption** | **STARTTLS (usually port 587)** (default), **TLS (usually port 465)** or **None — trusted internal relay only**. Chosen explicitly rather than guessed from the port: guessing wrong can mean credentials sent in the clear. |
+| **Encryption** | **STARTTLS (usually port 587)** (default), **TLS (usually port 465)** or **None — trusted internal relay only**, in a drop-down list. Chosen explicitly rather than guessed from the port: guessing wrong can mean credentials sent in the clear. |
 | **Username** | The login for the relay. Optional. |
 | **Password** | The relay password. Never shown again: the field starts empty and shows *Unchanged* when one is stored. |
 | **From address** | The sender, for example `alerts@example.com`. Required, and must contain `@`. |
@@ -27,7 +27,7 @@ sidebar_position: 7
 ### Save the settings
 
 1. Fill **SMTP host**, **Port**, **Encryption**, **Username**, **Password**, **From address** and **From name**.
-2. Press **Save**. A notice says *Settings saved.*
+2. Press **Save**. The **Remove** button appears once settings are stored.
 
 An untouched password field is omitted from the save so the stored password is kept; leaving it empty after clearing is how you remove it. The password is stored as a secret, not in the settings row.
 
@@ -46,7 +46,7 @@ When settings exist a **Remove** button deletes them (*Settings removed.*), afte
 | **Bot token** | The bot's OAuth token, for example `xoxb-…`. It needs the `chat:write` scope, and the bot must be invited to each channel. When one is stored the field shows *Unchanged* and the note *A token is stored. Leave blank to keep it.* |
 | **Default channel** | Optional, for example `#data-alerts`. Shown as a hint when adding a destination. |
 
-Press **Save Slack settings** (*Slack settings saved.*). **Remove** deletes the token and channel (*Slack settings removed.*).
+Press **Save Slack settings** (*Slack settings saved.*). The token field then says *A token is stored. Leave blank to keep it.* **Remove Slack app** deletes the token and channel (*Slack settings removed.*).
 
 ### Set up Slack
 
@@ -55,13 +55,23 @@ Press **Save Slack settings** (*Slack settings saved.*). **Remove** deletes the 
 3. Invite the bot to the channels alerts will post to (`/invite @your-bot`).
 4. Save, then create an alert whose destination is the Slack channel.
 
-## Example
+## Example: the demo mail catcher
+
+On the Docker demo stack every mail goes to Mailpit (`http://localhost:8025` on the host). For the workspace *Docs sandbox*:
+
+1. **SMTP host** `mailpit`, **Port** `1025`, **Encryption** **None — trusted internal relay only**, no username or password.
+2. **From address** `docs-sandbox@egret.local`, **From name** *Docs sandbox alerts*. Press **Save**.
+3. Press **Send test message**. The page says *Test message sent. Check the inbox for the from-address.*, and Mailpit shows the mail *egret test message* from *Docs sandbox alerts*.
+
+The demo seed configures the `default` workspace the same way. The demo stack has no Slack: a token saved there is stored, but nothing can be delivered to Slack.
+
+## Example: a production relay
 
 For a finance workspace: SMTP host `smtp.corp.example`, port `587`, **STARTTLS**, username `alerts-bot`, from address `finance-alerts@corp.example`, from name *Finance Alerts*. Slack default channel `#finance-alerts`.
 
 ## Limits and known issues
 
-- On the demo instance, saving SMTP settings returned an *internal error* (HTTP 500), so the saved state, **Send test message** and the Slack save could not be verified there. The field list is from the product source.
+- Before settings exist the page loads two 404 responses (`/notifications/smtp` and `/notifications/slack`) that show as errors in the browser console. They are harmless.
 - Passwords and tokens are write-only. You cannot read them back; replace them to change them.
 
 ## Further reading

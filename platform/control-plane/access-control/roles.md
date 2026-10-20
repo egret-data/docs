@@ -33,7 +33,7 @@ A strip counts **roles**, **platform** and **workspace**. **Scope** filters **Al
 | **Permissions** | How many permissions the role grants, including inherited ones. |
 | **Assignees** | How many users or groups hold it. |
 
-![The tree view groups roles by scope](/img/platform/admin/cp-roles-tree.png)
+![The tree view groups roles by scope and shows inheritance](/img/platform/admin/cp-roles-tree.png)
 
 ## Create a custom role
 
@@ -50,7 +50,7 @@ The new role has no permissions. Open it to add some.
 
 Select a role to open its page. The header says *Workspace role · 8 permissions · 0 assignees* and offers **Delete role**. A role with assignees or child roles shows who holds it; with none it says *No assignees or inheriting roles.*
 
-![A custom workspace role inheriting from ws_viewer with two direct permissions](/img/platform/admin/cp-role-detail.png)
+![The custom workspace role finance_reporter: inherits from ws_viewer and adds two permissions](/img/platform/admin/cp-role-detail.png)
 
 ### Details
 

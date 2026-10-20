@@ -6,7 +6,7 @@ sidebar_position: 3
 
 **Explain access** answers the question "can this person read this?" using the policies the engine actually downloads, not the policies you think you wrote. It is the quickest way to find out why a user is allowed or refused, and which grant decided it.
 
-![The Who can read dialog: an Allowed verdict for member-sso with the grant that decided it](/img/platform/admin/gov-who-can-read.png)
+![The Who can read dialog: select is Allowed for member-sso on docs-trino, with the grant that decided it](/img/platform/admin/gov-who-can-read.png)
 
 Explain needs the **policy:read** permission. There are two entry points:
 

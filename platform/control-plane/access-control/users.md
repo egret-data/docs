@@ -27,6 +27,8 @@ A summary strip counts **users**, **active** and **disabled**. Two filters narro
 | **Roles** | Platform roles the user holds, or a dash. |
 | **Groups** | How many groups the user belongs to. |
 
+The **⋯** menu on a row offers **View access** (the [Access Explorer](./access-explorer.md) for that person), **Assign roles**, **Edit**, **Impersonate** and **Delete**.
+
 ## Create a local account
 
 Use this for break-glass accounts and for installations without SSO.
@@ -45,13 +47,13 @@ Prefer SSO for people. A local account has its own password and does not follow 
 
 **Bulk select** adds checkboxes. After you tick users, a bar shows *N selected* with **Disable**, **Enable**, **Assign role…** and **Clear**. **Done** leaves bulk mode.
 
-![Bulk select with one user ticked](/img/platform/admin/cp-users-bulk.png)
+![Bulk select with two users ticked and the actions bar](/img/platform/admin/cp-users-bulk.png)
 
 ## The user page
 
-Select a user to open their page. The header shows the avatar, name, status, provider and email, with **Disable** (or **Enable**) and **Delete**.
+Select a user to open their page. The header shows the avatar, name, status, provider and email, with **Disable** (or **Enable**) and **Delete**. A local account also has **Reset password**: *Set a new password for this local account. Their existing sessions are signed out immediately.*
 
-![A user page with details, roles and groups](/img/platform/admin/cp-user-detail.png)
+![The page of Farid Haddad: details, two platform roles and one group](/img/platform/admin/cp-user-detail.png)
 
 ### Details
 
@@ -73,7 +75,7 @@ The table lists **Role** and **Scope** with a remove button. With none it reads 
 
 ## Disable and delete
 
-**Disable** blocks sign-in without removing anything; the status becomes **disabled** and **Enable** reverses it. **Delete** removes the account. Prefer disabling: grants and shares that name a deleted user become unmatched names (see [People & groups](../../data-governance/people-and-groups/index.md)).
+**Disable** blocks sign-in without removing anything and signs the user out; it applies at once, without a confirmation. The status becomes **disabled** and **Enable** reverses it. **Delete** asks *Delete "\<email\>"?* (*This user, their sessions, group memberships, and role grants will be permanently removed. This cannot be undone.*) and needs you to type `delete`. Prefer disabling: grants and shares that name a deleted user become unmatched names (see [People & groups](../../data-governance/people-and-groups/index.md)).
 
 ## Limits and known issues
 

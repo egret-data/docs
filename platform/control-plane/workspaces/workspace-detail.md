@@ -10,7 +10,7 @@ Opening a workspace in **Control Plane → Workspaces** shows its page. The head
 
 ## Overview
 
-A summary strip shows the number of **members** and **queries run**, then **OWNER**, **CREATED** and **STATUS**.
+A summary strip shows the number of **members** and **queries run** (for example *7 members · 27 queries run*), then **OWNER**, **CREATED** and **STATUS**.
 
 ## Members
 
@@ -20,11 +20,11 @@ A note reminds you that workspace roles apply only inside the workspace, and tha
 
 ## Resources
 
-![The Resources tab of the default workspace: a warehouse and the assigned engines](/img/platform/admin/cp-workspace-resources.png)
+![The Resources tab of Docs sandbox: no warehouse, and the engine docs-trino assigned](/img/platform/admin/cp-workspace-resources.png)
 
 ### Warehouses
 
-*Iceberg catalogs owned by this workspace.* The table shows each warehouse's **Name**, **Storage** (the storage connection) and **Status** (for example **Provisioned**). **Manage** opens the Catalogs page.
+*Iceberg catalogs owned by this workspace.* The table shows each warehouse's **Name**, **Storage** (the storage connection) and **Status** (for example **Provisioned**); a workspace without one says *No warehouses in this workspace yet.* **Manage** opens the Catalogs page. On the demo stack the seeded warehouse `demo-warehouse` belongs to `default`.
 
 ### Assigned engines
 
@@ -36,7 +36,7 @@ A footer says *Storage connections and secrets are managed platform-wide in the 
 
 *These switches decide which modules this workspace has at all — turning one off hides it from the sidebar and blocks its API for everyone in this workspace, including platform admins. It doesn't delete anything: existing content is kept and comes back exactly as it was when the module is switched back on. Who can read or write within an enabled module is still decided by workspace roles.*
 
-![The Features tab with one switch per module](/img/platform/admin/cp-workspace-features.png)
+![The Features tab of Docs sandbox with one switch per module](/img/platform/admin/cp-workspace-features.png)
 
 | Module | What it covers |
 |---|---|
@@ -63,7 +63,7 @@ Pending requests to join this workspace, with the same **Approve** and **Deny** 
 
 ## Activity
 
-The audit entries recorded for this workspace: **Time**, **Action**, **Resource**, **Actor** and **Decision**. It is the workspace-scoped slice of the [Audit log](../audit-log.md), newest first.
+The audit entries recorded for this workspace: **Time**, **Action**, **Resource**, **Actor** and **Decision**. It is the workspace-scoped slice of the [Audit log](../audit-log.md), newest first. Most rows are authorization decisions such as `workspace:manage_members` (**allow** or **deny**), `query:run` or `dashboard:read`; changes such as `member:add` show a dash. A member who opens a page they may not use shows up as a **deny**. Actions done while a platform admin impersonated someone are listed under the impersonated person.
 
 ## Limits and known issues
 

@@ -6,7 +6,7 @@ sidebar_position: 2
 
 A **group** is a set of users you can give roles and grants to once instead of person by person. **Control Plane → Identity → Groups** lists local groups you create in egret and groups synced from your identity provider.
 
-![The Groups list showing two groups synced from OIDC](/img/platform/admin/cp-groups.png)
+![The Groups list: local groups and groups synced from OIDC](/img/platform/admin/cp-groups.png)
 
 You need **group:read** to open the page.
 
@@ -34,12 +34,12 @@ The dialog says *Create a local group.* After creating it, open the group to add
 
 ## The group page
 
-![A synced group with members and roles](/img/platform/admin/cp-group-detail.png)
+![The local group finance-analysts: details, three members and no roles](/img/platform/admin/cp-group-detail.png)
 
 | Section | What it holds |
 |---|---|
 | **Details** | The **Name** (editable for local groups). |
-| **Members** | *Members are synced from your identity provider* for a synced group, with **Member**, **Email** and a remove action for local groups. |
+| **Members** | For a local group: *Users in this group. Search to add someone, or remove with ×.*, a **User** search with **Add**, and the **Member** and **Email** of each member with a remove button. For a synced group: *Members are synced from your identity provider.* |
 | **Roles** | *Roles granted to every member of this group.* Choose **Scope** (**Platform** or **Workspace**) and **Role**, then **Add**. |
 
 When a group holds a role, every member gets it. In the platform a role held through a group works as expected. In the query engine, however, a group name never reaches Trino or StarRocks: engines count only roles a user holds directly, which the **Applied on engines** column of [People & groups](../../data-governance/people-and-groups/index.md) shows as *egret only — not applied on engines: held through a group*.

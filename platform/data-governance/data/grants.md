@@ -6,7 +6,7 @@ sidebar_position: 1
 
 A **grant** says who can read or write which part of a catalog. Grants are the main way you give people access to data in the query engines. You create them on the **Permissions** tab of the Data page, from a person's page, or from the grant dialog's **Grant access** button.
 
-![The Permissions tab of the sessions table: the grant written for it and the grant inherited from the workspace](/img/platform/admin/gov-table-permissions.png)
+![The Permissions tab of the sessions table: the grant to member-sso here, and two inherited catalog grants (the workspace assignment of Default and the role data_steward)](/img/platform/admin/gov-table-permissions.png)
 
 ## Anatomy of a grant
 
@@ -17,7 +17,7 @@ A **grant** says who can read or write which part of a catalog. Grants are the m
 | **Scope** | A catalog, narrowed to a schema, a table and a column. Each narrower level is optional. |
 | **Principals** | Who the grant is for: **Include** (users, groups or roles) and **Exclude** (principals removed from the include set). |
 
-Grants are written as sentences in lists, for example `user member-sso can read demo_catalog.analytics.sessions`. A level whose value is a pattern (`*`, `ord*`, `order?`) is quoted in the sentence, and the engine matches it as a glob.
+Grants are written as sentences in lists, for example `user member-sso can read demo_warehouse.analytics.sessions`. A level whose value is a pattern (`*`, `ord*`, `order?`) is quoted in the sentence, and the engine matches it as a glob.
 
 ## Read the Permissions tab
 
@@ -35,15 +35,19 @@ Each row has **Edit** and **Delete** icon buttons. Both need the **policy:update
 
 ## Create a grant
 
-1. Open **Governance → Data** and select the table, for example `demo_catalog.analytics.sessions`.
+1. Open **Governance → Data** and select the table, for example `demo_warehouse.analytics.sessions`.
 2. Press **Grant access**. The dialog opens as **New grant** with the catalog, schema and table already filled in.
 3. Leave **Effect** as **Allow**. Under **Actions**, keep **Read** ticked.
 4. Under **Principals → Include**, choose a kind (**user**, **group** or **role**), then search.
-5. For a user who has no engine username yet, choose the match and press **Allocate username and add**. Confirm **Allocate and add** in the dialog *Allocate a username to Member SSO?* Egret reports *Member SSO was allocated a username and added, stored as member-sso.* The username is kept even if you close the form without saving.
-6. Press **Preview**. The preview names the profiles that would be recompiled, for example `docs-trino-policy`, and how many policies would be created, updated, deleted or left unchanged.
+5. A user who already has an engine username is added by selecting the match. For a user who has none yet, the match shows **Allocate username and add**: press it. Confirm **Allocate and add** in the dialog *Allocate a username to Member SSO?* Egret reports *Member SSO was allocated a username and added, stored as member-sso.* The username is kept even if you close the form without saving.
+6. Press **Preview**. The preview names the profiles that would be recompiled, for example `docs-trino`, and how many policies would be created, updated, deleted or left unchanged.
 7. Press **Create**. You see *Grant created.*
 
-![The New grant dialog after a preview: one principal, and the profile it would recompile](/img/platform/admin/gov-grant-dialog.png)
+![The New grant dialog after a preview: read and write on demo_warehouse.analytics.sessions for alice-nguyen, which would recompile docs-trino](/img/platform/admin/gov-grant-dialog.png)
+
+### Check the grant in SQL Lab
+
+The engine applies the grant at its next policy download (the plugin polls every 30 seconds). On the demo stack, after this grant `member-sso` read `demo_warehouse.analytics.sessions` through the engine `docs-trino`, and a table with no grant for her answered *Access Denied: Cannot select from columns [] in table or view customers*.
 
 ### The dialog fields
 

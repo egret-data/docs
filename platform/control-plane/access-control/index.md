@@ -28,18 +28,18 @@ Access overview needs the **user:read** permission, which platform admins hold.
 | **USERS** | Total accounts, with how many are active. |
 | **GROUPS** | Total groups, split into *local* and *synced* (from the identity provider). |
 | **ROLES** | Total roles, split into platform and workspace roles. |
-| **PLATFORM ADMINS** | Users holding the `platform_admin` role, and their share of all users (for example *25% of users — review*). |
+| **PLATFORM ADMINS** | Users holding the `platform_admin` role, and their share of all users (for example *15% of users — review*). |
 
 ### Needs attention
 
 Findings about the way access is set up. Each has a title, a sentence and a **Review** button. Examples on the demo instance:
 
-- **5 roles have no assignees**: *They grant nothing until assigned to a user or group.*
-- **1 platform admins · 25% of users**: *Review who holds full-platform access and trim if it's too broad.*
+- **6 roles have no assignees**: *They grant nothing until assigned to a user or group.* Roles that are only used as workspace roles count here.
+- **2 platform admins · 15% of users**: *Review who holds full-platform access and trim if it's too broad.*
 
 ### Recent changes
 
-The latest audit entries with the action, resource, the actor, and the time. **View audit log** opens the full [Audit log](../audit-log.md).
+The latest audit entries with the action (for example `perm_grant:create`), the resource type, the actor and the time. The actor is shown as a short user id (`by 8a66d837`), not a name. **View audit log** opens the full [Audit log](../audit-log.md).
 
 ### How access works
 

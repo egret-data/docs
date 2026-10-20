@@ -6,7 +6,7 @@ sidebar_position: 3
 
 **Workspace settings → Access → Roles & permissions** shows what each workspace role can do in this workspace. It is a read-only view: roles are defined once for the whole platform and apply to every workspace.
 
-![The workspace Roles and permissions page with the three built-in roles and a custom role](/img/platform/admin/ws-roles.png)
+![The workspace Roles and permissions page with three built-in roles and two custom roles](/img/platform/admin/ws-roles.png)
 
 *Roles are defined platform-wide in Control Plane → Access control and apply to every workspace. This is a read-only view.*
 
@@ -45,7 +45,7 @@ Select a row to expand it. The permissions are grouped by area, each with its de
 | OTHER | `catalog:read` | View catalogs. |
 | SQL LAB | `saved_query:read` | View saved queries. |
 
-![A custom role expanded: inherited reads plus chart and dashboard management](/img/platform/admin/ws-roles-expanded.png)
+![The custom role finance_reporter expanded: it inherits from ws_viewer and adds chart and dashboard management](/img/platform/admin/ws-roles-expanded.png)
 
 A role that inherits from another shows only the permissions it adds itself. `finance_reporter`, which inherits from `ws_viewer` and adds `chart:manage` and `dashboard:manage`, shows **2 permissions** here, while the Control Plane role page counts 8 because it includes the seven inherited reads. Read the parent's row to see the inherited ones.
 

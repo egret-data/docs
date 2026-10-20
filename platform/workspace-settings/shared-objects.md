@@ -6,7 +6,7 @@ sidebar_position: 5
 
 **Workspace settings → Access → Shared objects** is a workspace-wide roll-up of everything that has been shared with someone: dashboards, charts, datasets, folders, notebooks and saved queries, and who holds a grant on each. It is the place to audit sharing and to change it in one spot.
 
-![The Shared objects page: one row per object and principal](/img/platform/admin/ws-shares.png)
+![The Shared objects page: five shares on a dashboard, a chart and a dataset, one of them denied](/img/platform/admin/ws-shares.png)
 
 Only workspace admins can view shares; others see *Only workspace admins can view shares.* Until something is shared the page shows *Nothing shared in this workspace yet.*
 

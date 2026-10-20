@@ -41,9 +41,14 @@ The checks the server runs are:
 | Classifications without clearance | Tags that gate nothing (**Info**). |
 | Catalogs attached to no engine | No engine serves the catalog (**Info**). |
 
-On the demo instance before an engine is declared, the only finding is the last one: `demo_catalog` is attached to no engine, so no engine serves it. Declaring the catalog on an engine (see [Engine page tabs](./engines-and-policy/index.md#the-engine-page)) clears it, and the list then reads *Nothing needs attention.*
+On the demo stack, with the engine `docs-trino` serving `demo_warehouse`, the list held two findings:
 
-When your permissions do not allow a check, the page says so with a **Not checked here** line that names what it skipped, for example views that may expose classified data through `DEFINER`, and classification coverage. Those two are covered on the [View exposure](./classifications/view-exposure.md) page.
+- **Warning**: *egret could not compute the lineage of 1 view, so the tables it reads are not known.*, with the view and the engine's answer: `demo_warehouse.analytics.revenue_by_country — engine docs-trino: engine: Access Denied: Cannot access catalog demo_warehouse`. Egret reads view definitions through the engine, and the engine's policy did not let egret's own account into the catalog.
+- **Info**: *3 classifications have no clearance: they gate nothing.*, listing the tags.
+
+Before an engine serves a catalog, the finding is that the catalog is attached to no engine. When everything is in order the list reads *Nothing needs attention.*
+
+A **Not checked here** line names what the page does not check: views that may expose classified data through `DEFINER`, and classification coverage. It appears for platform admins too. Those two are covered on the [View exposure](./classifications/view-exposure.md) page. When your permissions do not allow one of the checks above, it is added to that line.
 
 :::note
 Each check needs its own permissions: engine drift checks need **policy:read** and **engine:read**, the catalog attachment check needs **catalog_registry:read**, and so on. A check you cannot run is listed as not checked, not silently dropped.
@@ -51,13 +56,13 @@ Each check needs its own permissions: engine drift checks need **policy:read** a
 
 ## Recent changes
 
-**Recent changes** lists governance changes as they are recorded, newest first, with the columns **When**, **Who** and **What**, and a **View** link that opens the object concerned. The text describes each change in a sentence, for example *Administrator created rule Hash session ids: mask MASK_HASH on demo_catalog.analytics.sessions.session_id*, *Administrator set the clearance of classification Personal data (PII): roles data_steward; groups none* or *Administrator created an engine grant: trino.set_system_session_property (query_max_run_time) on engine docs-trino to user member-sso*.
+**Recent changes** lists governance changes as they are recorded, newest first, with the columns **When**, **Who** and **What**, and a **View** link that opens the object concerned. The text describes each change in a sentence, for example *Administrator created a grant: allow read on demo_warehouse.finance to group finance-analysts, group data-team*, *Administrator set the clearance of classification Confidential: roles data_steward; groups none*, *Administrator created an engine grant: trino.set_system_session_property (query_max_run_time) on engine docs-trino to user member-sso* or *Administrator migrated legacy: analysts read finance_pg of profile docs-legacy-trino into egret grants and rules*. The link column reads **View**, or *(deleted)* when the object no longer exists.
 
 The list is paged: use the button at the bottom to load older changes. Under the list a note says *The oldest change you can see is from \<date\>*, and that changes older than 90 days are pruned. A second note warns that role assignments and catalog tags are recorded after they commit and can be missing if the audit writer was overloaded. Recording began when this version of egret was installed, so a fresh instance shows *No governance change has been recorded yet*.
 
 A change made by an administrator acting as another user is shown as "Admin as User". A change by a deleted user is shown as *A deleted user*, and a change made by the platform itself, for example a recompile, as *egret*.
 
-![Recent changes on the demo instance after creating a grant, rules, a tag, an engine grant and a clearance](/img/platform/admin/gov-overview.png)
+![The Governance overview on the demo stack: two findings and the most recent governance changes](/img/platform/admin/gov-overview.png)
 
 ## The Governance sidebar
 
