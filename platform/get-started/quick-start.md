@@ -1,11 +1,14 @@
 ---
-sidebar_position: 3
+sidebar_position: 4
 ---
 
 # Quick start
 
 This page runs Egret on your machine: PostgreSQL, an S3-compatible object store, Trino and Keycloak in Docker, and the
 server and web app from source. It takes about 20 minutes, most of it the first Rust build.
+
+**Only want to try Egret?** [Run the demo stack](./run-the-demo-stack) instead: `just demo-up` starts the whole platform,
+seeded with sample data, on Docker alone, with no Rust toolchain or Node.js needed. This page is for working on Egret itself.
 
 :::note How this page was verified
 The server steps (migrate, init, serve, sign-in) were run against a clean database with the binary built from the
@@ -141,7 +144,7 @@ errors](../deploy-operate/troubleshooting/engine-406-502).
 
 ## Optional: demo data
 
-With the server running, `just seed-demo` provisions a demo Iceberg catalog with namespaces, five tables, roles and
+Not to be confused with the [demo stack](./run-the-demo-stack)'s seed (`just demo-seed`): with the server running, `just seed-demo` provisions a demo Iceberg catalog with namespaces, five tables, roles and
 clients. It needs the catalog enabled (`EGRET_CATALOG__ENABLED=true` with `EGRET_CATALOG__AUTH_TOKEN`); see [Storage and
 catalog setup](../deploy-operate/storage-and-catalog).
 
@@ -153,5 +156,6 @@ just down        # stops and removes the containers; the PostgreSQL and RustFS v
 
 ## Next
 
+- [Run the demo stack](./run-the-demo-stack), for a seeded instance with Data Apps, reports and engine provisioning
 - [Take a tour of the app](./first-login-tour)
 - [Build your first dashboard](./first-dashboard)

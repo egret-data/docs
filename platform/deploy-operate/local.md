@@ -9,6 +9,12 @@ instance. The Egret server itself is **not** in the compose file: you run it fro
 describes each service, how Egret uses it, and the `just` recipes around it. For a step-by-step first run, see the
 [Quick start](../get-started/quick-start).
 
+The repository has a second Compose file, `deploy/docker-compose.demo.yml`, that runs **everything** in containers, Egret
+included, with sample content and no Rust toolchain: `just demo-up`. It is for trying the product, not for developing it; see
+[Run the demo stack](../get-started/run-the-demo-stack). The two stacks are separate Compose projects (`egret-dev` and
+`egret-demo`) with separate volumes, but both want host port 8080 (the demo stack's edge and the dev server), so move one of
+them (`DEMO_PORT`, or `EGRET_SERVER__PORT`) to run both.
+
 ```bash
 cp .env.example .env
 just up       # docker compose -f deploy/docker-compose.dev.yml up -d
@@ -99,6 +105,9 @@ A recreated container regenerates `fe.conf`, so the setting is lost without any 
 | `just seed-alerts` | Seed ten alert and report schedules that cover every state of the UI. |
 | `just reset-testdata` | Wipe the catalog, test workspaces and RustFS; keep users and the `demo` and `eng` workspaces. |
 | `just check` | Format, lint and run the whole test suite. It needs Postgres and Valkey from `just up`, and a JVM with Maven for the Ranger gates. |
+| `just demo-up`, `just demo-down`, `just demo-reset` | Start, stop, and stop and delete the volumes of the [demo stack](../get-started/run-the-demo-stack). |
+| `just demo-seed`, `just demo-logs` | Re-run the demo stack's idempotent seed; follow its logs (`just demo-logs egret` for one service). |
+| `just demo-verify-apps`, `just demo-verify-engine` | Browser checks of Data Apps and of **Add engine** on a running demo stack (they need Node.js and Playwright). |
 | `just k8s-up`, `just deploy-kind` | A local Kubernetes cluster and the Helm chart; see [Kubernetes](./kubernetes). |
 
 ## Further reading

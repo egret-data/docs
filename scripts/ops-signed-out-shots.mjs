@@ -2,7 +2,7 @@
 // identity provider's login form. These cannot go through scripts/screenshots.mjs because that
 // harness reuses a signed-in session. Nothing is submitted, so no sign-in attempt is counted
 // against the rate limit.
-// Usage: BASE=http://localhost:5180 node scripts/ops-signed-out-shots.mjs
+// Usage: BASE=http://egret.localtest.me:8080 node scripts/ops-signed-out-shots.mjs
 import {chromium} from 'playwright';
 import {mkdirSync} from 'node:fs';
 
@@ -15,14 +15,23 @@ const fresh = async () => {
   const ctx = await browser.newContext({viewport: {width: 1440, height: 900}});
   return {ctx, page: await ctx.newPage()};
 };
-const clip = {x: 420, y: 150, width: 600, height: 600};
+// The page renders nothing until /api/auth/config has answered, so wait for the SSO button, then
+// crop to the sign-in card with a margin (the rest of the page is empty).
+const card = async (page) => {
+  const box = await page.getByText('Sign in to Egret').locator('xpath=ancestor::*[contains(@class,"border")][1]').boundingBox();
+  const m = 48;
+  return {x: box.x - m, y: box.y - m, width: box.width + 2 * m, height: box.height + 2 * m};
+};
 
 let {ctx, page} = await fresh();
 await page.goto(`${BASE}/login`, {waitUntil: 'networkidle'});
-await page.screenshot({path: `${OUT}sign-in.png`, clip});
-await page.getByRole('button', {name: /break-glass/i}).click();
-await page.waitForTimeout(500);
-await page.screenshot({path: `${OUT}sign-in-break-glass.png`, clip});
+const breakGlass = page.getByRole('button', {name: /break-glass/i});
+await breakGlass.waitFor({timeout: 30000});
+await page.screenshot({path: `${OUT}sign-in.png`, clip: await card(page)});
+await breakGlass.click();
+await page.getByPlaceholder('Email').waitFor();
+await page.waitForTimeout(300);
+await page.screenshot({path: `${OUT}sign-in-break-glass.png`, clip: await card(page)});
 await ctx.close();
 
 ({ctx, page} = await fresh());

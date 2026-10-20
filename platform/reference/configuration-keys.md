@@ -150,6 +150,19 @@ Limits for queries run from the application.
 | `preview_rows` | `EGRET_ENGINE__PREVIEW_ROWS` | `100` | Rows returned for a preview. Must not exceed `max_rows`. |
 | `results_prefix` | `EGRET_ENGINE__RESULTS_PREFIX` | `query-results` | Object-store key prefix for stored query results, inside the storage bucket. |
 
+## engines
+
+How **Add engine** provisions a query engine. Everything under `docker` applies only when `provisioner` is `docker`. See [Engines and Ranger setup](../deploy-operate/engines-and-ranger#the-docker-provisioner).
+
+| Key | Environment variable | Default | Meaning |
+|---|---|---|---|
+| `provisioner` | `EGRET_ENGINES__PROVISIONER` | `auto` | `auto` uses Kubernetes when Egret runs in a cluster or finds a kubeconfig, and never picks `docker`. `kubernetes`, `docker` or `none` choose a backend explicitly. With `none`, or `auto` and no cluster, **Add engine** is disabled. |
+| `docker.host` | `EGRET_ENGINES__DOCKER__HOST` | `unix:///var/run/docker.sock` | The Docker API: `unix://`, `tcp://` or `http://`. |
+| `docker.network` | `EGRET_ENGINES__DOCKER__NETWORK` | empty | The network engine containers join. Required with `docker`. |
+| `docker.project` | `EGRET_ENGINES__DOCKER__PROJECT` | empty | Value of the `egret.project` label on every engine container. Egret never touches a container carrying another project. Required with `docker`. |
+| `docker.callback_url` | `EGRET_ENGINES__DOCKER__CALLBACK_URL` | unset | How engine containers reach Egret, when that differs from the default derived from `catalog.public_url`. An empty value is refused. |
+| `docker.allowed_images` | `EGRET_ENGINES__DOCKER__ALLOWED_IMAGES` | `["trinodb/trino"]` | Image repositories (tag excluded) an engine may use, as a JSON array. Must not be empty. |
+
 ## audit
 
 | Key | Environment variable | Default | Meaning |

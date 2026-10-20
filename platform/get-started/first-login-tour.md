@@ -1,5 +1,5 @@
 ---
-sidebar_position: 4
+sidebar_position: 5
 ---
 
 # First login tour
@@ -13,14 +13,15 @@ The sign-in page changes with the server configuration.
 | Configuration | What the page shows |
 |---|---|
 | Single sign-on off (`oidc.enabled = false`, the default) | An email and password form. |
-| Single sign-on on | **Sign in with SSO**, and a small **Admin sign-in (break-glass)** link below it. |
+| Single sign-on on (as on the demo stack) | **Sign in with SSO**, and a small **Admin sign-in (break-glass)** link below it. |
 
 ![The sign-in page with single sign-on enabled](/img/platform/ops/get-started/sign-in.png)
 
 ### Sign in with SSO
 
 1. Press **Sign in with SSO**. The browser goes to your identity provider.
-2. Sign in there. In the development stack the provider is Keycloak and the realm `egret` has three users:
+2. Sign in there. In the development stack and the [demo stack](./run-the-demo-stack) the provider is Keycloak and the
+   realm `egret` has three users:
 
    | User | Password | Group claim |
    |---|---|---|
@@ -38,8 +39,8 @@ The sign-in page changes with the server configuration.
 Egret creates the account as a plain member. What a person can do comes from roles granted to their **groups**, and those
 grants are made by an administrator: assign a platform role to the group under **Control Plane → Groups**, or add the group
 to a workspace under **Manage → Workspace settings → Members**. From a terminal, `egret workspace add-group --workspace
-<slug> --group <idp-group> --role ws_editor` does the second one. Until a grant exists, the person can sign in and see
-nothing useful.
+<slug> --group <idp-group> --role ws_editor` does the second one. Until a grant exists, the person can sign in and sees
+only *No workspaces yet. Ask an admin to add you to one.*
 :::
 
 ### Break-glass administrator
@@ -52,7 +53,7 @@ identity provider is down or misconfigured.
    ![The sign-in page with the break-glass form open](/img/platform/ops/get-started/sign-in-break-glass.png)
 
 2. Enter the administrator's email (`admin@egret.local` unless you set `EGRET_ADMIN_EMAIL`) and password, then press
-   **Sign in**.
+   **Sign in**. On the demo stack the password is `Admin12345!`.
 
 Treat this account like a root password: use it to set up single sign-on and to recover, and give day-to-day
 administrators a platform role through their IdP group. The [security checklist](../deploy-operate/security-hardening)

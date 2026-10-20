@@ -64,7 +64,15 @@ helm upgrade egret deploy/helm/egret -n egret-system -f my-values.yaml
 The chart looks up the existing `egret-secrets` Secret, so the master key, the cookie key and the catalog token are kept
 across upgrades. The `egret-init` hook runs again after every upgrade; it does nothing when an administrator already exists.
 Pods are not restarted when only an image's contents change under an unchanged tag: roll them explicitly
-(`kubectl rollout restart deploy/egret -n egret-system`) or use a new tag. Not run locally; see [Kubernetes](./kubernetes).
+(`kubectl rollout restart deploy/egret -n egret-system`) or use a new tag. Not run for these docs, which had no Kubernetes
+cluster; see [Kubernetes](./kubernetes).
+
+### The demo stack
+
+The [demo stack](../get-started/run-the-demo-stack) is upgraded by rebuilding it from the new source: `git pull`, then
+`just demo-up` (it runs `docker compose up -d --build`). Migrations run when the Egret container starts, and the data volumes are
+kept. Engines started with **Add engine** keep their containers only while the stack is up: after `just demo-down` and
+`just demo-up` they stay listed as `provisioning` with no containers, so delete and add them again. Not run for these docs.
 
 ## Moving engines to a new version
 

@@ -11,9 +11,9 @@ serves. Managing engines in the app is covered in [Query engines](../control-pla
 [Data governance](../data-governance/engines-and-policy).
 
 :::note What was run for this page
-The Ranger download endpoints and the plugin-config endpoints were called on a running instance. Provisioning an engine on
-Kubernetes cannot run without a cluster; that part is described from the source and the repository's guides, and is marked
-as not run locally.
+The Ranger download endpoints and the plugin-config endpoints were called on a running instance. **Add engine** was run on the
+[demo stack](../get-started/run-the-demo-stack), where Egret provisions Trino as Docker containers. Provisioning on Kubernetes
+was not run (no cluster); that part is described from the source and the repository's guides.
 :::
 
 ## Supported versions
@@ -47,12 +47,34 @@ There are two ways, both under **Control Plane → Engines** (see [Query engines
 | Way | What Egret does | Needs |
 |---|---|---|
 | **Register external engine** | Stores the host, port and the plugin version you declare. Never touches the cluster. | A reachable Trino or StarRocks. Works with no Kubernetes. |
-| **Add engine** | Provisions the engine as Kubernetes workloads and wires the plugin, catalog and delegation. Not run locally. | A cluster and a service account for Egret; see [Kubernetes](./kubernetes). |
+| **Add engine** | Provisions the engine and wires the plugin, catalog and delegation: as Kubernetes workloads, or, with the Docker provisioner, as containers on one Docker host (Trino only). | A cluster and a service account for Egret (see [Kubernetes](./kubernetes)), or the Docker provisioner. |
 
 Then a workspace points at the engine with a database connection (**Manage → Workspace settings → Engines**).
 
-Without a cluster the server logs `kubernetes unavailable; engine provisioning disabled` and **Add engine** does not work;
-**Register external engine** does.
+`[engines] provisioner` (`EGRET_ENGINES__PROVISIONER`) chooses the backend: `auto` (the default: Kubernetes when Egret runs in
+a cluster or finds a kubeconfig), `kubernetes`, `docker` or `none`. `auto` never picks `docker`. With `auto` and no cluster the
+server logs `kubernetes unavailable; engine provisioning disabled` and **Add engine** does not work; **Register external
+engine** does.
+
+### The Docker provisioner
+
+The [demo stack](../get-started/run-the-demo-stack) sets `EGRET_ENGINES__PROVISIONER=docker` and logs `engine provisioning:
+docker` at start. Egret then starts each Trino engine as containers (`egret-engine-egret-engines-<name>-coordinator`, and
+`…-worker-<n>` per worker), labelled `egret.managed=true` and `egret.project=<project>`, with no published ports, no mounts
+and all capabilities dropped. Egret never touches a container without both labels.
+
+| Key | What it sets |
+|---|---|
+| `EGRET_ENGINES__DOCKER__HOST` | The Docker API: `unix://`, `tcp://` or `http://`. Default `unix:///var/run/docker.sock`. The demo stack uses a socket proxy, `tcp://docker-proxy:2375`. |
+| `EGRET_ENGINES__DOCKER__NETWORK` | The network the engine containers join. Required. |
+| `EGRET_ENGINES__DOCKER__PROJECT` | The value of the `egret.project` label. Required. |
+| `EGRET_ENGINES__DOCKER__CALLBACK_URL` | How engines reach Egret, when it differs from the default derived from `catalog.public_url`. |
+| `EGRET_ENGINES__DOCKER__ALLOWED_IMAGES` | Image repositories an engine may use, as a JSON array. Default `["trinodb/trino"]`. |
+
+StarRocks, ingress, autoscaling, extra mounts or containers, image pull secrets and extra ports are refused with an error that
+names them, and the engine's **Logs** and **Exec** buttons answer *not available with the Docker engine provisioner* (use
+`docker logs`). Whoever can reach the Docker API can control the host; the demo stack is not a safe place for untrusted users
+(see its [Security](../get-started/run-the-demo-stack#security) section).
 
 ### Requirements on the engine
 
