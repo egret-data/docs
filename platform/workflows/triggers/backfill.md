@@ -16,13 +16,17 @@ A backfill runs a schedule for ticks in the past: the nights the scheduler was o
 
 ![The Backfill dialog with Start, End and Labels](/img/platform/workflows/trigger-backfill.png)
 
-The dialog says *Runs this schedule for each of its ticks from start to end, both included, one about every second. Regular runs wait until it ends.* Times are read in the trigger's time zone (*In UTC: pick a start*). The button says what is missing: *Pick a start*, *The end is in the future; leave it empty to end now*, *The start must be before the end*, *Fix the labels*, or *Fix the inputs*. A label key may not start with `system.`, and a key needs a value.
+The dialog says *Runs this schedule for each of its ticks from start to end, both included, one about every second. Regular runs wait until it ends.* Times are read in the trigger's time zone (*In Asia/Ho_Chi_Minh: pick a start*). The button says what is missing: *Pick a start*, *The end is in the future; leave it empty to end now*, *The start must be before the end*, *Fix the labels*, or *Fix the inputs*. A label key may not start with `system.`, and a key needs a value.
 
-If the schedule declares inputs the dialog offers them, so you can change values for the backfilled runs.
+If the flow declares inputs the dialog offers them under **Inputs**, prefilled from the schedule's `inputs:`, so you can change values for the backfilled runs. The screenshot shows the `region` input of `daily-revenue`.
 
 ## What happens
 
-A backfill for four ticks (16:24 to 16:27 on a every-minute schedule) created four executions within a few seconds. Each is a **Schedule** execution, labelled with the backfill's labels (`reason: docs-demo-backfill`), and its **Overview** shows a **Backfill** badge and the trigger variables of its own tick. While the backfill runs, the schedule's regular ticks wait. When it ends the schedule resumes from where it was, and the missed-run rule of `recoverMissedSchedules` applies to what fell due.
+On the Docker demo stack, a backfill of the last five days on `docs.demo.sales/daily-revenue` (schedule `every_morning`, `0 6 * * *` in `Asia/Ho_Chi_Minh`) created five executions, one per morning, within about five seconds. Each is a **Schedule** execution, labelled with the backfill's labels (`reason: docs-demo-backfill`), and its **Overview** shows a **Backfill** badge and the trigger variables of its own tick.
+
+![A backfilled execution: the Trigger section with the Backfill badge and the tick's date](/img/platform/workflows/execution-scheduled.png)
+
+While the backfill runs, the schedule's regular ticks wait. When it ends the schedule resumes from where it was, and the missed-run rule of `recoverMissedSchedules` applies to what fell due.
 
 | State | Where you see it |
 |---|---|
@@ -40,6 +44,7 @@ Select the schedule's row and use **Pause backfills**, **Resume backfills** or *
 - Only schedules can be backfilled (*Only schedules can be backfilled*). A schedule that is off the queue because of an invalid cron says *Off the queue: …*.
 - The end must not be in the future.
 - Executions fire about one tick per second, so a large window takes time.
+- Each backfilled run uses the flow's saved draft at the moment it fires, not a version. On the demo stack the first backfill of `daily-revenue` ran a draft with a broken task and all five runs failed; a second backfill after the fix succeeded. Fix the flow before you backfill it.
 
 ## Further reading
 

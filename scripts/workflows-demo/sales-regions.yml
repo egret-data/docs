@@ -1,0 +1,21 @@
+id: region-rollup
+namespace: docs.demo.sales
+description: Starts daily-revenue once per region and records the run in the KV store.
+tasks:
+  - id: per_region
+    type: io.kestra.plugin.core.flow.Loop
+    values: ["emea", "apac", "amer"]
+    tasks:
+      - id: run_region
+        type: io.kestra.plugin.core.flow.Subflow
+        namespace: docs.demo.sales
+        flowId: daily-revenue
+        wait: true
+        inputs:
+          region: "{{ item.value }}"
+  - id: remember
+    type: io.kestra.plugin.core.kv.Set
+    key: last_rollup
+    value: "{{ execution.startDate }}"
+    kvType: STRING
+    kvDescription: Start time of the last region roll-up

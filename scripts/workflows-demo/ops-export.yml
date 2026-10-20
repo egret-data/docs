@@ -1,0 +1,13 @@
+id: slow-export
+namespace: docs.ops
+description: A two-minute export, to show a running execution and Kill.
+tasks:
+  - id: prepare
+    type: io.kestra.plugin.core.log.Log
+    message: Preparing the export
+  - id: export
+    type: io.kestra.plugin.core.flow.Sleep
+    duration: PT2M
+  - id: done
+    type: io.kestra.plugin.core.log.Log
+    message: Export finished

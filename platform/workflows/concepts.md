@@ -46,7 +46,7 @@ A trigger starts executions by itself. Egret runs three kinds: **Schedule** (a c
 | **Container runner** | Runs script tasks (shell, Python) in containers. | `workflow.container_runner` = `none`, `docker` or `kubernetes` (default `none`) |
 | **Plugin host** | A separate Java container that runs Kestra plugin tasks (JDBC queries). | Workspace feature **Workflow Kestra plugins**, plus a plugin host image |
 
-The demo instance used for these docs runs the worker and the scheduler with no container runner, so only the core tasks run there. Script tasks and plugin tasks are documented from the source and labelled as not run locally. See [Runtime and operations](./runtime.md) for every switch and limit.
+The Docker demo stack these pages were checked on runs the worker and the scheduler, with webhooks off and no container runner. Every core task, Pause, Subflow, Loop, retries, kill, replay, schedules, backfills and flow triggers ran there. Script tasks, Kestra plugin tasks (including the JDBC Trino query) and egret platform tasks (`egret.sql`, `egret.report.send` and the others) are refused before they start, so they are documented from the source. See [Runtime and operations](./runtime.md#what-runs-on-the-docker-demo-stack) for the full list.
 
 ## Execution states
 

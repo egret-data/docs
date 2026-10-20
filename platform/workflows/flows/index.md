@@ -10,7 +10,7 @@ A flow is a YAML document that describes a job: its inputs, the tasks to run and
 
 ## Find a flow
 
-Go to **Workflows → Flows**. Flows are grouped in a tree by namespace: `docs.demo` appears as `docs` and then `demo`, with the flow count in brackets.
+Go to **Workflows → Flows**. Flows are grouped in a tree by namespace: `docs.demo` appears as `docs` and then `demo`, with the flow count in brackets. A count includes the namespaces below: on the demo stack `demo (23)` holds the 21 flows of `docs.demo` and the 2 of `docs.demo.sales`.
 
 | Control | What it does |
 |---|---|
@@ -48,7 +48,7 @@ Open a flow to see four tabs and a set of actions.
 
 ![A flow's page with the code editor and the Docs panel](/img/platform/workflows/flow-editor.png)
 
-The header shows the flow id, a state chip (**Active**, or **Disabled** when the flow or its YAML says `disabled: true`), its latest version and its namespace. The actions are:
+The header shows the flow id, a state chip (**Active**, or **Disabled** when the flow or its YAML says `disabled: true`), its latest version (with a **Changes since v1** badge when the saved draft differs from it) and its namespace. The actions are:
 
 | Action | What it does | Needs |
 |---|---|---|
@@ -65,6 +65,8 @@ Next to a disabled action the page prints the reason, for example *Run: Save fir
 | **Revisions** | The versions of this flow. See below. |
 | **Executions** | The runs of this flow only, with the same filters as the [Executions](../executions/index.md) page. |
 | **Triggers** | This flow's triggers and their switches. See [Triggers](../triggers/index.md). |
+
+![The Executions tab of a flow, with its runs only](/img/platform/workflows/flow-executions.png)
 
 ## Run a flow
 
@@ -91,9 +93,9 @@ A version is a snapshot of the saved draft that you create on purpose. Versions 
 2. Press **Create version**.
 3. Optionally type a **Note**, such as *What changed in this version*, and confirm. A toast says *Created v2*.
 
-The **Revisions** tab lists versions with their **Version** number, **Author** and **Created** time. The newest has a **Latest** badge, and a version that equals the current draft has a **Matches draft** badge. Select a version and use **Compare with** (**Nothing** or **Current draft**) to see a text diff. **Restore to draft** copies the selected version's text into the editor's draft after a confirmation; unsaved edits in the editor are discarded.
+The **Revisions** tab lists versions with their **Version** number, **Author** and **Created** time. The newest has a **Latest** badge, and a version that equals the current draft has a **Matches draft** badge. Select a version and use **Compare with** (**Nothing**, **Current draft** or another version) to see a side-by-side diff. The selected version and the comparison are kept in the address (`?v=1&compare=draft`). **Restore to draft** copies the selected version's text into the editor's draft after a confirmation; unsaved edits in the editor are discarded.
 
-![The Revisions tab comparing two versions](/img/platform/workflows/flow-revisions.png)
+![The Revisions tab comparing v1 with the current draft](/img/platform/workflows/flow-revisions.png)
 
 A flow that has never had a version shows *No versions yet*.
 

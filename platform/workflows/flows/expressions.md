@@ -4,7 +4,7 @@ sidebar_position: 5
 
 # Expressions and templating
 
-Almost every string in a flow can hold an expression: the text between `{{` and `}}`. Egret renders expressions with a port of Kestra's Pebble template language, so most Kestra expressions work unchanged. This page lists what is available, with the results seen when each was run on the demo instance, and what is not supported yet.
+Almost every string in a flow can hold an expression: the text between `{{` and `}}`. Egret renders expressions with a port of Kestra's Pebble template language, so most Kestra expressions work unchanged. This page lists what is available, with the results seen when each was run on a demo instance, and what is not supported yet.
 
 ## Write an expression
 
@@ -110,7 +110,7 @@ Date patterns follow Java's `DateTimeFormatter`, so `yyyy-MM-dd HH:mm:ss` and `E
 | Storage and files | `read`, `fileSize`, `fileExists`, `isFileEmpty`, `fileURI` (these read execution files) |
 | Store | `kv('key')` |
 
-The time, identifier, parsing and `kv` functions were run on the demo instance. `fileExists` and its siblings answer for files an execution wrote, and refuse other URIs. Not supported yet: `max`, `min`, `currentEachOutput`, `render` and `errorLogs` (each answers *not implemented yet* and fails the task). `http()` is refused on purpose, because an expression renders inside the control plane and a request from there would leave from the server's own network. `secret()` is refused everywhere except on Kestra plugin tasks; the editor reports `secret_outside_plugin_task` and a flow that calls it also needs the `workflow:use_secrets` permission to be saved.
+The time, identifier, parsing and `kv` functions were run on a demo instance. `fileExists` and its siblings answer for files an execution wrote, and refuse other URIs. Not supported yet: `max`, `min`, `currentEachOutput`, `render` and `errorLogs` (each answers *not implemented yet* and fails the task). `http()` is refused on purpose, because an expression renders inside the control plane and a request from there would leave from the server's own network. `secret()` is refused everywhere except on Kestra plugin tasks; the editor reports `secret_outside_plugin_task` and a flow that calls it also needs the `workflow:use_secrets` permission to be saved.
 
 ## How rendering behaves
 

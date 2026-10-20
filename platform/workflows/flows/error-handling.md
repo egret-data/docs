@@ -4,7 +4,7 @@ sidebar_position: 7
 
 # Retries, errors and timeouts
 
-Tasks fail: a source is down, a query times out, a value is missing. This page shows how to retry a task, stop one that takes too long, run a handler when something fails, and let a flow carry on after a failure. Every example was run on the demo instance and the results below are what the **Logs** and **Gantt** tabs showed.
+Tasks fail: a source is down, a query times out, a value is missing. This page shows how to retry a task, stop one that takes too long, run a handler when something fails, and let a flow carry on after a failure. Every example was run on a demo instance and the results below are what the **Logs** and **Gantt** tabs showed. The `flaky-import`, `error-blocks`, `allow-failure-block` and `timeout-and-runif` flows were run again on the Docker demo stack and ended the same way (**Failed**, **Failed**, **Warning**, **Warning**).
 
 ## How a failure moves through a flow
 

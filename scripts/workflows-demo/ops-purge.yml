@@ -1,0 +1,16 @@
+id: purge-old-logs
+namespace: docs.ops
+description: Removes log lines older than 30 days from the docs.ops flows.
+tasks:
+  - id: purge
+    type: io.kestra.plugin.core.log.PurgeLogs
+    namespace: docs.ops
+    endDate: "{{ now() | dateAdd(-30, 'DAYS') }}"
+  - id: report
+    type: io.kestra.plugin.core.log.Log
+    message: "Purged {{ outputs.purge.count }} log lines"
+triggers:
+  - id: weekly
+    type: io.kestra.plugin.core.trigger.Schedule
+    cron: "0 3 * * 0"
+    disabled: true

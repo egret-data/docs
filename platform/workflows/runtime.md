@@ -17,6 +17,23 @@ This page is for the person who runs the platform: which switches make workflows
 
 Run the worker and the scheduler together unless you want a replica that only serves. A scheduler without a worker creates executions nobody advances, and the **Triggers** page says so.
 
+## What runs on the Docker demo stack
+
+The Docker demo stack (`just demo-up`) sets `EGRET_WORKFLOW__WORKER_ENABLED=true` and `EGRET_WORKFLOW__SCHEDULER_ENABLED=true` and leaves the other switches at their defaults. Each item below was tried on it.
+
+| What | On the demo stack |
+|---|---|
+| Core tasks: log, outputs, variables, labels, assert, fail, exit, sleep, storage files, namespace files, KV | Run. |
+| Flow control: `If`, `Switch`, `Parallel`, `Sequential`, `Dag`, `Loop`, `LoopUntil`, `AllowFailure`, `Subflow`, `Pause` | Run. A loop and a subflow create child executions. |
+| Retries, timeouts, `errors:` handlers | Run. Flow-level `finally:` and `afterExecution:` do not run anywhere (see [Retries, errors and timeouts](./flows/error-handling.md)). |
+| Resume, kill, replay | Work. A kill of a sleeping task ended `KILLED` about 4 seconds later. |
+| Schedule triggers, backfills, flow triggers | Fire. |
+| Webhook triggers | Not reachable: webhooks are off (the routes answer 404), and the frontend's web server does not forward `/workflows/v1/` to the backend. |
+| Script tasks (`scripts.shell.*`, `scripts.python.*`) and `WorkingDirectory` with them | Refused before they start: no container runner is configured. Egret reaches Docker only through a socket proxy that is used to start engines. |
+| Kestra plugin tasks (JDBC MySQL, PostgreSQL, Trino) | Refused: they need the container runner and the plugin host. The Trino engine `trino-demo` cannot be queried from a flow. |
+| `egret.sql`, `egret.dataapi.call`, `egret.dataset.refresh`, `egret.report.send`, `core.http`, `core.slack` | Refused on every deployment: *this egret deployment has no handler for …*. |
+| Notifications by mail | There is no mail task. The workspace SMTP setting that sends alerts and reports to Mailpit is not used by workflows. |
+
 ## Tuning
 
 | Setting | Meaning | Default |
@@ -52,7 +69,7 @@ A workspace can switch workflow capabilities on or off under **Control Plane →
 | **Workflow containers** | Off | Allows script tasks. Requires **Workflows**. |
 | **Workflow Kestra plugins** | Off | Allows Kestra plugin tasks (the JDBC plugins). Requires **Workflow containers**. |
 
-Script and plugin tasks also need a `container_runner`, and the image on the platform's allowed-images list. The plugin host image is set under `workflow.plugin_host` (`image`, `jvm_max_heap` of 384m by default, `kill_grace_s` of 15). None of this exists on the demo instance, so those parts are documented from the source.
+Script and plugin tasks also need a `container_runner`, and the image on the platform's allowed-images list. The plugin host image is set under `workflow.plugin_host` (`image`, `jvm_max_heap` of 384m by default, `kill_grace_s` of 15). The Docker demo stack has none of this, so those parts are documented from the source.
 
 ## Permissions
 
@@ -69,7 +86,9 @@ Script and plugin tasks also need a `container_runner`, and the image on the pla
 - Flow `concurrency:`, `sla:`, `checks:` and `quotas:` are accepted and not enforced.
 - Flow-level `finally:` and `afterExecution:` do not run.
 - Deleting a flow keeps its namespace and id reserved.
-- Script tasks, plugin tasks and the webhook path were not run on the demo instance.
+- **One slow task holds up the others on its replica**. The worker runs the task runs it claimed in one tick one after another, and claims more only when they have all ended. On the demo stack a long `Sleep` kept four storage tasks of other executions in *Running* for 2 min 13 s, and no new task started, until the `Sleep` was killed. Keep long waits out of flows that share a replica with others, or kill them; a `Pause` does not hold the worker.
+- The webhook URL is served by the backend under `/workflows/v1/`, a path the frontend's web server and the Helm ingress do not forward to the backend. Route it yourself before you switch webhooks on.
+- Script tasks, plugin tasks and webhook calls were not run on the Docker demo stack; see the table above.
 
 ## Further reading
 

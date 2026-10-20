@@ -71,7 +71,7 @@ tasks:
 ```
 
 :::note Script tasks were not run
-The `DownloadFiles` and `UploadFiles` tasks were run on the demo instance, and the example above prints `Downloaded /data/targets.csv`. Passing a namespace file to a script task needs a container runner, which the demo instance does not have, so that use is described from the source.
+The `DownloadFiles` and `UploadFiles` tasks were run on the Docker demo stack, and the example above prints `Downloaded /data/targets.csv`. Passing a namespace file to a script task needs a container runner, which the demo stack does not have, so that use is described from the source.
 :::
 
 ## Limits and known issues

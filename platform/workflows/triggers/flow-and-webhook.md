@@ -41,7 +41,9 @@ Each time `nightly-heartbeat` ended `SUCCESS`, this flow started once. The new e
 A Flow trigger with no `dependsOn` and no `when` fires on every execution that ends in the workspace, including its own. Two such flows can trigger each other without end. Name the upstream flow in `dependsOn`.
 :::
 
-Upstream flows that live in the same workspace are resolved when you save. A flow trigger that names a flow that does not exist saves without a warning and never fires. The **Triggers** drawer shows the **Flow trigger** section: the states heard, the mode, the window, and each condition as *Met* or *Not met* (the demo's showed `docs.demo.nightly-heartbeat` as *Not met* until it ran). The **Dependencies** tab of a namespace draws the link as a dashed arrow ([Namespaces](../namespaces/index.md)).
+Upstream flows that live in the same workspace are resolved when you save. A flow trigger that names a flow that does not exist saves without a warning and never fires. The **Triggers** drawer shows the **Flow trigger** section: the states heard, whether it is **Listening**, the mode, the window, and each condition as *Met* or *Not met* in the window that is open now. A condition that is met fires the trigger and the window closes, so on the demo stack `docs.demo.nightly-heartbeat` showed *Not met* and *No window is open* again after the heartbeat had run three times and started `after-heartbeat` each time.
+
+![The details drawer of a flow trigger: states heard, listening, mode, window and the dependsOn condition](/img/platform/workflows/trigger-flow-details.png) The **Dependencies** tab of a namespace draws the link as a dashed arrow ([Namespaces](../namespaces/index.md)).
 
 The editor's schema lists `condition` and `inputs` for a `dependsOn` entry; the keys above are what the engine reads.
 
@@ -66,10 +68,14 @@ triggers:
       source: webhook
 ```
 
-The trigger's URL path is `/workflows/v1/{workspace}/executions/webhook/{namespace}/{flowId}/{key}`; for this flow it is `/workflows/v1/default/executions/webhook/docs.demo/order-webhook/orders-demo-key`. The drawer shows it with the key hidden, a **Reveal** button and a **Copy** button. The key in the path is the only credential and the endpoint needs no login, so treat the key as a secret.
+The trigger's URL path is `/workflows/v1/{workspace}/executions/webhook/{namespace}/{flowId}/{key}`; for this flow it is `/workflows/v1/default/executions/webhook/docs.demo/order-webhook/orders-demo-key`. The drawer shows it with the key hidden, a **Reveal** button and a **Copy** button, and says *This path is served by the egret backend, at whatever host your operator exposes for webhooks.*
 
-:::note Off by default, not run on the demo instance
-Webhooks are disabled unless the operator sets `EGRET_WORKFLOW__WEBHOOKS_ENABLED=true`. When off, the routes are not mounted: the URL answers 404, and the **Triggers** page says *Webhooks are off on this server; their URLs answer 404.* The demo instance runs with webhooks off, so what follows comes from the source and the API, not from a live call.
+![The details drawer of a webhook trigger with the key hidden and the Reveal and Copy buttons](/img/platform/workflows/trigger-webhook-details.png) The key in the path is the only credential and the endpoint needs no login, so treat the key as a secret.
+
+:::note Off by default, not run on the Docker demo stack
+Webhooks are disabled unless the operator sets `EGRET_WORKFLOW__WEBHOOKS_ENABLED=true`. When off, the routes are not mounted: the URL answers 404, and the **Triggers** page says *Webhooks are off on this server; their URLs answer 404.* The Docker demo stack runs with webhooks off, so what follows comes from the source and the API, not from a live call.
+
+The route lives on the backend under `/workflows/v1/`, and neither the frontend's web server nor the Helm ingress forwards that path to the backend: on the demo stack a `POST` to the URL is answered by the web server with 405. Before you switch webhooks on, add a route for `/workflows/v1/` to the backend service in your ingress or proxy.
 :::
 
 | Property | What it does |

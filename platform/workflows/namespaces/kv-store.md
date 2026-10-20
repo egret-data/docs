@@ -6,7 +6,7 @@ sidebar_position: 3
 
 The KV store holds small named values that flows share: a counter, the time of the last run, an email address, a threshold. Each namespace has its own store. Flows read a value with `kv('key')` or the `Get` task, and write it with `Set`. You can also edit the keys by hand on the **KV** tab of a namespace.
 
-![The KV tab listing four keys with their type, description, last modified time and expiration](/img/platform/workflows/namespace-kv.png)
+![The KV tab listing five keys with their type, description, last modified time and expiration](/img/platform/workflows/namespace-kv.png)
 
 ## Open the KV tab
 
@@ -20,7 +20,7 @@ Go to **Workflows → Namespaces**, open a namespace and choose **KV**. The tabl
 | **Last modified** | When the latest revision was written. |
 | **Expiration** | When the key expires, or **Never**. |
 
-**Filter keys** (*Key contains…*) narrows the table. The line above the table counts the keys, for example *4 keys*. A key that has expired no longer appears.
+**Filter keys** (*Key contains…*) narrows the table. The line above the table counts the keys, for example *5 keys*. A key that has expired no longer appears.
 
 ## Add a key
 
@@ -107,10 +107,10 @@ A key that is missing makes `kv()` and `Get` fail unless you pass `errorOnMissin
 curl -b cookies.txt -H "X-Egret-CSRF: $CSRF" -H "Content-Type: text/plain" \
   -H "description: Where escalations go" -H "ttl: PT24H" \
   -X PUT --data 'support@example.com' \
-  "http://localhost:5180/api/ws/default/workflows/namespaces/docs.demo/kv/support_email"
+  "http://egret.localtest.me:8080/api/ws/default/workflows/namespaces/docs.demo/kv/support_email"
 
 # list
-curl -b cookies.txt "http://localhost:5180/api/ws/default/workflows/namespaces/docs.demo/kv"
+curl -b cookies.txt "http://egret.localtest.me:8080/api/ws/default/workflows/namespaces/docs.demo/kv"
 ```
 
 The type is inferred from the body: `3` became a `NUMBER` and `P7D` a `DURATION` in testing. A `ttl` header is an ISO-8601 duration; a negative or malformed one is refused.

@@ -48,7 +48,7 @@ The **Dependencies** tab draws every flow of the namespace as a box. A solid arr
 
 ![The Dependencies tab with a Subflow edge and a Flow trigger edge](/img/platform/workflows/namespace-dependencies.png)
 
-In the demo, `call-subflow` points to `add-numbers` with a solid arrow, and `nightly-heartbeat` points to `after-heartbeat` with a dashed arrow.
+In the demo, `call-subflow` points to `add-numbers` with a solid arrow, and `nightly-heartbeat` points to `after-heartbeat` with a dashed arrow. The tab of `docs.demo` also draws `region-rollup` calling `daily-revenue`, two flows of the child namespace `docs.demo.sales`: the graph covers the namespace and the namespaces below it. Flows with no link are drawn as loose boxes below the linked ones.
 
 ## Variables and secrets
 

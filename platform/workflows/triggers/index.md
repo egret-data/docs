@@ -6,7 +6,7 @@ sidebar_position: 1
 
 A trigger starts a flow without a person pressing **Run**: on a schedule, when another flow ends, or when an outside system calls a URL. You declare triggers under `triggers:` in the flow's YAML, and the **Triggers** page lists them all, with their state and switches.
 
-![The Triggers page listing a flow trigger, a schedule, a webhook and a schedule that is switched off](/img/platform/workflows/triggers-list.png)
+![The Triggers page listing six triggers in three namespaces: a flow trigger, schedules that are on, one switched off, one disabled in YAML, and a webhook under the webhooks-off banner](/img/platform/workflows/triggers-list.png)
 
 ## The three kinds
 

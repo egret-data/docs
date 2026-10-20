@@ -261,8 +261,8 @@ A pause can only be released through the page or the API (`POST /executions/{id}
         - cat note.txt
 ```
 
-:::note Not run on the demo instance
-Script tasks need a container runner (`workflow.container_runner`) and the **Workflow containers** workspace feature. The demo instance has neither, so this example is documented from the source and was not run. `WorkingDirectory` runs on Docker only; Kubernetes support is planned. See [Runtime and operations](../runtime.md).
+:::note Not run on the Docker demo stack
+Script tasks need a container runner (`workflow.container_runner = docker`) and the **Workflow containers** workspace feature. The Docker demo stack has neither, even though it runs on Docker, so this example is refused there and is documented from the source. `WorkingDirectory` runs with the Docker runner only; Kubernetes support is planned. See [Runtime and operations](../runtime.md#what-runs-on-the-docker-demo-stack).
 :::
 
 ## Limits and known issues
