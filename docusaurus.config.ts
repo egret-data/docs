@@ -26,6 +26,9 @@ const config: Config = {
   },
 
   headTags: [
+    {tagName: 'link', attributes: {rel: 'icon', href: '/docs/favicon.ico', sizes: '48x48'}},
+    {tagName: 'link', attributes: {rel: 'icon', type: 'image/png', sizes: '32x32', href: '/docs/img/favicon-32.png'}},
+    {tagName: 'link', attributes: {rel: 'apple-touch-icon', href: '/docs/img/apple-touch-icon.png'}},
     {tagName: 'link', attributes: {rel: 'preconnect', href: 'https://fonts.googleapis.com'}},
     {tagName: 'link', attributes: {rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: 'anonymous'}},
   ],
@@ -91,6 +94,7 @@ const config: Config = {
     },
     footer: {
       style: 'dark',
+      logo: {alt: 'Egret', src: 'img/wordmark-dark.svg', width: 140},
       links: [
         {
           title: 'Docs',
