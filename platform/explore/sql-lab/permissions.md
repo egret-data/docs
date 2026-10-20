@@ -39,7 +39,7 @@ What this means in practice:
 - **Saved queries** can also be shared one by one: **Actions → Share…** gives a user or group access to that query only, whatever their workspace role. See [Shared objects](../../workspace-settings/shared-objects).
 - **Save as dataset** also needs the **Datasets** module to be on; with it off, the dialog fails with a feature-disabled error.
 
-(The viewer behaviour above comes from the role definitions and the server code; it was not reproduced with a viewer account on the demo instance.)
+(The viewer behaviour above comes from the role definitions and the server code. It was not reproduced on the demo stack: its `default` workspace has only the local admin as a member, and adding a viewer would change the workspace membership that other demo users rely on.)
 
 ## Which databases you can use
 

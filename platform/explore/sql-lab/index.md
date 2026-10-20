@@ -8,6 +8,10 @@ SQL Lab is the interactive SQL editor in a workspace. You pick one of the worksp
 
 ![SQL Lab with a query and its results](/img/platform/sql-datasets/sqllab-results.png)
 
+:::note On the demo stack
+The Docker demo stack has one connection, *trino-demo*, a Trino server with the catalogs `tpch` (generated TPC-H data in schemas `tiny`, `sf1`, `sf100` and so on) and `memory`, plus Trino's own `system`. Every example on these pages runs against `tpch.tiny`.
+:::
+
 SQL Lab is the first item in the **Explore** group of the sidebar, so it is the page a workspace opens on when the SQL Lab module is turned on. It runs on the database connections that a workspace admin has added under **Manage → Workspace settings → Databases** (see [Databases](../../workspace-settings/databases.md)). Trino and StarRocks connections are supported.
 
 ## What is on the page
@@ -36,10 +40,13 @@ The page is one resizable workspace. Drag the grey bars between the panels to ch
    FROM tpch.tiny.orders
    GROUP BY 1
    ORDER BY 3 DESC
+   LIMIT 100
    ```
 
 4. Leave **Limit** at **1,000 rows** or choose another value.
 5. Press **Run** (or **⌘ Enter** on macOS, **Ctrl Enter** elsewhere).
+
+Keep the `LIMIT` after an `ORDER BY`: without it, Trino may return the rows in another order (see [Row limit](./editor.md#row-limit)).
 
 While the query runs, a *Running…* badge shows in the toolbar and the **Cancel** button is enabled. When it ends the badge reads, for example, *Done in 397 ms · 3 rows* (or *Failed in 125 ms*), and the rows appear in **Results**.
 
@@ -88,6 +95,7 @@ Because tabs live in the browser, clearing site data or switching browsers gives
 - SQL Lab needs at least one database connection granted to the workspace. Without one the database picker is empty and **Run** reports *Pick a database*.
 - The row limit, the 60-second query timeout and the 100,000-row ceiling are server settings; see [Query results](./results.md#limits).
 - Cancelling a query leaves the Results panel empty without saying the query was cancelled. See the [editor page](./editor.md#run-and-cancel).
+- On Trino, an `ORDER BY` without a `LIMIT` can be lost, because Egret wraps the query to apply the row limit. See [Row limit](./editor.md#row-limit).
 
 ## Further reading
 

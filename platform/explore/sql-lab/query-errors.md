@@ -32,7 +32,7 @@ A failed query's message starts with a short prefix that tells you who said it.
 | `engine authentication failed` | Egret | The engine refused the identity Egret presented. With per-user delegation this usually means your engine token could not be verified. |
 | `forbidden` | Egret or the engine | You are not allowed to run this. On a delegated connection, a user without an SSO session gets it. |
 
-(The `connect:`, `timeout` and authentication texts come from the server code; only the `engine:` family was reproduced on the demo instance.)
+(The `connect:`, `timeout` and authentication texts come from the server code. Only the `engine:` family was reproduced on the demo stack: its one Trino connection is healthy and not delegated, and every `tpch.tiny` query ends well inside the 60-second timeout.)
 
 ## Read the position in the message
 

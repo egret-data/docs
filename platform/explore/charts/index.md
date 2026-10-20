@@ -43,7 +43,7 @@ The **⋯** menu at the end of a row offers:
 
 Press the folder toolbar button (**New folder**) to create a folder; the dialog asks for a name. Once you have a folder, the list is grouped into collapsible sections: the folders in alphabetical order, then **Uncategorized**. Each header shows the number of charts in the section and a **⋯** menu to share, rename or delete the folder. Drag a row onto a folder header, or use the row menu, to move a chart. Deleting a folder does not delete its charts: they move to **Uncategorized**.
 
-![The Charts list grouped by folder: the Q4 reporting folder with one bookmarked chart, then Uncategorized](/img/platform/charts/list-folders.png)
+![The Charts list grouped into the folders Chart gallery and KPIs, then Uncategorized, with the row menu of a chart open on its folder commands](/img/platform/charts/list-folders.png)
 
 While a search, type filter or bookmark filter is active, the sections stay, but folders with no matching chart are hidden.
 
@@ -51,13 +51,13 @@ While a search, type filter or bookmark filter is active, the sections stay, but
 
 The checklist toolbar button turns on a checkbox column. Tick charts (the header checkbox selects every visible row), then use **Move *n* to folder…** or **Move *n* to Trash** next to the **Type** filter. Collapsed folders are not included in **select all**.
 
-![Bulk select with one chart selected](/img/platform/charts/list-bulk.png)
+![Bulk select with two charts in the KPIs folder selected and the Move 2 to folder… and Move 2 to Trash buttons](/img/platform/charts/list-bulk.png)
 
 ### Trash
 
 **Move to Trash** is reversible. The trash toolbar button switches the page to the **Trash** view, with its own search box. Each trashed chart has **Restore** and **Delete permanently** in its menu. The Trash view has no folders, bookmarks or bulk select.
 
-![The Trash view](/img/platform/charts/list-trash.png)
+![The Trash view with one trashed chart and its Restore and Delete permanently menu](/img/platform/charts/list-trash.png)
 
 **Delete permanently** cannot be undone, and asks you to type `delete` before the **Delete** button turns on.
 

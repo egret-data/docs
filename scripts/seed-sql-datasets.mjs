@@ -1,5 +1,5 @@
 // Seeds the SQL Lab / dataset demo objects used by the sql-datasets docs screenshots (idempotent by name).
-// Usage: STATE=<playwright storage state> BASE=http://localhost:5180 node scripts/seed-sql-datasets.mjs
+// Usage: STATE=<playwright storage state> BASE=http://egret.localtest.me:18080 [SEED_HISTORY=1] node scripts/seed-sql-datasets.mjs
 import {api} from './api-helper.mjs';
 const a = await api(process.env.STATE);
 const WS = '/api/ws/default';
