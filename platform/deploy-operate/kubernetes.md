@@ -7,6 +7,10 @@ sidebar_position: 6
 The repository ships a Helm chart in `deploy/helm/egret` that deploys the whole stack into a Kubernetes cluster. It also
 lets Egret provision query engines, run workflow script tasks and start Data Apps pods inside that cluster.
 
+To try engine provisioning and Data Apps without a cluster, use the [demo stack](../get-started/run-the-demo-stack): it runs
+Trino engines as Docker containers and Data Apps as processes in the Egret container. Both are demo-only substitutes with no
+isolation; script and container workflow tasks still need Kubernetes.
+
 :::warning Development chart, and not run for these docs
 The chart's own README is explicit: it is **dev only, not for production**. It bundles PostgreSQL and RustFS, ships a
 default local administrator password, and exposes the frontend on a NodePort. The author of this page had no Kubernetes

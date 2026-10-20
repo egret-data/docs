@@ -15,15 +15,16 @@ from separate products:
 |---|---|---|
 | Exploring data and BI | SQL Lab, datasets with metrics, 19 chart types, dashboards, alerts and reports, Data Apps | [Explore (BI)](../explore/sql-lab) |
 | A table catalog | An embedded Apache Iceberg REST catalog on S3-compatible storage | [Catalogs](../control-plane/catalogs) |
-| Query engines | Connections to Trino and StarRocks, and provisioning of both on Kubernetes | [Query engines](../control-plane/query-engines) |
+| Query engines | Connections to Trino and StarRocks, and provisioning of both on Kubernetes (Trino also on Docker) | [Query engines](../control-plane/query-engines) |
 | Access policy | Roles, per-object grants, row filters, column masks, tag-based classification, enforced in the engine | [Data governance](../data-governance/overview) |
 | Serving data as an API | SELECT statements with parameters published as REST endpoints | [Data API](../data-api/overview) |
 | Automation | A workflow engine compatible with Kestra's flow syntax, with schedules and triggers | [Workflows](../workflows/flows) |
 
 ## Where to start
 
-1. **Run it.** The [Quick start](./quick-start) brings up the dependencies and the server on your machine and was run end
-   to end for these docs.
+1. **Run it.** [Run the demo stack](./run-the-demo-stack) starts the whole platform on Docker with one command (`just demo-up`),
+   seeded with sample data. It needs Docker and `just`, and no Rust toolchain. To build and run the server from source instead,
+   follow the [Quick start](./quick-start).
 2. **Learn the vocabulary.** [Concepts](./concepts) defines workspace, engine, catalog, dataset, governance and control
    plane in one page.
 3. **Sign in and look around.** The [First login tour](./first-login-tour) covers single sign-on, the break-glass
@@ -34,7 +35,8 @@ If you operate Egret rather than use it, go to [Deploy and operate](../deploy-op
 
 ## What is and is not production-ready
 
-The Docker Compose stack and the Helm chart in the repository are development tooling. The chart's own README says it is
+The Docker Compose stacks (the demo stack and the development stack) and the Helm chart in the repository are development
+tooling; the demo stack in particular uses public secrets and must never be exposed to a network. The chart's own README says it is
 for a single-developer local cluster and is not a production chart. The [security hardening
 checklist](../deploy-operate/security-hardening) lists what you must change before exposing a deployment.
 

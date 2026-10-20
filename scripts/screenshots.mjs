@@ -60,7 +60,8 @@ for (const s of shots) {
   await page.waitForTimeout(s.settle ?? 800);
   // ids may contain a sub-folder, e.g. 'charts/bar-data'
   mkdirSync(dirname(`${OUT}${s.id}.png`), {recursive: true});
-  await page.screenshot({path: `${OUT}${s.id}.png`, fullPage: s.fullPage ?? false});
+  // `clip` ({x, y, width, height}) crops to a region when the rest of the page adds only empty space.
+  await page.screenshot({path: `${OUT}${s.id}.png`, fullPage: s.fullPage ?? false, ...(s.clip ? {clip: s.clip} : {})});
   console.log(s.id);
 }
 await browser.close();

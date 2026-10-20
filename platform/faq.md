@@ -16,7 +16,8 @@ access is audited. See the [Overview](./get-started/overview) and [Concepts](./g
 
 ### Which query engines does it support?
 
-Trino and StarRocks. You can connect to engines you already run, or have Egret provision them on Kubernetes. See [Engines and
+Trino and StarRocks. You can connect to engines you already run, or have Egret provision them on Kubernetes (Trino also as
+Docker containers, which the demo stack uses). See [Engines and
 Ranger setup](./deploy-operate/engines-and-ranger). The [Egret Engine](/engine/introduction), a Rust engine, is a separate
 project in an early design phase and cannot be used yet.
 
@@ -35,9 +36,13 @@ pods.
 
 ### Do I need Kubernetes?
 
-No, to run the platform and query an engine you already have. **Register external engine** works without a cluster. You need a
-cluster to provision engines from the UI (**Add engine**), to run workflow script and container tasks in pods, and to run Data
-Apps in pods. Without one the server logs `kubernetes unavailable; engine provisioning disabled`.
+No, to run the platform and query an engine you already have. **Register external engine** works without a cluster. In
+production you need a cluster to provision engines from the UI (**Add engine**), to run workflow script and container tasks in
+pods, and to run Data Apps in pods. Without one the server logs `kubernetes unavailable; engine provisioning disabled`.
+
+The [demo stack](./get-started/run-the-demo-stack) shows the whole product without a cluster: it provisions Trino engines as
+Docker containers and runs Data Apps as processes inside the Egret container. Those substitutes have no isolation and are for
+demos only; workflow script and container tasks do not run there.
 
 ### Where is my data stored?
 
@@ -46,6 +51,12 @@ PostgreSQL. Table data, stored query results and workflow files are in the objec
 StarRocks. See [Backup and restore](./deploy-operate/backup-restore).
 
 ## Getting started
+
+### What is the fastest way to try Egret?
+
+The demo stack: clone the repository and run `just demo-up`. It needs Docker and `just` (no Rust toolchain), and comes seeded
+with a dataset, charts and a dashboard on Trino's `tpch` sample data. Sign in at `http://egret.localtest.me:8080` as
+`admin@egret.local` / `Admin12345!`. See [Run the demo stack](./get-started/run-the-demo-stack).
 
 ### Why does the server not start after I copied `.env.example`?
 
@@ -56,7 +67,7 @@ StarRocks. See [Backup and restore](./deploy-operate/backup-restore).
 ### What is the administrator password?
 
 The one `egret init` printed, or the one you set with `EGRET_ADMIN_PASSWORD`. The Helm chart's default is `Admin12345!` and
-you should change it. See [First login tour](./get-started/first-login-tour).
+you should change it. On the demo stack it is `Admin12345!` for `admin@egret.local`. See [First login tour](./get-started/first-login-tour).
 
 ### Where do I register a database?
 

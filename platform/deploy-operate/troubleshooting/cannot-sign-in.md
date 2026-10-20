@@ -57,6 +57,7 @@ Typical when the session cookie is not stored or not sent.
 |---|---|
 | `EGRET_SESSION__SECURE=true` but the site is served over plain HTTP | Browsers drop `Secure` cookies on non-localhost HTTP. Serve HTTPS, or set it to `false` for a test instance. |
 | The page and the API are on different origins | The cookie is set for the origin the browser sent the request to. In development, open the Vite port (5173 or the port your proxy serves), not the backend port, and make `oidc.redirect_url` use that same origin. |
+| On the demo stack, the browser is on `localhost` | Egret and Keycloak know the stack as `http://egret.localtest.me:8080` (`DEMO_URL`): **Sign in with SSO** started on `localhost` returns to `egret.localtest.me`, where the sign-in was never started. Open the `egret.localtest.me` address; see [Run the demo stack](../../get-started/run-the-demo-stack#host-names). |
 | The session ended | Sessions last at most `session.absolute_ttl_hours` (24) and end after `session.idle_ttl_minutes` (60) idle. `GET /api/auth/me` answers `401 {"error":"unauthorized"}` when there is no valid session. |
 | A signed-in user was disabled or signed out by the identity provider | Back-channel logout revokes every session of that user. Sign in again. |
 

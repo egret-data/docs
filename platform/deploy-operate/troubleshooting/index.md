@@ -20,10 +20,13 @@ docs.
 ## First checks for anything
 
 1. **Is the server healthy?** `curl http://<host>/readyz` answers `{"status":"ok","db":"up"}` when the database is
-   reachable. `/healthz` answers as long as the process is up.
+   reachable. `/healthz` answers as long as the process is up. On the [demo stack](../get-started/run-the-demo-stack) these
+   paths are not routed to Egret (the edge answers with the web app's HTML page); use `docker compose --env-file
+   deploy/demo/demo.env -f deploy/docker-compose.demo.yml ps`, which shows each service's health check.
 2. **What does the log say?** The server logs to standard output. Raise detail with `EGRET_LOG__FILTER=info,egret=debug`.
    At start it prints one line for every disabled subsystem: `workflow worker disabled by config`,
-   `workflow scheduler disabled by config`, `kubernetes unavailable; engine provisioning disabled`.
+   `workflow scheduler disabled by config`, `kubernetes unavailable; engine provisioning disabled`. With the Docker
+   provisioner it logs `engine provisioning: docker` instead.
 3. **Did startup validation stop it?** A one-line `Error:` naming a key; see [Startup
    checks](../reference/configuration-keys#startup-checks).
 4. **Is it a known issue?** See [Known issues](../known-issues).
@@ -37,6 +40,7 @@ docs.
 | A workflow execution stays in *Running* | The worker is off by default: `EGRET_WORKFLOW__WORKER_ENABLED=true`. | [Workflows stuck](troubleshooting/workflows-stuck) |
 | `Error: the apps API requires [storage] bucket, access_key, secret_key` at start | The object-store credentials are always required. | [Catalog and storage errors](troubleshooting/catalog-storage-errors) |
 | *secrets master_key is not configured* when saving a connection | Set `EGRET_SECRETS__MASTER_KEY`. | [Catalog and storage errors](troubleshooting/catalog-storage-errors) |
-| *kubernetes unavailable; engine provisioning disabled* in the log | No cluster. **Register external engine** still works; **Add engine** does not. | [Engines and Ranger setup](./engines-and-ranger) |
+| *kubernetes unavailable; engine provisioning disabled* in the log | No cluster. **Register external engine** still works; **Add engine** does not, unless you use the Docker provisioner. | [Engines and Ranger setup](./engines-and-ranger) |
+| The demo stack does not load, SSO fails, or an engine stays `provisioning` | Host name, port or memory; see the demo stack's own troubleshooting table. | [Run the demo stack](../get-started/run-the-demo-stack#troubleshooting) |
 | *csrf check failed* (403) from a script | Send the `egret_csrf` cookie's value in the `X-Egret-CSRF` header. | [Cannot sign in](troubleshooting/cannot-sign-in) |
 | `/control-plane/config` renders a blank page | Known issue; the page is not linked from the UI. | [Known issues](../known-issues) |
