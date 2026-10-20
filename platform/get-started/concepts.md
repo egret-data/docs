@@ -46,8 +46,8 @@ People get a **workspace role** in a workspace: `ws_admin`, `ws_editor` or `ws_v
 
 A query engine runs your SQL. Egret connects to **Trino** and **StarRocks**. A *database connection* (**Manage →
 Workspace settings → Engines**) points a workspace at one engine: host, port, catalog and credentials. Egret can connect
-to an engine you already run (an *external* engine), or provision Trino and StarRocks on Kubernetes through the control
-plane. See [Databases](../workspace-settings/databases) and [Query engines](../control-plane/query-engines).
+to an engine you already run (an *external* engine), or provision Trino and StarRocks through the control plane: on
+Kubernetes, or, for Trino only, as Docker containers (the [demo stack](./run-the-demo-stack) does this). See [Databases](../workspace-settings/databases) and [Query engines](../control-plane/query-engines).
 
 ## Iceberg catalog and storage
 
