@@ -22,7 +22,7 @@ Each row has four columns.
 | **State** | The outcome of the run. |
 | **Started** | When the run began, for example `8 minutes ago`. |
 | **Value** | The number the run measured: the first column of the first row for an alert, the metric for a Data API alert. Empty for a report. |
-| **Detail** | An error or delivery message, shown in red. Empty when everything worked. |
+| **Detail** | An error or delivery message, shown in red. **Notification sent** when the message went out without an error, and `—` when nothing was sent. |
 
 ## Run states
 
@@ -42,19 +42,21 @@ The state labels in the API are `success`, `noop`, `grace`, `error` and `working
 
 ## Examples from a real run log
 
-These runs were captured on the demo workspace, which has no email server:
+These runs were captured on the Docker demo stack, where email goes to Mailpit and the renderer is running:
 
 | Item | State | Value | Detail |
 |---|---|---|---|
-| Pending orders above 100 (condition `> 100`) | **Success** | 363 | `webhook host resolves to a blocked address (127.0.0.1): loopback` |
-| Pending orders above 100, run again within the grace period | **On grace** | 363 | none |
-| Cancelled orders spike (`> 0`) | **Not triggered** | 0 | none |
-| Urgent open orders exist (value is not null and not zero) | **Success** | 15780 | `smtp is not configured for this workspace` |
-| A Data API alert on error rate `> 0.05` | **Success** | 0.601 | `smtp is not configured for this workspace` |
-| A query that references a missing column | **Error** | none | `query failed: engine: line 2:8: Column 'nope' cannot be resolved` |
-| A text value in the first column | **Error** | none | `alert query must return a number or NULL in its first column, got "O"` |
-| A PDF dashboard report with no rendering service | **Error** | none | `render failed: error sending request for url (http://egret-renderer:8080/render)` |
-| A Slack destination with no workspace Slack app | **Success** | 1 | `no slack bot token is configured for this destination` |
+| Pending orders above 100 (condition `> 100`, email and a webhook to a public host) | **Success** | 363 | `webhook returned 405` (the email arrived) |
+| Pending orders above 100, run again within the grace period | **On grace** | 363 | — |
+| Cancelled orders spike (`> 0`) | **Not triggered** | 0 | — |
+| Urgent open orders exist (value is not null and not zero) | **Success** | 1488 | **Notification sent** |
+| Orders by status error rate, a Data API alert (`> 0.05`) | **Success** | 0.27 | **Notification sent** |
+| Late orders to Slack, with no workspace Slack app | **Success** | 64 | `no slack bot token is configured for this destination` |
+| Webhook to an internal host (`http://mailpit:8025/hook`) | **Success** | 7304 | `webhook host resolves to a blocked address (172.24.0.5): private` |
+| Executive summary snapshot, a PNG report | **Success** | — | **Notification sent** |
+| Sales performance weekly digest, a two-dashboard PDF report | **Error** | — | `render failed: error sending request for url (http://renderer:8080/render)` |
+
+Captured earlier on a workspace without SMTP or renderer, the other messages you may see are `smtp is not configured for this workspace` (with **Success**), `query failed: engine: line 2:8: Column 'nope' cannot be resolved` and `alert query must return a number or NULL in its first column, got "O"` (both **Error**).
 
 ## Why didn't I get a message?
 
@@ -64,7 +66,7 @@ Work down this list.
 2. **What did the last run record?** Open the run log.
 3. **Not triggered**: the condition was not met. Check the **Value** against your threshold, and check that the query returns a number in its first column.
 4. **On grace**: it fired recently. Wait out the grace period, or lower it.
-5. **Error**: read **Detail**. The query, the first column, the renderer or the engine failed.
+5. **Error**: read **Detail**. The query, the first column, the renderer or the engine failed. `render failed: error sending request …` means the renderer could not be reached or did not answer within 30 seconds; see [Reports](./reports#png-and-pdf-need-the-renderer).
 6. **Success with a Detail message**: the condition was met and delivery failed. A missing SMTP server, a missing Slack app, a webhook to a blocked or failing address, or a non-`2xx` response is recorded here.
 
 ## Run now
@@ -79,9 +81,9 @@ Finished runs are kept for the item's **Run log retention (days)**, 90 by defaul
 
 ## Limits and known issues
 
-- The list's **Last run** and the item's header badge ignore manual runs.
 - When several destinations fail, only the first failure is recorded in **Detail**.
-- **Value** is empty for reports.
+- **Value** is empty for reports, and in the run log dialog of a report the **Value** and **Detail** headings run together (KI-171).
+- The list's **Last run** and the header badge ignore manual runs (KI-032), so test an item with **Run now** and read the run log, not the list.
 
 ## Further reading
 
