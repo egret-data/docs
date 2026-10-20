@@ -6,7 +6,7 @@ sidebar_position: 3
 
 A consumer that calls your endpoints needs a credential. In the Data API that is an **OAuth2 client** owned by a **service account**. A service account is a machine identity: it is the "who" that endpoints grant access to and that the query engine sees. A client is one `client_id` and `client_secret` pair that lets a program prove it acts for that account.
 
-![The Clients page with two service accounts and their clients](/img/platform/data-api/clients-list.png)
+![The Clients page with three service accounts and their clients: Active, Revoked and Expired](/img/platform/data-api/clients-list.png)
 
 Open **Explore → Data API → Clients**. Each service account is a header row with its clients listed beneath it.
 
@@ -26,7 +26,7 @@ One service account can have several clients, for example one per consuming syst
 |---|---|
 | **Client** | The service account's name and email, with the number of clients and when it was created; under it, each client's name. |
 | **ID** | A shortened `client_id` (`egret-da…805e`) with a copy button. |
-| **Status** | **Active**, **Revoked** (with *revoked 3 minutes ago*) or **Expired** (with the expiry date). |
+| **Status** | **Active**, **Revoked** (with *revoked an hour ago*) or **Expired** (with *expires 9 months ago*, which means it expired then; KI-025). |
 | **Last used** | When the client last minted a token, or *Never*. |
 
 **Search service accounts…** filters by name. The **⋯** menu on a service account offers **Issue client…** and **Delete**; on an active client it offers **Revoke…**. A client that is already revoked has no menu.
@@ -48,7 +48,7 @@ Names are unique in a workspace. Reusing one is refused: `service account alread
 2. Enter a **Name** for the credential and, optionally, **Expires**. Name it after the consumer that will use it, so revoking the right one later is obvious. Leave **Expires** blank for a client that lives until revoked.
 3. Press **Create client**.
 
-![The New client page](/img/platform/data-api/client-new.png)
+![The New client page for orders-reporting-bot with the name weekly-export](/img/platform/data-api/client-new.png)
 
 The next page shows three values:
 
@@ -56,7 +56,7 @@ The next page shows three values:
 |---|---|
 | **Client ID** | Public identifier, `egret-dataapi-` followed by a UUID. |
 | **Client secret** | The secret. **Shown only once.** Press **Copy** and store it in the consumer's secret manager now. |
-| **Token endpoint** | Where the client exchanges its credentials, for example `http://localhost:8080/oauth/token`. |
+| **Token endpoint** | Where the client exchanges its credentials, for example `http://egret.localtest.me:8080/oauth/token`. |
 
 Reloading the page or returning to it later shows *Client secret no longer available*: the secret cannot be read back, by design. If it is lost, revoke the client and issue another.
 
@@ -86,7 +86,7 @@ The status becomes **Revoked**. A request for a token with a revoked secret is a
 A token is a signed, stateless credential. Revoking a client stops it minting new tokens, but a token already issued keeps working until it expires, up to 10 minutes later. In the walk-through, a token minted shortly before revocation still returned `200` afterwards. To cut a consumer off at once, remove the **grant** on the endpoint: grants are read on every request and take effect on the next call.
 :::
 
-An **Expired** client (its **Expires** date has passed) behaves like a revoked one for new tokens.
+An **Expired** client (its **Expires** date has passed) behaves like a revoked one for new tokens: on the demo stack the expired client `partner-pilot` got `{"error":"invalid_client"}`.
 
 ## Delete a service account
 

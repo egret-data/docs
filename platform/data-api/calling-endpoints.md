@@ -13,14 +13,14 @@ You need:
 - a **published** endpoint (here, `GET /orders/by-status`);
 - a [service account with an OAuth2 client](./clients), and its `client_id` and `client_secret`;
 - an invoke [grant](./endpoints/access) for that service account on the endpoint;
-- the base URL of your deployment. On the demo instance it is `http://localhost:8080`.
+- the base URL of your deployment. On the Docker demo stack it is `http://egret.localtest.me:8080` (or the port set in `DEMO_PORT`).
 
 Set them as shell variables:
 
 ```bash
-export BASE=http://localhost:8080
+export BASE=http://egret.localtest.me:8080
 export WS=default
-export CLIENT_ID=egret-dataapi-bf232700-aeb0-461f-9b13-f1ce18ba805e
+export CLIENT_ID=egret-dataapi-cf9e7fe8-f970-45af-901d-66a9a24b9ab7
 export CLIENT_SECRET='…the secret shown once when the client was issued…'
 ```
 
@@ -180,7 +180,7 @@ content-type: application/json
 retry-after: 1
 ```
 
-On the walk-through endpoint (**Per caller (qps)** 5, **Burst** 10), forty simultaneous requests produced twelve `200` answers and twenty-eight `429`. A client should wait the `Retry-After` interval and retry, with a little jitter:
+On the walk-through endpoint (**Per caller (qps)** 5, **Burst** 10), thirty simultaneous requests from one client produced 10 to 12 `200` answers and the rest `429`. A client should wait the `Retry-After` interval and retry, with a little jitter:
 
 ```bash
 for i in 1 2 3; do

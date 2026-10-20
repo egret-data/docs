@@ -20,7 +20,7 @@ A green **Preview** does not prove a consumer can call the endpoint: it checks n
 
 ## Preview a draft
 
-![The Query tab with a Preview result](/img/platform/data-api/endpoint-query.png)
+![The Query tab of Orders by status with priority 2-HIGH and a three-row Preview result](/img/platform/data-api/endpoint-query.png)
 
 1. Open the endpoint's **Query** tab.
 2. Under **Preview**, fill in a value for each parameter you want to test. Required parameters are marked with a red asterisk, and a parameter's default shows as the placeholder.
@@ -40,7 +40,7 @@ What to know:
 
 ## Try it
 
-![The Try it tab after a successful run as orders-reporting-bot](/img/platform/data-api/endpoint-try.png)
+![The Try it tab after a successful run as orders-reporting-bot: Status 200 and the response body](/img/platform/data-api/endpoint-try.png)
 
 1. Open the endpoint's **Try it** tab.
 2. Under **Run as**, choose a **Service account**.

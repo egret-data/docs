@@ -6,7 +6,7 @@ sidebar_position: 8
 
 Consumers never see your draft. They see a **version**: a frozen snapshot of the endpoint's contract (SQL, parameters, response settings, cache, limits and rate limit) taken when you press **Publish**. You can edit the draft as much as you like without affecting anyone, and go back to an earlier version in one click.
 
-![The Versions tab listing v2 as Live and v1](/img/platform/data-api/endpoint-versions.png)
+![The Versions tab of Orders by status: v2 Live with a 1 breaking change badge over its note, and v1 with Roll back](/img/platform/data-api/endpoint-versions.png)
 
 ## Publish an endpoint
 
@@ -41,7 +41,7 @@ Version numbers are per endpoint and never reused.
 
 A change is **breaking** when a consumer built against the live version could stop working. Before you publish, the dialog compares the draft with the live version.
 
-![The Publish dialog listing a breaking change and requiring acknowledgement](/img/platform/data-api/publish-dialog-breaking.png)
+![The Publish dialog for Top customers: column spend of statement main is gone, and Publish stays disabled until the acknowledgement is ticked](/img/platform/data-api/publish-dialog-breaking.png)
 
 Examples Egret classifies as breaking, each with its own message:
 
@@ -71,7 +71,7 @@ Rolling back makes an earlier version the live one again. Consumers calling the 
 2. Press **Roll back** on the version you want back.
 3. Type `rollback` to confirm and press **Roll back**. The dialog says *Every deployed client calling this endpoint's URL will immediately start receiving this version's frozen contract instead of the current live one. This does not delete anything — publish again to move forward once you're ready.*
 
-![The rollback confirmation dialog](/img/platform/data-api/rollback-dialog.png)
+![The Roll back to v1? dialog with rollback typed and the red Roll back button enabled](/img/platform/data-api/rollback-dialog.png)
 
 A message confirms *Rolled back to vN*. Nothing is deleted. The draft is untouched, so the header may read **Live · v1 · unpublished changes** when the draft is ahead of the version being served.
 

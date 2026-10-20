@@ -6,7 +6,7 @@ sidebar_position: 4
 
 The **Config** tab holds everything about an endpoint that is not its query or its response: its name and URL, whether answers are cached, how big and how slow an answer may be, and how often each caller may ask. Changes are saved with **Save** and reach consumers when you [publish](./publishing).
 
-![The Config tab showing the Endpoint and Cache groups](/img/platform/data-api/endpoint-config.png)
+![The Config tab of Orders by status: Endpoint, Cache (enabled, TTL 60, Per caller), Limits (100 rows, 30 seconds) and Rate limit (5 qps, burst 10) groups, and Validate saved draft](/img/platform/data-api/endpoint-config.png)
 
 The tab is a table with **Setting**, **Details** and **Value** columns, grouped under **Endpoint**, **Cache**, **Limits** and **Rate limit**, followed by a **Validate** check.
 
@@ -90,7 +90,7 @@ How many requests may arrive at once, above the sustained rate, before throttlin
 
 A ceiling across all callers of this endpoint together, whatever their individual limits. `0` means no endpoint-wide limit.
 
-With **Per caller (qps)** `5` and **Burst** `10`, forty simultaneous requests from one client produced twelve answers and twenty-eight `429` responses with `Retry-After: 1`: the ten burst slots plus the tokens that refilled while the burst ran. Sequential calls at normal speed were not throttled.
+With **Per caller (qps)** `5` and **Burst** `10` on **Orders by status**, thirty simultaneous requests from one client produced 10 to 12 answers and 18 to 20 `429` responses with `Retry-After: 1`, and sixteen simultaneous requests from a second client of the same service account produced eleven answers and five `429`: the ten burst slots plus the tokens that refilled while the burst ran. Each client credential has its own bucket. Sequential calls at normal speed were not throttled.
 
 :::note
 With one Egret replica, rate-limit counters and the cache live in the server's memory. Running more than one replica requires a shared store (Redis or Valkey); Egret refuses to start with several replicas and no store, so limits are never silently multiplied. If the shared store cannot be reached, a call to an endpoint that has a rate limit is refused with `503 rate_limiter_unavailable`, and a cache lookup that fails is treated as a miss.

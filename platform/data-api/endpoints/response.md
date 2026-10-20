@@ -6,7 +6,7 @@ sidebar_position: 5
 
 The **Response** tab shows what a consumer actually receives when it calls the endpoint: the frozen columns of the live version, and the settings that decide how rows become JSON. Use it to rename keys, return positional arrays, drop the envelope, or build a custom document with a script.
 
-![The Response tab with frozen columns and the Output shape settings](/img/platform/data-api/endpoint-response.png)
+![The Response tab of Orders by status: frozen columns status, revenue and order_count, and the Output shape settings](/img/platform/data-api/endpoint-response.png)
 
 ## The default response
 
@@ -72,7 +72,7 @@ Every other column is in every response.
 
 Tick **Build the response with a script** to replace the standard `data` with a document you build. This is for a shape no SQL projection can express, such as a single object that joins a total with a list. Most endpoints do not need it: **Shape** and **Naming** already cover renaming keys and objects versus arrays.
 
-![The Response tab of an endpoint with a transform script and declared return columns](/img/platform/data-api/endpoint-response-transform.png)
+![The Response tab of Yearly revenue summary: two statements' frozen columns, the transform script (227 / 8,192 bytes) and three declared returns](/img/platform/data-api/endpoint-response-transform.png)
 
 The script is Starlark, a deterministic Python subset with no input or output, no network, no clock and no randomness. It must define `transform(params, statements)`:
 

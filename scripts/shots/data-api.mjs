@@ -1,6 +1,5 @@
-// Screenshots for the Data API, Alerts & reports and Apps pages (area: data-api).
-// Objects used (created by scripts/seed-data-api.sh): service accounts "orders-reporting-bot" and
-// "partner-sandbox"; endpoints "Orders by status", "Orders page", "Yearly revenue summary", "Top customers".
+// Screenshots for the Data API and Alerts & reports pages (Apps: scripts/shots/apps.mjs).
+// Data API objects are created by scripts/seed-data-api.mjs (TRAFFIC=1 also fills Activity).
 const ws = '/explore/default';
 const A = 'data-api';
 const tall = (h) => (page) => page.setViewportSize({width: 1440, height: h});
@@ -15,7 +14,7 @@ const openEndpoint = (name, tab, height) => async (page) => {
   }
 };
 
-export const shots = [
+const list = [
   {id: `${A}/endpoints-list`, path: `${ws}/data-api/endpoints`, settle: 1500},
   {
     id: `${A}/endpoint-actions-menu`,
@@ -55,7 +54,7 @@ export const shots = [
     id: `${A}/endpoint-params`,
     path: `${ws}/data-api/endpoints`,
     prepare: async (page) => {
-      await openEndpoint('Orders by status', null, 1500)(page);
+      await openEndpoint('Orders by status', null, 1300)(page);
       await page.getByText('Database and parameters').click();
       await page.waitForTimeout(500);
     },
@@ -74,7 +73,7 @@ export const shots = [
   {id: `${A}/endpoint-config`, path: `${ws}/data-api/endpoints`, prepare: openEndpoint('Orders by status', 'Config', 1450), settle: 1500},
   {id: `${A}/endpoint-response`, path: `${ws}/data-api/endpoints`, prepare: openEndpoint('Orders by status', 'Response', 1150), settle: 1500},
   {id: `${A}/endpoint-response-transform`, path: `${ws}/data-api/endpoints`, prepare: openEndpoint('Yearly revenue summary', 'Response', 1500), settle: 2500},
-  {id: `${A}/endpoint-access`, path: `${ws}/data-api/endpoints`, prepare: openEndpoint('Orders by status', 'Access'), settle: 2000},
+  {id: `${A}/endpoint-access`, path: `${ws}/data-api/endpoints`, prepare: openEndpoint('Orders by status', 'Access', 640), settle: 2000},
   {
     id: `${A}/endpoint-try`,
     path: `${ws}/data-api/endpoints`,
@@ -100,7 +99,7 @@ export const shots = [
     },
     settle: 500,
   },
-  {id: `${A}/endpoint-versions`, path: `${ws}/data-api/endpoints`, prepare: openEndpoint('Orders by status', 'Versions'), settle: 2000},
+  {id: `${A}/endpoint-versions`, path: `${ws}/data-api/endpoints`, prepare: openEndpoint('Orders by status', 'Versions', 560), settle: 2000},
   {
     id: `${A}/publish-dialog-breaking`,
     path: `${ws}/data-api/endpoints`,
@@ -115,9 +114,9 @@ export const shots = [
     id: `${A}/rollback-dialog`,
     path: `${ws}/data-api/endpoints`,
     prepare: async (page) => {
-      await openEndpoint('Orders by status', 'Versions')(page);
+      await openEndpoint('Orders by status', 'Versions', 760)(page);
       await page.getByRole('button', {name: 'Roll back'}).click();
-      await page.waitForTimeout(800);
+      await page.getByPlaceholder('rollback').fill('rollback');
     },
     settle: 500,
   },
@@ -131,11 +130,12 @@ export const shots = [
     },
     settle: 800,
   },
-  {id: `${A}/clients-list`, path: `${ws}/data-api/clients`, settle: 1500},
+  {id: `${A}/clients-list`, path: `${ws}/data-api/clients`, prepare: tall(640), settle: 1500},
   {
     id: `${A}/service-account-new`,
     path: `${ws}/data-api/clients/new`,
     prepare: async (page) => {
+      await page.setViewportSize({width: 1440, height: 560});
       await page.getByLabel('Name', {exact: true}).fill('finance-dashboard');
       await page.getByLabel('Description (optional)').fill('Read-only reporting for the finance team');
     },
@@ -148,6 +148,7 @@ export const shots = [
       await page.getByRole('button', {name: 'Actions for orders-reporting-bot'}).click();
       await page.getByRole('menuitem', {name: /Issue client/}).click();
       await page.waitForLoadState('networkidle');
+      await page.setViewportSize({width: 1440, height: 500});
       await page.getByLabel('Name', {exact: true}).fill('weekly-export');
     },
     settle: 800,
@@ -155,63 +156,14 @@ export const shots = [
   {id: `${A}/activity`, path: `${ws}/data-api/activity`, prepare: tall(1250), settle: 2500},
 
   // Alerts & reports shots live in scripts/shots/alerts.mjs.
-  // ---- Apps -------------------------------------------------------------------------------------
-  {id: 'apps/apps-list', path: `${ws}/apps`, settle: 2000},
-  {
-    id: 'apps/create-dialog',
-    path: `${ws}/apps`,
-    prepare: async (page) => {
-      await page.getByRole('button', {name: '+ App'}).click();
-      await page.getByLabel('Name', {exact: true}).fill('Revenue explorer');
-    },
-    settle: 800,
-  },
-  {
-    id: 'apps/row-menu',
-    path: `${ws}/apps`,
-    prepare: async (page) => {
-      await page.getByRole('button', {name: 'Actions', exact: true}).click();
-    },
-    settle: 600,
-  },
-  {
-    id: 'apps/edit-unavailable',
-    path: `${ws}/apps`,
-    prepare: async (page) => {
-      await page.getByRole('button', {name: 'Actions', exact: true}).click();
-      await page.getByRole('menuitem', {name: 'Edit'}).click();
-      await page.waitForTimeout(2500);
-    },
-    settle: 500,
-  },
-  {
-    id: 'apps/view-unavailable',
-    path: `${ws}/apps`,
-    prepare: async (page) => {
-      await page.getByText('Revenue explorer', {exact: true}).first().click();
-      await page.waitForTimeout(2500);
-    },
-    settle: 500,
-  },
-  {
-    id: 'apps/versions-dialog',
-    path: `${ws}/apps`,
-    prepare: async (page) => {
-      await page.getByRole('button', {name: 'Actions', exact: true}).click();
-      await page.getByRole('menuitem', {name: 'Edit'}).click();
-      await page.getByRole('button', {name: 'Versions'}).click();
-      await page.waitForTimeout(1500);
-    },
-    settle: 500,
-  },
-  {
-    id: 'apps/share-dialog',
-    path: `${ws}/apps`,
-    prepare: async (page) => {
-      await page.getByRole('button', {name: 'Actions', exact: true}).click();
-      await page.getByRole('menuitem', {name: 'Share…'}).click();
-      await page.waitForTimeout(1500);
-    },
-    settle: 500,
-  },
 ];
+
+// screenshots.mjs reuses one page, so a viewport set by one shot would leak into the next: each Data API shot
+// starts at 1440x900 unless its own prepare changes it.
+export const shots = list.map((s) => !s.id.startsWith(`${A}/`) ? s : ({
+  ...s,
+  prepare: async (page) => {
+    await page.setViewportSize({width: 1440, height: 900});
+    if (s.prepare) await s.prepare(page);
+  },
+}));

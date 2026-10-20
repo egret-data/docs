@@ -6,7 +6,7 @@ sidebar_position: 7
 
 **Activity** is the access log of the Data API: every call to one of the workspace's endpoints, with its status, duration and whether the cache answered. Use it to see who is calling what, find the call behind an error report, and spot an endpoint that has started to fail.
 
-![The Activity page with summary tiles, a per-endpoint table and the calls list](/img/platform/data-api/activity.png)
+![The Activity page for 24h: 282 calls, a 20.2% error rate shown as Failing, latency and cache-hit tiles, the per-endpoint table with No matching endpoint last, and the newest calls including 429 rate_limited](/img/platform/data-api/activity.png)
 
 Open **Explore → Data API → Activity**.
 

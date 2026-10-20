@@ -6,7 +6,7 @@ sidebar_position: 2
 
 Parameters let a caller change what an endpoint returns: filter by a status, pick a date, choose a sort column. You declare each parameter on the **Query** tab and refer to it in the SQL as `{{ name }}`. Egret checks every value before the query runs and sends it to the engine as a bound value, never as pasted text.
 
-![The Query tab with the parameters table open](/img/platform/data-api/endpoint-params.png)
+![The Query tab of Orders by status with Database and parameters open: priority (enum) and min_total (number, 0 to 1000000)](/img/platform/data-api/endpoint-params.png)
 
 ## Declare a parameter
 

@@ -7,7 +7,7 @@ sidebar_position: 6
 An endpoint answers with whatever the query engine returns to the identity that ran the query. If the engine filters rows or masks columns **per user** (row filters and column masks in Ranger, for example), the endpoint must run the query as the right user, or every consumer would read what the shared credential can read. This page explains who "the caller" is for the Data API, and the rule Egret enforces for governed data.
 
 :::warning Not run in the demo
-The demo connection, `trino-demo`, is neither governed nor per-user, and shared settings could not be changed for this page. The rule is described from the product's messages and source, and the messages shown below appear in the endpoint editor when the condition holds. The refusal on publish and the `503 governance_stale` response were not provoked on the instance.
+The demo connection, `trino-demo`, is neither governed nor per-user. Provoking the rule needs a governed connection, and the demo workspace is shared by everyone using the stack, so no connection was added or changed for this page. The rule is described from the product's messages and source, and the messages shown below appear in the endpoint editor when the condition holds. The refusal on publish and the `503 governance_stale` response were not provoked on the instance.
 :::
 
 ## Who is "the caller"

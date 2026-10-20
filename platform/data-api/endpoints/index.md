@@ -6,7 +6,7 @@ sidebar_position: 1
 
 An endpoint is one query published at one URL. This page covers the list of endpoints, how to create an endpoint, and how the editor is organised. Each editor tab has its own page.
 
-![The endpoints list showing six live endpoints](/img/platform/data-api/endpoints-list.png)
+![The endpoints list with eight endpoints: six live, one draft and one disabled](/img/platform/data-api/endpoints-list.png)
 
 ## The endpoints list
 
@@ -16,14 +16,14 @@ Open **Explore → Data API → Endpoints**. The list shows every endpoint in th
 |---|---|
 | **Name** | The endpoint's name, with a star to bookmark it. |
 | **Method & path** | The HTTP method and the path callers append to the workspace's base URL, for example `GET /orders/by-status`. |
-| **State** | **Live**, **Draft**, or **Disabled** (see [lifecycle](./overview#endpoint-lifecycle)). |
+| **State** | **Live**, **Draft**, or **Disabled · was live** (see [lifecycle](./overview#endpoint-lifecycle)). |
 | **Engine** | The engine of the endpoint's database connection, for example Trino. |
 | **Last edited** | When the draft last changed. |
 
 Above the table:
 
 - **Search endpoints…** filters by name.
-- **State** and **Engine** narrow the list. The counters under the filters (`6 endpoints total · 6 live · 0 draft · 0 disabled`) are clickable shortcuts for the State filter.
+- **State** and **Engine** narrow the list. The counters under the filters (`8 endpoints total · 6 live · 1 draft · 1 disabled`) are clickable shortcuts for the State filter.
 - The toolbar buttons are **Bookmarks** (show only starred endpoints), **Bulk select** (select several rows and press **Move N to Trash**), **New folder**, and **Trash**.
 - **Download OpenAPI** exports an OpenAPI document; see [OpenAPI export](./openapi).
 - **+ Endpoint** opens the create page.
@@ -39,10 +39,10 @@ The **⋯** menu on a row offers:
 | **Open** | Opens the editor. |
 | **Disable** | Takes a live endpoint out of service. Calls get `404 not_found`. Its live version and grants are kept. |
 | **Enable** | Puts a disabled endpoint back, serving the version it had. Not available for an endpoint that was never published. |
-| **Move to folder** | Moves it into a folder or a new folder. |
-| **Move to Trash** | Soft-deletes the endpoint. Disabled for a **Live** endpoint: the menu says *Disable it first*. |
+| **Move to new folder…** | Creates a folder and moves the endpoint into it. With folders in the workspace the menu also offers **Move to "folder"** for each one, and **Remove from folder** for an endpoint in a folder. |
+| **Move to Trash** | Soft-deletes the endpoint. Greyed out for a **Live** endpoint, with the hint *Disable it first*. |
 
-![The row menu for an endpoint](/img/platform/data-api/endpoint-actions-menu.png)
+![The row menu of the live endpoint Top customers: Open, Disable, Move to new folder and a greyed-out Move to Trash with Disable it first](/img/platform/data-api/endpoint-actions-menu.png)
 
 In **Trash**, a row offers **Restore** (the endpoint returns **disabled**, never straight to serving) and **Delete permanently**, which cannot be undone.
 
@@ -52,7 +52,7 @@ In **Trash**, a row offers **Restore** (the endpoint returns **disabled**, never
 2. Fill in **Name**, **Path**, an optional **Description**, **Method**, **Database** and **SQL**.
 3. Press **Create endpoint**.
 
-![The New endpoint page filled in](/img/platform/data-api/endpoint-new.png)
+![The New endpoint page filled in for Customer spend on trino-demo](/img/platform/data-api/endpoint-new.png)
 
 The create page collects only what an endpoint cannot exist without. Parameters, response shape, cache and limits are configured in the editor you land in next. Nothing is served yet: a new endpoint is a **Draft**.
 
@@ -104,10 +104,10 @@ Opening an endpoint shows its editor. The header carries the name, a state badge
 | **Try it** | Make a real call as a service account. | [Try it](./endpoints/try-it) |
 | **Versions** | Publish, review history, roll back. | [Publishing](./endpoints/publishing) |
 
-The header badge reads **Draft · never published**, **Live · v2**, **Live · v2 · unpublished changes** (the saved draft differs from what is served) or **Disabled · was live**. Pressing the badge opens **Versions**.
+The header badge reads **Draft · never published**, **Live · v2**, **Live · v1 · unpublished changes** (the saved draft differs from what is served, as on **Top customers** in the walk-through) or **Disabled · was live**. Pressing the badge opens **Versions**.
 
 :::caution Changing the path moves the live URL
-In the version of Egret used for these docs, saving a new **Path** in **Config** changes the URL that is served immediately, before you publish. A call to the old path returns `404 not_found` while the new path answers with the live version's data. Publishing then reports the change as breaking. Treat a path change as a breaking change to make deliberately. See [Publishing](./endpoints/publishing#breaking-changes).
+Saving a new **Path** in **Config** changes the URL that is served immediately, before you publish. A call to the old path returns `404 not_found` while the new path answers with the live version's data. Publishing then reports the change as breaking. Treat a path change as a breaking change to make deliberately. See [Publishing](./endpoints/publishing#breaking-changes).
 :::
 
 ## Limits and known issues

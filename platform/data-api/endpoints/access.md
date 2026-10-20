@@ -6,7 +6,7 @@ sidebar_position: 7
 
 Nobody can call an endpoint until you say so. The **Access** tab lists the workspace's service accounts and lets you grant each one permission to **invoke** this endpoint. Grants are per endpoint, so a consumer you give the sales endpoint cannot call the finance one.
 
-![The Access tab with one granted and one ungranted service account](/img/platform/data-api/endpoint-access.png)
+![The Access tab of Orders by status: finance-dashboard and orders-reporting-bot granted on this endpoint, partner-sandbox not granted](/img/platform/data-api/endpoint-access.png)
 
 ## Grant a service account access to an endpoint
 
@@ -37,7 +37,7 @@ The status under **Invoke** is one of:
 
 Two notes appear on a row when they matter:
 
-- **Revoking will not remove access**, shown on a granted account that also reaches invoke through the workspace: revoking removes the grant but not the access.
+- **Revoking will not remove access**, meant for a granted account that also reaches invoke through the workspace: revoking removes the grant but not the access. On the demo stack this note is shown on **every** granted service account, including ones with no workspace role, and is wrong for them: revoking `finance-dashboard` on **Orders by status** made its next call answer `403 not_granted`. Trust the result of **Try it** after a revoke, not the note.
 - **Revoking may not remove access**, shown when Egret cannot check the inherited access, for example while the endpoint is not live.
 
 The check for inherited access runs the account's own OpenAPI document and looks for this endpoint in it, so it only works on a live endpoint. A draft or disabled endpoint says so above the table: *This endpoint is not live, so nothing is being served yet and egret cannot check workspace-inherited invoke rights against it. Grants recorded here are real and take effect when it is published.*
