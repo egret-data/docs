@@ -46,7 +46,7 @@ To get a dashboard delivered regularly, create a **report** that targets it.
 
 The form, its schedule and delivery settings, owners and run history belong to Alerts & reports and are described there: see [Alerts & reports](../alerts-and-reports). Subscribe… appears only for people who can manage the dashboard.
 
-PNG and PDF reports are produced by a separate rendering service that opens the dashboard as a page and captures it. Image delivery was not exercised on the demo instance used to write these pages; CSV and text reports read the query results directly.
+PNG and PDF reports are produced by a separate rendering service that opens the dashboard as a page and captures it; CSV and text reports read the query results directly. On the Docker demo stack, which runs the renderer and delivers mail to Mailpit, a PNG of **Executive summary** arrived inside the email and a PDF arrived as an attachment. See [Reports](../alerts-and-reports/reports#what-recipients-get) for what the email looks like.
 
 ## Scheduled report rendering
 
@@ -68,12 +68,15 @@ What the page draws:
 
 The page tells the renderer it is ready only when every chart has finished drawing and fonts have loaded, so images are not captured half-drawn. If a chart fails to draw or the data cannot be fetched, the page stays blank and the render is reported as failed rather than delivering a partial image.
 
+This is what a PDF of **Sales performance** (two tabs, a heading, a text card and six chart cards, filters with defaults) looked like on the demo stack: the title *Sales performance*; the cards **Revenue trend**, **Revenue by priority** and **Priority mix** on the first sheet and **Top clerks** and **Largest orders** (from the **Orders** tab) on the second; the line chart starting in January 1995 because the **Order date** filter defaults to 1995–1996; no heading or text card; and **Top clerks** under the chart's name, not the card title "Top 10 clerks". A table taller than its 384 px box ran past the bottom of the box (KI-NEW-2). The whole render took about 20 seconds.
+
 ## Limits and known issues
 
 - There is no whole-dashboard export button; reports (PNG, PDF) are the way to get the dashboard as one file.
 - Rendered reports ignore card title and visualization overrides, text cards and tabs.
 - The download popover's row limit text does not match the real limit (10,000 rows).
-- PNG and PDF report rendering needs the rendering service, which was not exercised on the demo instance.
+- PNG and PDF report rendering needs the rendering service. A large dashboard takes about 20 seconds to render, and a multi-dashboard PDF fails when the renders together exceed 30 seconds (KI-NEW-1).
+- A table card overflows its box on the rendered page (KI-NEW-2).
 
 ## Further reading
 

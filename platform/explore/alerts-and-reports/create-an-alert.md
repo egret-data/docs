@@ -21,7 +21,7 @@ The editor has four tabs, **General**, **Condition**, **Schedule** and **Notific
 
 ## General
 
-![The General tab of an existing alert, with Recent runs underneath](/img/platform/alerts/detail.png)
+![The General tab of an existing alert, with Recent runs underneath: On grace runs and a Success run with a webhook error](/img/platform/alerts/detail.png)
 
 | Setting | What it does | Default |
 |---|---|---|
@@ -62,11 +62,17 @@ The alert **Pending orders above 100** uses these settings:
 | **Condition** | **Value meets a comparison**, operator `>`, threshold `100` |
 | **Schedule** | Daily at 08:00, timezone `Asia/Ho_Chi_Minh` |
 | **Grace period** | 3600 seconds |
-| **Notification** | Email `ops@example.com` and a webhook |
+| **Notification** | Email `ops@example.com` and a webhook to `https://example.com/egret-hook`, subject `[egret] {{name}} on {{date}}`, an opening and a closing note, and the **Order operations** dashboard attached as a PNG |
 
-Pressing **Run now** from the list ran it once. The sample data has 363 partially shipped orders, so the value `363` passed `> 100`: the run was recorded as **Success**, meaning the alert fired. Because the workspace in this walk-through has no email server and webhooks to a loopback address are blocked, the run log shows why nothing arrived; see [Run history](./run-history).
+Pressing **Run now** from the list ran it once. The sample data has 363 partially shipped orders, so the value `363` passed `> 100`: the run was recorded as **Success**, meaning the alert fired. The email arrived (below). The webhook receiver answered `405`, so the run log's **Detail** reads `webhook returned 405`; see [Run history](./run-history). A second **Run now** a few minutes later, and the next scheduled run, were recorded as **On grace** and sent nothing.
 
 A second alert, **Cancelled orders spike**, counts orders with status `X`. There are none, so the value is `0`, which does not pass `> 0`: each run is recorded as **Not triggered** and nobody is notified.
+
+### What the recipient gets
+
+![The alert email in the demo stack's Mailpit inbox: opening note, the attached dashboard picture, the observed value](/img/platform/alerts/mail-alert.png)
+
+The email has the alert name as a heading, the **Opening note**, the attached chart or dashboard as a picture (when **Also show a chart or dashboard** is set), the line *The alert "Pending orders above 100" fired. Observed value: 363*, the **Closing note** and an **Open in egret** button. The triggering rows are attached as a CSV file named after the alert (`pending-orders-above-100.csv`, holding the header `n` and the value `363`). Without a subject of your own it reads `[egret] Pending orders above 100 triggered`.
 
 ## What happens when it fires
 

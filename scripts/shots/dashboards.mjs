@@ -211,6 +211,9 @@ export const shots = [
       await page.getByTestId('dashcard-body').nth(3).hover();
       await page.getByRole('button', {name: 'card visualization'}).nth(0).click({force: true});
       await settle(page, 1500);
+      // The forced click scrolls the edit banner out of view; bring it back.
+      await page.evaluate(() => document.querySelectorAll('*').forEach((el) => { if (el.scrollTop > 0) el.scrollTop = 0; }));
+      await settle(page, 500);
     }),
   },
   {
@@ -241,6 +244,8 @@ export const shots = [
   {
     id: 'dashboards/trash', path: `${ws}/dashboards`,
     prepare: async (page) => { await page.getByRole('button', {name: 'Trash'}).click(); await settle(page, 1200); },
+    // One trashed dashboard: crop the empty lower half.
+    clip: {x: 0, y: 0, width: 1440, height: 330},
   },
   {
     id: 'dashboards/view', path: `${ws}/dashboards`,

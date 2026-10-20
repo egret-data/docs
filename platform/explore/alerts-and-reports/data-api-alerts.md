@@ -49,15 +49,14 @@ If the window reaches back further than the workspace keeps its access log (90 d
 
 ## Examples
 
-These alerts were created on the demo workspace after generating some failing and throttled traffic against the walk-through endpoints.
+These alerts ran on the Docker demo stack, against the traffic that the Data API walk-through had generated in the hour before (including refused and throttled calls).
 
 | Alert | Settings | Run now result |
 |---|---|---|
-| **Orders by status error rate** | Endpoint **Orders by status**, metric **Error rate**, window 3600, condition `> 0.05` | **Success**, value `0.601`: 60% of calls in the last hour had failed because the test traffic included refused and throttled calls. |
-| **Throttled calls in the last hour** | **Whole workspace**, metric **Count of a specific error code** with `rate_limited`, window 3600, condition `> 0` | **Success**, value `99`: the number of `429` responses the rate-limit test produced. The Activity page filtered on error code `rate_limited` shows the same calls. |
-| **Orders by status p95 latency** | Endpoint **Orders by status**, metric **p95 latency**, window 3600, condition `> 1000` | **Not triggered**, value `430.5`: the slowest 5% of successful calls took about 430 ms, under the threshold. |
+| **Orders by status error rate** | Endpoint **Orders by status**, metric **Error rate**, window 3600, condition `> 0.05`, every 5 minutes | **Success**, value `0.27`: 27% of the calls in the last hour had failed. The scheduled runs that followed were **On grace**. |
+| **Throttled calls in the last hour** | **Whole workspace**, metric **Count of a specific error code** with `rate_limited`, window 3600, condition `> 0` | **Success**, value `20`: the number of `429` responses in the hour. The Activity page filtered on error code `rate_limited` shows the same calls. |
 
-Each of the first two also recorded `smtp is not configured for this workspace` in the run log, because the demo workspace has no mail server.
+Both emailed `api-owners@example.com` (the demo stack's Mailpit received `[egret] Orders by status error rate triggered`), and the run log shows **Notification sent**. Earlier, on another instance, a **p95 latency** alert on the same endpoint with condition `> 1000` was **Not triggered** with value `430.5`.
 
 ## Permissions
 

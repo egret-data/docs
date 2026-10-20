@@ -33,7 +33,7 @@ The link switches to a **Cron expression** box. It takes five fields, as in cron
 The list shows each item's schedule in words (`Every 15 minutes`, `Every day at 08:00`) and its **Next run**.
 
 :::note
-The scheduler checks for due items on a fixed interval, 30 seconds by default (`automation.tick_interval_secs`). An item runs at its next tick after it becomes due, so a run can start up to one interval late.
+The scheduler checks for due items on a fixed interval, 30 seconds by default (`automation.tick_interval_secs`). An item runs at its next tick after it becomes due, so a run can start up to one interval late. Items that fall due together run one after another: on the demo stack twelve items due at 12:10:00 started between 12:10:18 and 12:11:21, the slow PNG and PDF renders holding up the rest. While an item waits its turn the list shows **Working**.
 :::
 
 ### Timezone

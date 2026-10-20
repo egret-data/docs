@@ -1,5 +1,5 @@
 // Seeds the demo charts and three dashboards used by the Dashboards docs (scripts/shots/dashboards.mjs).
-// Usage: STATE=<playwright storage-state json with a logged-in admin session> node scripts/seed-dashboards.mjs
+// Usage: BASE=http://egret.localtest.me:18080 STATE=<playwright storage-state json with a logged-in admin session> node scripts/seed-dashboards.mjs
 // Idempotent by name: existing objects with the same name are updated, never duplicated.
 // Requires the `orders` dataset (metrics `revenue`, `order_count`) from scripts/seed-demo.sh.
 import {readFileSync} from 'node:fs';
@@ -7,7 +7,8 @@ import {readFileSync} from 'node:fs';
 const BASE = process.env.BASE ?? 'http://localhost:5180';
 const WS = process.env.WS ?? 'default';
 const st = JSON.parse(readFileSync(process.env.STATE, 'utf8'));
-const jar = st.cookies.filter((c) => c.domain === 'localhost');
+const host = new URL(BASE).hostname;
+const jar = st.cookies.filter((c) => c.domain.replace(/^\./, '') === host);
 const cookie = jar.map((c) => `${c.name}=${c.value}`).join('; ');
 const csrf = jar.find((c) => c.name === 'egret_csrf')?.value;
 
@@ -121,7 +122,10 @@ const dashboards = [
       virt('heading', 0, 0, 24, 1, {text: 'Weekly sales review'}),
       card('Revenue KPI', 0, 1, 12, 3, {title: 'Revenue'}),
       card('Orders KPI', 12, 1, 12, 3, {title: 'Orders'}),
-      card('Revenue trend', 0, 4, 24, 7),
+      card('Revenue trend', 0, 4, 16, 7),
+      virt('text', 16, 4, 8, 7, {text: '### This week\n\n- Revenue is **up** on urgent orders\n- Partial shipments are still above 100\n- Next review: Monday 09:00\n\nSee the [order desk](./) for detail.'}),
+      virt('iframe', 0, 11, 12, 6, {iframe: 'https://www.youtube.com/embed/dQw4w9WgXcQ'}),
+      card('Revenue by status', 12, 11, 12, 6, {title: 'Revenue by status'}),
     ],
   },
   {name: 'Regional review (draft)', description: '', width: 'fixed', parameters: [], tabs: [], cards: []},
