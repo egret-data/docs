@@ -45,6 +45,10 @@ What this means in practice:
 
 The database picker lists only the connections that are granted to the workspace; see [Databases](../../workspace-settings/databases). A request for any other database is refused with *database not granted to workspace*.
 
+:::warning Only workspace admins see the picker's list
+The picker is filled from `GET /api/ws/{ws}/databases`, which answers 403 to everyone who is not a workspace admin. A member with `ws_editor`, `ws_viewer` or a custom role that has `query:run` therefore sees an empty picker ("Select a database") even though the connection is granted, and nothing says why. Queries sent through the API with a `database_id` do run. See [Known issues](../../known-issues) (KI-159).
+:::
+
 ## What the engine allows
 
 SQL Lab sends your text to the engine and returns the engine's answer. Two settings of the connection decide who the engine thinks you are:
