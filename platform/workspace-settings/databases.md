@@ -6,7 +6,7 @@ sidebar_position: 4
 
 A **database connection** (shown in the UI as an *engine connection*) tells the workspace how to reach a query engine. SQL Lab, datasets, charts and dashboards run their queries through these connections. They are configured under **Manage → Workspace settings → Connections → Engines**.
 
-![The Engines page of the Docs sandbox workspace with one connection](/img/platform/admin/ws-engines.png)
+![The Engines page of the Docs sandbox workspace: the provisioned engine docs-trino and the connection trino-sandbox](/img/platform/admin/ws-engines.png)
 
 *Query engine connections this workspace can use in SQL Lab and charts.* The page needs workspace-admin rights; without them it says *Requires workspace-admin to manage engines.* A new workspace says *No engines connected yet.*
 
@@ -25,7 +25,7 @@ A summary strip counts the **connections**, how many are **ok** and how many are
 
 Two icons next to a name flag how queries run: *Queries run as the signed-in user (per-user delegation)* and *Row filters and column masks are applied per user at the engine*.
 
-A connection can show **Show catalogs**: the catalogs of a provisioned engine, with their **Catalog**, **Kind**, **Storage** and **Secret**.
+A provisioned engine shows as a card with its name, type and a delegation badge (for example **Per-user**), its status, *Provisioned by egret · read-only*, and **Show catalogs**: the catalogs of the engine, with their **Catalog**, **Kind**, **Storage** and **Secret**. It is added by assigning the engine to the workspace in the Control Plane (see [Engine detail](../control-plane/query-engines/engine-detail.md#workspaces)), not here.
 
 ## Add a connection
 
@@ -94,11 +94,12 @@ Trino must accept forwarded headers (`http-server.process-forwarded=true`). With
 
 ## Example
 
-On the demo instance, the workspace `default` connects to the demo Trino (`localhost:8091`, catalog `tpch`) as `trino-demo`. To connect another workspace to the same Trino, add a connection with Host `localhost`, Port `8091`, **User** `docs`, **Catalog** `tpch` and **Schema** `tiny`, leave the three switches off, and press **Test**.
+On the Docker demo stack, the workspace `default` connects to the demo Trino as `trino-demo`. The workspace *Docs sandbox* connects to the same Trino as `trino-sandbox`: Host `trino-demo` (the container name on the demo network), Port `8080`, **User** `egret`, **HTTP scheme** `http`, **Catalog** `tpch`, the three switches off. It also has the provisioned engine `docs-trino` under **Provisioned by egret**.
 
 ## Limits and known issues
 
 - Egret validates reachability on save, but a new connection shows **Unknown** until you press **Test**.
+- Only workspace admins can list the workspace's connections. Members with `ws_editor`, `ws_viewer` or a custom role get *403* on the list, so the database picker in SQL Lab is empty for them, also for a provisioned engine assigned to the workspace.
 - Only Trino and StarRocks connections can be added here. External engines for Governance are registered in the Control Plane (see [Register an external engine](../control-plane/query-engines/register-external.md)).
 
 ## Further reading

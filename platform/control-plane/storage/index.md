@@ -61,18 +61,21 @@ The header shows the name, provider and the **BUCKET** and **ENDPOINT**, with **
 
 ## Browse a connection
 
-The **Browse** tab lists the bucket's folders and files, so you can confirm a connection works and see what egret stored: for example folders such as `apps`, `query-results`, `workflow` and the warehouse folders named by id. Select a folder to open it. An empty folder says *This folder is empty.*
+The **Browse** tab lists the bucket's folders and files, so you can confirm a connection works and see what egret stored: for example folders such as `apps`, `query-results`, `workflow` and the warehouse folders named by id. Select a folder to open it; files show their size. An empty folder says *This folder is empty.*
 
-![The Browse tab listing the folders of the bucket](/img/platform/admin/cp-storage-browse.png)
+The demo bucket is shared by everything egret stores, so `query-results` holds the stored result files of every user's SQL Lab queries. Anyone with **storage:read** can list and download them, including the built-in `data_steward` role; these files are what each person was allowed to see, after their masks and row filters. Keep **storage:read** for administrators.
+
+![The Browse tab listing the top-level folders of the warehouse bucket](/img/platform/admin/cp-storage-browse.png)
 
 ## Delete a connection
 
-Press **Delete** and confirm. A connection that warehouses or other resources still use should be left alone: check the **Warehouses** tab first.
+Press **Delete**. The dialog *Delete «\<connection\>»?* says *This storage connection will be removed. Any catalogs or workspaces that reference it may break.* and asks you to type `delete`. A connection that warehouses or other resources still use should be left alone: check the **Warehouses** tab first (for `demo-rustfs` it lists `demo-warehouse`, workspace Default, **Provisioned**).
 
 ## Limits and known issues
 
 - Only S3-compatible stores work; Google Cloud Storage and Azure Blob are not available yet.
-- On the demo instance the **Browse** tab lists the bucket root even for a connection with a **Key prefix**. Treat the prefix as unverified there.
+- The **Browse** tab lists the bucket root even for a connection with a **Key prefix** (checked with `sandbox-lake`, prefix `sandbox/`).
+- A key prefix does not keep two egret warehouses apart: a warehouse on `sandbox-lake` was refused with *Storage profile overlaps with existing warehouse demo-warehouse*. Use a separate bucket for each warehouse.
 
 ## Further reading
 

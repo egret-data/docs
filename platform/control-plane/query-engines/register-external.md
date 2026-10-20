@@ -6,7 +6,7 @@ sidebar_position: 1
 
 Register an external engine when you run Trino or StarRocks yourself and want egret to manage its data-access policy. Egret does not provision, restart or monitor a registered engine. It holds a record, so that a policy profile can be bound to the engine and you can read the Ranger plugin configuration to install on it.
 
-![The Register external engine form](/img/platform/admin/cp-engine-register.png)
+![The Register external engine form: Engine, Ranger and Policy profile sections](/img/platform/admin/cp-engine-register.png)
 
 You need **engine:create**. Binding a profile also needs **policy:read**, and declaring catalogs needs **catalog_registry:read**.
 
@@ -42,7 +42,7 @@ Egret proves migrations and explains access only for Trino with plugin 2.5.0 or 
 
 ### Policy profile
 
-*Bind a Trino profile now, or leave it and bind one later from the engine's Settings tab. A profile can belong to one engine.* The list shows **No profile yet**, then each profile, marking those already taken (for example *docs-trino-policy — bound to docs-trino*). A profile already bound to another engine cannot be chosen again. If binding would make two mask or row-filter rules decide one column differently, egret refuses and changes nothing, and the form says *Nothing was changed. Resolve one of the two, then try again.*
+*Bind a Trino profile now, or leave it and bind one later from the engine's Settings tab. A profile can belong to one engine.* The list shows **No profile yet**, then each Trino profile, marking those already taken (for example *docs-trino — bound to docs-trino*). It does not say which profiles have a tag service, so a profile you created with **New profile** is offered although it cannot be bound. A profile already bound to another engine cannot be chosen again. If binding would make two mask or row-filter rules decide one column differently, egret refuses and changes nothing, and the form says *Nothing was changed. Resolve one of the two, then try again.*
 
 :::note
 A Trino profile created in the console has no tag service and cannot be bound. Use a profile with a tag service (see [Engines and policy](../../data-governance/engines-and-policy/index.md#create-a-policy-profile)).
@@ -54,22 +54,30 @@ A Trino profile created in the console has no tag service and cannot be bound. U
 
 ## After you register
 
-You land on the engine's page with the tabs **Overview**, **Catalogs**, **Plugin config** and **Settings**. Then:
+You land on the engine's **Plugin config** tab. Without a profile it says *conflict: engine \<name\> is bound to no policy profile: bind a profile first Bind a policy profile on the Settings tab, then come back.* The tabs are **Overview**, **Catalogs**, **Plugin config** and **Settings**. Then:
 
-1. **Plugin config**: copy the files to your engine and restart it (see [Ranger plugin](../../data-governance/engines-and-policy/ranger-plugin.md)).
-2. **Catalogs**: declare more catalogs, or detach.
-3. In **Governance → Engine & policy**, grant engine permissions and review policies.
+1. **Settings**: bind a policy profile that has a tag service, and press **Save changes**.
+2. **Plugin config**: copy the files to your engine and restart it (see [Ranger plugin](../../data-governance/engines-and-policy/ranger-plugin.md)).
+3. **Catalogs**: declare more catalogs, or detach.
+4. In **Governance → Engine & policy**, grant engine permissions and review policies.
 
-If a warning appears under the form, read it before leaving; it names settings, such as an unreachable download URL, that will stop the engine from downloading policy.
+If a warning appears on **Plugin config**, read it before leaving; it names settings, such as an unreachable download URL, that will stop the engine from downloading policy.
 
-## Seed the demo engine
+## Example: register the demo Trino
 
-On the demo instance, `scripts/seed-governance-ui.mjs` in the docs repository registers the demo Trino (`localhost:8091`) as `docs-trino` the same way, through the UI.
+On the Docker demo stack the seeded Trino (`trino-demo`, port `8080`) can be registered as an external engine:
+
+1. **Register external engine**, **Name** `trino-demo-ext`, **Engine type** Trino, **Host** `trino-demo`, **Port** `8080`.
+2. **Plugin version** `2.8.0`, **Policy profile** **No profile yet**, tick `tpch_bench` under **Catalogs**.
+3. **Register engine**.
+
+Binding the console-created Trino profile `docs-external-policy` at this point fails with *bad request: policy profile 5 (docs-external-policy) has no usable tag service …*, so the example binds a profile pair created through the API (a `tag` profile and a Trino profile whose `config.tagService` names it) afterwards on **Settings**. The demo Trino has no Ranger plugin installed, so the record is for policy authoring only: nothing is enforced on that engine.
 
 ## Limits and known issues
 
 - Egret holds a record only: it does not monitor the engine, so the page shows no health status.
 - An engine name cannot be changed after registration; remove the record and register again.
+- The message after registering keeps the raw `conflict:` prefix of the API error.
 
 ## Further reading
 

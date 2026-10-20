@@ -28,12 +28,14 @@ Values are concrete names. The form refuses *Enter a value.*, leading or trailin
 2. On **Engine permissions**, press **Grant**.
 3. Under **Capability**, pick one. The fields for its values appear.
 4. Fill the values, for example `query_max_run_time` for a system session property.
-5. Under **Granted to**, choose **user**, **group** or **role**, search, and add at least one principal (*Add at least one user, group or role.*). A group is expanded to its current members.
+5. Under **Granted to**, choose **user**, **group** or **role**, search, and add at least one principal (*Add at least one user, group or role.*). A group is expanded to its current members. The search list stays open after you pick someone and covers the **Grant** button; click elsewhere in the dialog to close it.
 6. Press **Grant**.
 
-The permission appears under **Granted**, grouped by capability, with the **Values**, **Granted to**, the compiled **Policy** name (for example `perm-engine-8f0e…`) and edit and delete buttons. Editing opens **Edit engine permission**. Deleting shows *Delete engine permission* and the toast *Engine permission deleted.*
+The permission appears under **Granted**, grouped by capability, with the **Values**, **Granted to**, the compiled **Policy** name (for example `perm-engine-33b6526b-…`) and edit and delete buttons. On the demo stack, granting **Set a system session property** `query_max_run_time` to `member-sso` on `docs-trino` added the row *query_max_run_time — user member-sso*, and the Governance overview recorded *Administrator created an engine grant: trino.set_system_session_property (query_max_run_time) on engine docs-trino to user member-sso*. Editing opens **Edit engine permission**. Deleting shows *Delete engine permission* and the toast *Engine permission deleted.*
 
 The engine applies the permission at its next plugin download.
+
+![The Engine permissions tab of docs-trino: one granted session property, and the policies managed by egret](/img/platform/admin/gov-engine-permissions.png)
 
 ## Check an engine permission
 
@@ -50,7 +52,7 @@ Below **Granted**, **Managed by egret** lists policies egret seeds itself on the
 | **Platform admins: all access** | Platform admins have all access. |
 | **Group admin: all access (seeded defaults)** | The default policy set that gives the group `admin` all access. |
 
-An external engine's profile shows *egret seeds no engine policy on this profile.*
+On the provisioned engine `docs-trino` the section held 13 **Platform admins: all access** policies (the user `admin`, every resource kind) and 3 **Every user's baseline** policies. An external engine's profile shows *egret seeds no engine policy on this profile.*
 
 ## Not grantable here
 

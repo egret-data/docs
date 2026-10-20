@@ -6,7 +6,7 @@ sidebar_position: 5
 
 The **Access Explorer** answers "what can this person reach?" and "who can reach this object?" with full provenance: for every line it says whether the access is direct, comes through a group, or comes through workspace membership. Use it before you grant access, and when someone reports they can see (or cannot see) something.
 
-![The Access Explorer for member-sso: workspaces and shared objects, each with how the access arises](/img/platform/admin/cp-explorer-user.png)
+![The Access Explorer for alice.nguyen@egret.local: workspaces and shared objects, each with how the access arises](/img/platform/admin/cp-explorer-user.png)
 
 You need **role:read** to open the page. Two tabs switch the direction.
 
@@ -23,7 +23,7 @@ The result has two sections:
 | **Workspaces** | Each workspace the principal belongs to, with the workspace role and where it comes from. |
 | **Shared objects** | Each object shared with the principal: the kind (**dashboard**, **folder**, and so on), the name, the workspace, the role, the **allow** or deny effect and the source. |
 
-The source reads **direct** for access given to the person, or **via \<group\>** when it comes through a group. For example, member-sso holds `ws_viewer` on *Docs sandbox* directly and `ws_editor` through the group `data-team`, and shows the shared dashboard *Finance KPIs* via `data-team`.
+The source reads **direct** for access given to the person, or **via \<group\>** when it comes through a group. For example, alice.nguyen@egret.local holds `ws_admin` on *Docs sandbox* and *Finance analytics* directly, `ws_editor` on *Finance analytics* and `finance_reporter` on *Docs sandbox* via `finance-analysts`, and sees an app shared with that group.
 
 ## Object → who can access
 
@@ -33,7 +33,7 @@ The source reads **direct** for access given to the person, or **via \<group\>**
 
 ![Who can access the Finance KPIs dashboard, with the source of each line](/img/platform/admin/cp-explorer-object.png)
 
-The result lists every principal that can reach the object. The header shows the kind, name and workspace. A filter, *All sources (5)*, narrows by source. The columns are:
+The result lists every principal that can reach the object. The header shows the kind, name and workspace. A filter, *All sources (10)* for *Finance KPIs* on the demo stack, narrows by source. The columns are:
 
 | Column | Meaning |
 |---|---|

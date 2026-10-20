@@ -6,13 +6,13 @@ sidebar_position: 2
 
 **Governance → Data** is the place to look at the access to one piece of data: a catalog, a schema, a table, a view or a column. Open an object to see who can read it, which tags and rules apply, which engines serve it and where it comes from.
 
-![The Data page for the sessions table: header, Engines and Tags, and the Columns list](/img/platform/admin/gov-table-overview.png)
+![The Data page for the sessions table: header, engine docs-trino, and the Columns list with tags and masking rules](/img/platform/admin/gov-table-overview.png)
 
 The page needs the **policy:read** or **tag:read** permission. Reading grants and rules needs **policy:read**; reading and applying tags needs **tag:read**.
 
 ## Browse the catalog tree
 
-The left panel is a tree of the **catalogs** egret knows about. Each catalog shows its kind and source, for example *Iceberg · egret* for a warehouse egret manages. Expand a catalog to its schemas, and a schema to its tables, views and materialized views.
+The left panel is a tree of the **catalogs** egret knows about. Each catalog shows its kind and source, for example *Iceberg · egret* for a warehouse egret manages, *TPC-H · via engine* or *JDBC · via engine* for catalogs listed through an engine. Expand a catalog to its schemas, and a schema to its tables, views and materialized views.
 
 | Control | What it does |
 |---|---|
@@ -36,7 +36,7 @@ Every object page has the same header:
 - **Grant access**, which opens the [grant dialog](./grants.md) with this object as the scope.
 - **Add tag** on a table, view or materialized view, which opens the [tag picker](../classifications/tagging.md). Tags exist only on egret-managed catalogs; on any other the button is disabled with *Tags can be added to egret-managed catalogs only*.
 - **Who can read?**, which opens [Explain access](./explain-access.md) for this object.
-- **Engines**: the engines that serve the catalog, for example `docs-trino · Trino · external`. *No engine attached* means no engine is declared to serve the catalog, so no policy reaches an engine.
+- **Engines**: the engines that serve the catalog, for example `docs-trino · Trino`. *No engine attached* means no engine is declared to serve the catalog, so no policy reaches an engine.
 - **Tags**: the tags on this object. A schema or catalog shows none, because tags attach to tables and columns.
 
 The header never waits on the API. Its name and path come from the URL, so one failing call never blanks the page.
@@ -57,6 +57,9 @@ The selected tab is kept in the address (`?tab=permissions`, `?tab=masks`, `?tab
 
 - **Catalog**: the **Schemas** it contains, the **Attached engines** (or *Not attached to any engine*) and the **Workspaces** it is assigned to.
 - **Schema**: a table with **Name** and **Kind** for each table, view or materialized view.
+
+![The schema analytics: three tables and the view revenue_by_country](/img/platform/admin/gov-data-schema.png)
+
 - **Table**: the **Columns** table with **Name**, **Type**, **Tags** and **Masking rules** per column. Select a column to open its panel (see below).
 
 ### Permissions
@@ -81,6 +84,8 @@ On a table, **Reads from** lists the base tables of a view, and **Read by** list
 | **Workspaces** | Workspaces the catalog is assigned to. |
 | **Engines** | Engines that serve it, or *None*. |
 
+![The Details tab of the sessions table](/img/platform/admin/gov-table-details.png)
+
 ## The column panel
 
 Selecting a column in the **Columns** table opens a panel on the right and adds `?column=<name>` to the address. It shows, for that column:
@@ -92,7 +97,7 @@ Selecting a column in the **Columns** table opens a panel on the right and adds 
 
 Close the panel with **Close**.
 
-![The column panel for user_id with its tag, masking rules and grants](/img/platform/admin/gov-column-panel.png)
+![The column panel for user_id with its tag, the masking rule selected by the tag, and no column grant](/img/platform/admin/gov-column-panel.png)
 
 ## Limits and known issues
 

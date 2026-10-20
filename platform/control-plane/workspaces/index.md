@@ -32,6 +32,8 @@ The strip counts **total**, **active** and **archived** workspaces. **Status** f
 
 The new workspace appears in the list, owned by you, with no members. As a platform admin you can open it at once; everybody else needs to be added as a member (see [Members](../../workspace-settings/members.md)).
 
+The **⋯** menu on a row offers **Open**, **Rename** and **Archive**.
+
 ## Open a workspace
 
 Select a row to open the workspace's page, with the tabs **Overview**, **Members**, **Resources**, **Features**, **Access requests** and **Activity**. See [Workspace details](./workspace-detail.md).

@@ -6,7 +6,7 @@ sidebar_position: 2
 
 A **rule** changes what a person sees in a table without denying access to it. A **mask** replaces the values of a column (hash, redact, show the last four characters). A **row filter** hides the rows that do not match an expression. Rules apply to everyone except the principals you exempt, and they are enforced in the query engine.
 
-![The Masks and filters tab of the sessions table, with a row filter, a mask on a column and a mask selected by a tag](/img/platform/admin/gov-table-masks.png)
+![The Masks and filters tab of the sessions table: a row filter, a Nullify mask on revenue and a Hash mask selected by the tag Personal data (PII)](/img/platform/admin/gov-table-masks.png)
 
 Reading rules needs **policy:read**. Creating, editing and deleting them needs **policy:update**.
 
@@ -67,7 +67,7 @@ A SQL boolean expression over the table's columns, for example `region = 'us'` o
 
 | Option | Fields | Notes |
 |---|---|---|
-| **Path** | **Scope**: catalog (required), schema, table, and column for a mask. | A row filter by path needs catalog, schema and table together, and never a column; the dialog shows no column field and blocks saving until the three are set. A line below the fields reads *Selects demo_catalog.analytics.sessions*. |
+| **Path** | **Scope**: catalog (required), schema, table, and column for a mask. | A row filter by path needs catalog, schema and table together, and never a column; the dialog shows no column field and blocks saving until the three are set. A line below the fields reads *Selects demo_warehouse.analytics.sessions*. |
 | **Tag** | **Tag**: search tags by name and pick one. | The rule applies to every table or column carrying the tag. The tag is stored by its key, shown as *stored as personal-data-pii*. **Change** picks another. A tag rule is catalog-unscoped. |
 
 ### Exempt
@@ -76,7 +76,7 @@ The principals the rule does not apply to. The picker offers **user** and **grou
 
 ### Preview this write
 
-Like grants, a rule needs a current **Preview** before **Create**. For a tag rule the preview text warns: *A tag rule is catalog-unscoped, so this can recompile every Trino profile in the installation — see which, here, before committing.* A result reads, for example, *Would recompile docs-trino-policy. created 1 · updated 0 · deleted 0 · unchanged 4*.
+Like grants, a rule needs a current **Preview** before **Create**. For a tag rule the preview text warns: *A tag rule is catalog-unscoped, so this can recompile every Trino profile in the installation — see which, here, before committing.* A result reads, for example, *Would recompile docs-trino. created 1 · updated 0 · deleted 0 · unchanged 12*.
 
 ## Edit and delete
 
@@ -89,6 +89,18 @@ Two mask or row-filter rules that select the same column or table at the same pr
 ## Verify a rule
 
 Masks and filters are enforced by the engine, and **Who can read?** does not report them for Trino. To confirm a rule, query the table as a non-exempt user in SQL Lab, or compare the **Policies** tab of the engine, where each rule appears as a `Masking`, `Masking (by tag)` or `Row filter` policy compiled by egret.
+
+On the demo stack the `sessions` table has three rules: the row filter *EU sessions only* (`country IN ('FRANCE', 'GERMANY', 'UNITED KINGDOM', 'ROMANIA', 'RUSSIA')`, exempt group `data-stewards`), the mask *Hide revenue outside finance* (**Nullify** on `revenue`, exempt group `finance-analysts`) and the tag rule *Hash personal data* (**Hash** on every column tagged *Personal data (PII)*, exempt group `data-stewards`). Queried through `docs-trino` as `member-sso`, who is in none of the exempt groups:
+
+```sql
+SELECT country, count(*) FROM demo_warehouse.analytics.sessions GROUP BY 1;
+-- 5 rows: GERMANY 554, FRANCE 375, RUSSIA 484, UNITED KINGDOM 655, ROMANIA 655 (of 15 000 sessions)
+
+SELECT session_id, user_id, revenue FROM demo_warehouse.analytics.sessions LIMIT 1;
+-- 52486 | B25935C0F9C4BB9ABCFA13E4C15E56C16564B1390408CB5E24AC68140387D72C | NULL
+```
+
+The local platform admin `admin@egret.local` got the same masked values: platform admins have all access, but masks and row filters apply to everyone a rule does not exempt.
 
 ## Limits and known issues
 

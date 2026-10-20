@@ -6,7 +6,7 @@ sidebar_position: 4
 
 **Governance → Engine & policy** is where data-access policy reaches the query engines. Each engine downloads one **policy profile**, a named bundle of Apache Ranger policies that egret compiles from the grants and rules you write. This page lists the engines and profiles; each engine has its own page for engine permissions, policies, overlaps, the Ranger plugin and advanced policies.
 
-![Engine and policy: one engine bound to a profile, and a profile with no engine](/img/platform/admin/gov-engines-index.png)
+![Engine and policy: the provisioned docs-trino and the external trino-demo-ext, and four profiles without an engine](/img/platform/admin/gov-engines-index.png)
 
 The area needs the **policy:read** permission. Writes are checked per control.
 
@@ -24,19 +24,19 @@ The header counts **engines**, **profiles without an engine** and **hand-written
 |---|---|
 | **Engine** | The engine name. Select it to open the engine page. |
 | **Type** | Trino or StarRocks. |
-| **Origin** | **External** for an engine you registered, or provisioned by egret. |
+| **Origin** | **Provisioned** for an engine egret runs, **External** for one you registered. |
 | **Profile** | The profile the engine downloads, or *No profile* with the hint *Bind a profile in Control plane*. |
-| **Plugin** | Whether the engine's plugin is up to date. *Not judged: external*, *Not judged: not running* or *Not judged: no profile* say why egret cannot tell: an external engine is not monitored, a stopped engine cannot download, and an engine with no profile has nothing to download. |
+| **Plugin** | Whether the engine's plugin is up to date (**Up to date** for `docs-trino` on the demo stack). *Not judged: external*, *Not judged: not running* or *Not judged: no profile* say why egret cannot tell: an external engine is not monitored, a stopped engine cannot download, and an engine with no profile has nothing to download. |
 | **Engine grants** | How many engine permissions are granted on the engine. |
 | **Hand-written policies** | How many policies in the profile were written by hand in Ranger rather than compiled by egret. |
 
 ### Profiles without an engine
 
-Profiles that no engine downloads yet, with **Profile**, **Type**, **Origin** and **Policies** columns. When every profile is bound the section says *Every profile is bound to an engine.* A profile can be deleted from here: the confirmation says *The profile and every policy in it are removed. No engine downloads it.*
+Profiles that no engine downloads yet, with **Profile**, **Type**, **Origin** (**Manual** for one you created, **Generated** for one provisioning created) and **Policies** columns. The profile of a deleted provisioned engine stays here, with its policies. When every profile is bound the section says *Every profile is bound to an engine.* A profile can be deleted from here: the confirmation says *The profile and every policy in it are removed. No engine downloads it.*
 
 ## Create a policy profile
 
-Provisioned engines get their profile automatically. For an engine you run yourself, you create the profile first.
+Provisioned engines get their profile automatically: provisioning `docs-trino` created the Trino profile `docs-trino` and its tag service `docs-trino_tag`. For an engine you run yourself, you create the profile first.
 
 1. Press **New profile**.
 2. Enter a **Name**, for example `starrocks-prod`.
@@ -45,7 +45,7 @@ Provisioned engines get their profile automatically. For an engine you run yours
 
 The profile appears under **Profiles without an engine**, with origin **Manual**. Bind it to an engine on the engine's **Settings** tab in the Control Plane (see [Register an external engine](../../control-plane/query-engines/register-external.md)).
 
-![An unbound profile with no policies](/img/platform/admin/gov-profile.png)
+![The unbound profile docs-external-policy with the 13 policies added by Seed default policies](/img/platform/admin/gov-profile.png)
 
 :::warning
 A profile you create here cannot be bound to a Trino engine: egret refuses with *policy profile … has no usable tag service … so every tag-based column mask and row filter would silently compile to nothing*. A Trino profile needs a tag service, which the console cannot set. Use a profile created by provisioning, or create the profile pair through the API: a profile of type `tag` and a Trino profile whose `config` names it in `tagService`.
@@ -53,7 +53,7 @@ A profile you create here cannot be bound to a Trino engine: egret refuses with 
 
 ## The engine page
 
-Select an engine to open its page. The header shows the engine name, its **Type** badge, **External** (for an engine egret does not run), the bound **Profile**, the **Ranger plugin** version, and **Open in Control plane**. For an external engine a note reads *egret compiles this engine's policies but cannot see whether the external engine downloads them.*
+Select an engine to open its page. The header shows the engine name, its **Type** badge, **Provisioned** or **External**, the bound **Profile**, the **Ranger plugin** version, and **Open in Control plane**. For an external engine a note reads *egret compiles this engine's policies but cannot see whether the external engine downloads them.*
 
 The tabs are:
 
@@ -68,17 +68,17 @@ The tabs are:
 
 **Migrate** appears only while the profile holds a hand-written policy. An unbound profile has its own page with the frame of an engine page, but without **Engine permissions** and **Plugin**. A bound profile has no page of its own: its URL redirects to its engine.
 
-![The Policies tab of docs-trino](/img/platform/admin/gov-engine-policies.png)
+![The Policies tab of docs-trino: 28 policies, 12 compiled by egret and 16 seeded by egret](/img/platform/admin/gov-engine-policies.png)
 
 ## Make an engine serve a catalog
 
-Policies reach an engine only for the catalogs declared on it. In **Control plane → Engines → *engine* → Catalogs**, declare the catalog. The Data page's **Engines** line then shows the engine, and the Governance overview stops reporting *catalog is attached to no engine*. See [Engine detail](../../control-plane/query-engines/engine-detail.md).
+Policies reach an engine only for the catalogs it serves. In **Control plane → Engines → *engine* → Catalogs**, attach the catalog (provisioned engine) or declare it (external engine). The Data page's **Engines** line then shows the engine, and the Governance overview stops reporting *catalog is attached to no engine*. See [Engine detail](../../control-plane/query-engines/engine-detail.md).
 
 ## How a change reaches the engine
 
 1. You save a grant, rule, clearance or engine permission.
 2. Egret recompiles every profile it touches, in the same transaction. A compile that fails rolls the write back.
-3. The engine's plugin polls egret on an interval and downloads the new policy set. Until then the engine enforces the previous one.
+3. The engine's plugin polls egret on an interval (30 seconds by default) and downloads the new policy set. Until then the engine enforces the previous one. The engine's **Plugin** tab shows the version each plugin last reported; confirmation takes two polls, about a minute.
 
 Changing the profile bound to an engine recompiles both the old and the new profile. If that would leave two mask or row-filter rules deciding one column differently, egret refuses and changes nothing.
 

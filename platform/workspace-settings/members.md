@@ -6,7 +6,7 @@ sidebar_position: 2
 
 **Workspace settings → Access → Members** controls who can use the workspace and with which role. Members can be single people or whole groups. A person's role decides what they can do in the workspace: view, build and edit, or administer.
 
-![The Members page of the Docs sandbox workspace: a group and a person with their roles](/img/platform/admin/ws-members.png)
+![The Members page of the Docs sandbox workspace: people and groups with their roles](/img/platform/admin/ws-members.png)
 
 You need to be a workspace admin (the `ws_admin` role) or a platform admin to open this page.
 
@@ -28,11 +28,11 @@ A note under the title says *Workspace roles apply only inside \<workspace\> —
 
 1. Press **Add member**.
 2. Under **Type**, choose **User** or **Group**.
-3. Type the person's email (*User email…*) or the group's name (*Group name…*). Use the full email address. The person must already exist in the platform: an SSO user has signed in once, or a local account has been created.
+3. Type the person's email (*User email…*) or the group's name (*Group name…*). A few letters are enough: matching people are suggested with their name and email (typing `emma` suggests *Emma Schmidt emma.schmidt@egret.local*); pick one. The person must already exist in the platform: an SSO user has signed in once, or a local account has been created.
 4. Choose the **Role**. The default is `ws_viewer`.
 5. Press **Add member**. A toast says *Member added*.
 
-![The Add member dialog with an email typed](/img/platform/admin/ws-add-member.png)
+![The Add member dialog with an email typed and the matching user suggested](/img/platform/admin/ws-add-member.png)
 
 The dialog is *Give a user or group a role in this workspace.* Adding a group gives every member of the group the role.
 
@@ -58,11 +58,24 @@ The menu also has **Impersonate**, which lets a platform admin see the workspace
 
 **Bulk select** adds a checkbox to each row. After you tick rows, a bar shows *N selected* with **Remove**, **Set role…** and **Clear**. **Set role…** opens a dialog to choose one role for all the selected members; **Remove** removes them all. Press **Done** to leave bulk mode.
 
-![Bulk select with the actions bar](/img/platform/admin/ws-members-bulk.png)
+![Bulk select with two members ticked and the actions bar](/img/platform/admin/ws-members-bulk.png)
 
 ## Impersonate a member
 
-**Impersonate** in the row menu starts an impersonation session as that member, which is a way to check what the person sees. It is an administrator action; the demo instance's audit log records it like any other change. It is not covered further here because it was not exercised on the demo instance.
+**Impersonate** in the row menu lets a platform admin act as that member, to check what the person sees.
+
+1. Open **⋯ → Impersonate** on the member's row. The dialog **Impersonate user** says *You'll act as this user until the session expires or you exit. This is logged and requires a reason.*
+2. Type a **Reason** (required).
+3. If you sign in with a local account, type your **Password**. *Signing in with SSO? Leave this blank — you'll be redirected to re-authenticate.*
+4. Press **Impersonate**.
+
+The workspace reloads as that person, with a banner at the top: *Impersonating member-sso@egret.local · 29:57 left* and an **Exit** button. The session lasts 30 minutes. Pages and actions the person may not use behave as they would for them (for example **Workspace settings → Members** is refused). Press **Exit** to return to your own session.
+
+The audit log records `impersonation.start` (with your reason) and `impersonation.end` with you as the actor. What you do in between is recorded under the person you impersonate, not under your name.
+
+:::caution
+Impersonation changes the session you are signed in with. Do not use it from a browser session that someone else, or a script, shares.
+:::
 
 ## Access requests
 

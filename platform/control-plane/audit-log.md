@@ -30,7 +30,7 @@ Every page loads 100 rows. **Load more** fetches the next 100 using a keyset cur
 | **Decision** | An authorization check: the actor asked to do something and the policy engine answered. | **allow** or **deny**, with the grants that decided. | `secret:read` on `platform`, **allow**, `grant-0` |
 | **Mutation** | A change that was made. | A dash. | `member:add`, `object_grant:put`, `perm_rule:create`, `tag:assign` |
 
-Decisions are recorded for the platform's role-based checks. Governance changes also appear on the Governance overview's **Recent changes**; the audit log keeps the raw entries.
+Decisions are recorded for the platform's role-based checks. Impersonation is recorded as the mutations `impersonation.start` (with the reason) and `impersonation.end`, with the admin as the actor; the decisions made while impersonating are recorded under the impersonated user, with nothing that names the admin. Governance changes also appear on the Governance overview's **Recent changes**; the audit log keeps the raw entries.
 
 ## Filter the log
 

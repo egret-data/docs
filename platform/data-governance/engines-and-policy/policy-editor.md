@@ -6,7 +6,7 @@ sidebar_position: 3
 
 Most policies in a profile are compiled by egret from your grants and rules. A **hand-written policy** is a raw Apache Ranger policy you write yourself in the **Advanced** tab. Use it for the few things the permission model cannot express, and prefer [grants](../data/grants.md), [rules](../data/masks-and-filters.md) and [engine permissions](./engine-permissions.md) for everything else.
 
-![The Advanced tab of docs-trino with Create policy and Seed default policies](/img/platform/admin/gov-engine-advanced.png)
+![The Advanced tab of docs-trino: egret compiles this profile, so new hand-written policies are refused](/img/platform/admin/gov-engine-advanced.png)
 
 The tab opens with a fixed warning: *Hand-written policies are outside egret's model: egret does not recompile them, does not check overlaps with grants, and Data and People pages will mark them hand-written. Prefer Engine permissions or grants on Data.*
 
@@ -22,15 +22,27 @@ Creating, editing and deleting need **policy:create**, **policy:update** and **p
 Once egret compiles a profile, new hand-written policies on it are refused: *egret compiles this profile, so new hand-written policies are refused. Existing ones can still be edited, enabled, disabled and deleted.* Hand-written policies are therefore mainly for profiles of engines that egret does not compile for, and for policies that existed before.
 :::
 
-**Seed default policies** adds egret's default Trino set (group `admin`: all access). Existing policies are not changed. If the profile already has policies, egret says *No default policy was added: the profile already has policies.*
+**Seed default policies** adds egret's default Trino set (*group admin: all access*). Existing policies are not changed. If the profile already has policies, egret says *No default policy was added: the profile already has policies.* On an empty unbound Trino profile it added 13 policies (`all - catalog`, `all - function` and so on). They are listed on the **Policies** tab as **egret-seeded**, not under **Hand-written policies**, and the button gives no confirmation, so the Advanced tab looks unchanged.
 
-The **Hand-written policies** table lists each policy with its type, resource and whether it is **Enabled**.
+The **Hand-written policies** table lists each policy with its **Name**, **Type**, **Resource** (for example `finance_pg.*.*.*`) and whether it is **Enabled**. Select a name to open it in the editor.
+
+### Example: a hand-written access policy
+
+On the demo stack, on the unbound Trino profile `docs-legacy-trino` (created through the API with a tag service):
+
+1. **Advanced → Create policy → Access**.
+2. **Policy name** `legacy: analysts read finance_pg`.
+3. In **Resource**, type `finance_pg` in **Catalog** and press Enter. Keep `*` for **Schema**, **Table** and **Column**; the compact path reads `finance_pg.*.*.*`.
+4. In **Permissions → Allow conditions**, type `member-sso` under **Users** and press Enter, then **Add permissions**, tick `select` and confirm with the check mark.
+5. **Save**. You return to **Advanced**, and the profile now has a **Migrate** tab.
+
+A policy that also allows `use` and `show` is listed on **Migrate** as **Blocked**, because the permission model has only read and write (see [Migrate policies](./migrate.md)).
 
 ## The policy editor
 
 The editor is a page with a header and three sections in a side list: **Resource**, **Permissions** (**Masking** or **Row filter** for those types) and **Details**. Each shows a count of what is set.
 
-![The policy editor for a new access policy: policy name, enabled switch and the Resource section](/img/platform/admin/gov-policy-editor.png)
+![The policy editor for the hand-written access policy legacy: analysts read finance_pg, Resource section](/img/platform/admin/gov-policy-editor.png)
 
 ### Header
 
@@ -61,6 +73,8 @@ For a masking or row-filter policy the section edits the mask or the filter item
 :::warning
 Roles and groups named in a hand-written policy match nobody on engines egret serves, because egret runs no usersync and serves no roles download. Name users. The group `public` is the exception. See [How permissions work](../concepts.md#what-does-not-reach-the-engine).
 :::
+
+![The Permissions section: member-sso allowed select, with Add row, Exclude from allow and Deny conditions](/img/platform/admin/gov-policy-editor-permissions.png)
 
 ### Details
 

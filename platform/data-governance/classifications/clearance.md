@@ -6,14 +6,14 @@ sidebar_position: 1
 
 A **clearance** makes a classification tag a gate. Once a tag has a clearance, only principals who hold one of the required roles, or belong to one of the required groups, can open objects carrying the tag. A tag with no clearance only labels; it restricts nobody.
 
-![The Clearance section of a tag with the role data_steward required, and the warnings egret shows](/img/platform/admin/gov-tag-clearance.png)
+![The Clearance tab of Confidential with the role data_steward required, and the warnings egret shows](/img/platform/admin/gov-tag-clearance.png)
 
 ## Add a clearance
 
 1. Open **Governance → Classifications** and select the tag.
-2. In **Clearance**, choose the type: **Role** or **Group**.
+2. Open the **Clearance** tab and choose the type: **Role** or **Group**.
 3. Search and pick the role or group (*Select a role…*, or *Search groups…*).
-4. Press **Add**. A toast says *Clearance updated*. The tag now shows a **Gated** badge, and the list's **Clearance** column names the role.
+4. Press **Add**. The tag's header now shows a **Clearance** badge with a lock, and the list's **Clearance** column counts the requirement (*1 role*). The page adds the warnings described below.
 
 Add several rows to require "any of these". To lift the gate, remove all rows. The toast says *Clearance cleared*, and the section reads *Not gated — anyone can open objects with this tag.*
 
@@ -49,6 +49,10 @@ A person who holds the required role only through a group is *Not cleared* in th
 ## A StarRocks limit
 
 A StarRocks clearance expands to one policy per tagged column, counted per profile. If more than 500 of a tag's columns are visible to one StarRocks profile, that profile's recompile fails outright rather than truncating the clearance, and every write that would recompile it fails with it, until the tag is narrowed or untagged back under the limit.
+
+## What the engine does
+
+On the demo stack the tag *Confidential* is on the table `demo_warehouse.finance.invoices`, and its clearance requires the role `data_steward`. `member-sso` has a grant to read the schema `finance`, but `SELECT count(*) FROM demo_warehouse.finance.invoices` answers *Access Denied: Cannot select from columns [] in table or view invoices*. The platform admin gets the same answer: platform admins are not exempt from a clearance unless they hold the role directly. Farid Haddad, who holds `data_steward` directly, is listed as cleared.
 
 ## Check who is cleared
 
