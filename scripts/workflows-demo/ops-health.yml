@@ -1,0 +1,24 @@
+id: health-check
+namespace: docs.ops
+description: Checks every 15 minutes that the warehouse thresholds are set.
+labels:
+  team: platform
+tasks:
+  - id: read_threshold
+    type: io.kestra.plugin.core.kv.Get
+    namespace: docs.ops
+    key: max_lag_minutes
+    errorOnMissing: false
+  - id: check
+    type: io.kestra.plugin.core.execution.Assert
+    conditions:
+      - "{{ outputs.read_threshold.value != null }}"
+    errorMessage: The max_lag_minutes key is missing
+  - id: ok
+    type: io.kestra.plugin.core.log.Log
+    message: "Lag threshold is {{ outputs.read_threshold.value }} minutes"
+triggers:
+  - id: every_15_minutes
+    type: io.kestra.plugin.core.trigger.Schedule
+    cron: "*/15 * * * *"
+    timezone: UTC

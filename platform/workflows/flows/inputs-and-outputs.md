@@ -86,7 +86,7 @@ A `SECRET` input is masked in the run form. The value it receives is stored with
 
 ```bash
 curl -b cookies.txt -H "X-Egret-CSRF: $CSRF" -H "Content-Type: application/json" \
-  -X POST "http://localhost:5180/api/ws/default/workflows/flows/$FLOW_ID/executions" \
+  -X POST "http://egret.localtest.me:8080/api/ws/default/workflows/flows/$FLOW_ID/executions" \
   -d '{"inputs": {"customer": "Grace", "orders": 7, "vip": true, "channel": "sms"}}'
 ```
 

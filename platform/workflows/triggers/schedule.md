@@ -28,7 +28,9 @@ triggers:
 
 Within a minute the **Triggers** page shows the trigger with its **Next run**, and each tick creates an execution whose **Trigger** is **Schedule**. This flow logged `Heartbeat from nightly-heartbeat at 16:30:00` on every tick.
 
-![A schedule's execution: the Trigger section names the trigger and lists its variables](/img/platform/workflows/execution-scheduled.png)
+![A scheduled execution: the Trigger section names the trigger, marks a backfill and lists the tick's date, next and previous](/img/platform/workflows/execution-scheduled.png)
+
+The screenshot is a run of `docs.demo.sales/daily-revenue`, whose `every_morning` schedule fires at 06:00 in `Asia/Ho_Chi_Minh`; its `date` variable carries the zone's offset (`+07:00`).
 
 ## Properties
 
@@ -47,7 +49,7 @@ Not supported: `when` and `lateMaximumDelay` are refused, and `stopAfter`, `labe
 
 ### Cron expressions
 
-The expressions below were accepted and their next run was computed on the demo instance, on 19 October 2026 at about 17:03 UTC.
+The expressions below were accepted and their next run was computed by a demo instance on 19 October 2026 at about 17:03 UTC.
 
 | Expression | Meaning | Next run |
 |---|---|---|
@@ -63,6 +65,8 @@ A bad expression is not rejected when you save. For `cron: "60 * * * *"` the tri
 ### Time zones
 
 `timezone` decides what "9:00" means. `0 9 * * *` with `timezone: Asia/Ho_Chi_Minh` ran next at 02:00 UTC. The drawer shows the next run in the trigger's zone and in yours. A few old three-letter zone ids (such as `PST` or `IST`) are refused.
+
+![The details drawer of the every_morning schedule: cron, time zone, next run in both zones and the last execution](/img/platform/workflows/trigger-details.png)
 
 ### Inputs
 
@@ -92,7 +96,7 @@ Switching a schedule on after it missed runs opens **Enable trigger**:
 | Choice | What happens |
 |---|---|
 | **Skip missed runs; start at the next tick** | Nothing runs for the gap. The schedule resumes at the next tick. This is selected. |
-| **Recover missed runs (26 missed)** | Follows the trigger's `recoverMissedSchedules`: `ALL` runs every missed tick, one per scheduler pass; `LAST` runs only the latest; `NONE` runs none. |
+| **Recover missed runs (7 missed)** | Follows the trigger's `recoverMissedSchedules`: `ALL` runs every missed tick, one per scheduler pass; `LAST` runs only the latest; `NONE` runs none. |
 
 The dialog appears only when the schedule was switched off and its next tick has passed. A schedule that is already on, or has missed nothing, switches without asking.
 

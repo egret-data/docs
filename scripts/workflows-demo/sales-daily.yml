@@ -1,0 +1,42 @@
+id: daily-revenue
+namespace: docs.demo.sales
+description: Builds the morning revenue extract for one region.
+labels:
+  team: sales
+inputs:
+  - id: region
+    type: SELECT
+    values: [all, emea, apac, amer]
+    defaults: all
+tasks:
+  - id: start
+    type: io.kestra.plugin.core.log.Log
+    message: "Building the revenue extract for {{ inputs.region }}"
+  - id: extract
+    type: io.kestra.plugin.core.storage.Write
+    content: |
+      region,revenue
+      emea,182340
+      apac,140512
+      amer,233871
+    extension: .csv
+  - id: size
+    type: io.kestra.plugin.core.storage.Size
+    uri: "{{ outputs.extract.uri }}"
+  - id: publish
+    type: io.kestra.plugin.core.output.OutputValues
+    values:
+      bytes: "{{ outputs.size.size }}"
+      region: "{{ inputs.region }}"
+outputs:
+  - id: extractBytes
+    type: STRING
+    value: "{{ outputs.publish.values.bytes }}"
+triggers:
+  - id: every_morning
+    type: io.kestra.plugin.core.trigger.Schedule
+    description: 06:00 in Ho Chi Minh City
+    cron: "0 6 * * *"
+    timezone: Asia/Ho_Chi_Minh
+    inputs:
+      region: all

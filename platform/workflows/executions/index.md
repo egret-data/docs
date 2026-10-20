@@ -20,7 +20,7 @@ Go to **Workflows → Executions**. The page refreshes itself every few seconds 
 | **Time** | **Last hour**, **Last 24 hours**, **Last 7 days**, **Last 30 days**, or **Custom** with a start and an end. **All** shows every run. |
 | **Show child executions** | Off by default. Loop iterations, subflow runs and flow-trigger runs are children of another execution, and are hidden until you switch this on. |
 
-Under the filters a line counts what matches: the total, how many are on this page, and a count per state, such as *55 executions · 50 on this page · 1 paused · 23 success · 2 warning · 23 failed · 1 killed*. The list shows 50 runs per page; use **Previous** and **Next** at the bottom. Your filters and page are kept in the address, so you can share a link to a filtered list.
+Under the filters a line counts what matches: the total, how many are on this page (when there is more than one page), and a count per state, such as *41 executions · 1 running · 1 paused · 23 success · 3 warning · 10 failed · 3 killed*. The list shows 50 runs per page; use **Previous** and **Next** at the bottom. Your filters and page are kept in the address, so you can share a link to a filtered list.
 
 Each row shows:
 
@@ -63,10 +63,10 @@ There is no **New execution** button here. Start a run from a flow's page with *
 
 ```bash
 curl -b cookies.txt -H "X-Egret-CSRF: $CSRF" -H "Content-Type: application/json" \
-  -X POST "http://localhost:5180/api/ws/default/workflows/flows/$FLOW_ID/executions" -d '{}'
+  -X POST "http://egret.localtest.me:8080/api/ws/default/workflows/flows/$FLOW_ID/executions" -d '{}'
 ```
 
-The answer is the new execution, in the `RUNNING` state. With the worker off it stays there; see [Runtime and operations](../runtime.md).
+The answer is the new execution, in the `RUNNING` state. With the worker off it stays there; see [Runtime and operations](../runtime.md). The address above is the Docker demo stack's; use your own host.
 
 ## What is stored with an execution
 
@@ -82,6 +82,7 @@ When the files or logs have been removed, the **Logs** and **Outputs** tabs say 
 - There is no bulk action (kill, replay or delete several runs), no change-status action and no delete.
 - **Restart** a failed execution from the failed task is not available; use **Replay**, which starts a new execution from the beginning.
 - The page polls rather than streaming. A long-running execution can lag behind by a few seconds.
+- An execution can stay in **Running** longer than its tasks need when another execution's long task holds the worker; see [Runtime and operations](../runtime.md#limits-and-known-issues).
 
 ## Further reading
 

@@ -68,7 +68,9 @@ Typical messages:
 
 The **Topology** tab draws the flow as a graph. Use **Horizontal** or **Vertical** to change the direction, the zoom buttons to scale the graph, **Expand all** and **Collapse all** to open or fold flowable tasks, and **List view** for a text list of the same nodes. Edges are labelled (`then`, `else`, a switch case) and error and finally branches are drawn on their own paths.
 
-![The Topology tab beside the code, drawn from an If and a Switch](/img/platform/workflows/flow-editor-topology.png)
+![The Topology tab beside the code: the If task big_order with its then and else branches, the Switch beyond it](/img/platform/workflows/flow-editor-topology.png)
+
+A large flow first opens at a readable zoom on its start and first task rather than fitted to the panel; press the fit button (the third zoom control) to see the whole graph, or scroll and drag to move along it.
 
 The same graph, coloured by state, appears on a finished run: see [Execution details](../executions/detail.md).
 

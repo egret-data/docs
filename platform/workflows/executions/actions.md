@@ -18,6 +18,8 @@ Three actions work on an execution from its page: **Resume** releases a paused r
 2. Press **Resume**.
 3. Confirm in the dialog **Resume this execution?**, which says every paused task ends now as a success, whatever its duration or timeout, and the execution continues.
 
+![The Resume this execution? dialog](/img/platform/workflows/execution-resume.png)
+
 The `Pause` task ends `SUCCESS`, the execution moves through `RESTARTED` and `RUNNING`, and the tasks after the pause run.
 
 ```yaml
@@ -64,14 +66,14 @@ Things to know:
 2. In the dialog **Kill this execution?**, choose whether to **Also kill subflow executions**. It is on by default: the loop iterations and subflow executions of this execution, and theirs, are killed too. If you clear it, they keep running.
 3. Press **Kill**.
 
-![The kill dialog with the Also kill subflow executions option](/img/platform/workflows/execution-kill.png)
+![The kill dialog on a running execution, with the Also kill subflow executions option](/img/platform/workflows/execution-kill.png)
 
 What happens next depends on where the execution is:
 
 | Where the execution is | Result |
 |---|---|
 | Paused, retrying, or not yet started | `KILLED` at once. Tasks that had not finished end `KILLED`. |
-| A task is running | The execution becomes `KILLING` and a worker stops the running task, usually within the worker's kill check of 5 seconds (`workflow.kill_poll_ms`), then it ends `KILLED`. |
+| A task is running | The execution becomes `KILLING` and a worker stops the running task, usually within the worker's kill check of 5 seconds (`workflow.kill_poll_ms`), then it ends `KILLED`. On the demo stack a `Sleep` of two minutes (`docs.ops/slow-export`) ended `KILLED` about 4 seconds after **Kill**. |
 
 A killed execution cannot be resumed; replay it to run it again. Killing an execution that has already ended answers *The execution has already ended* and changes nothing.
 

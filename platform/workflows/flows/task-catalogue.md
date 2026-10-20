@@ -17,7 +17,7 @@ Task types are written with their full class name. A few have a short alias, for
 | Kestra plugin tasks | In the plugin host, a Java container | The above plus the **Workflow Kestra plugins** feature |
 | Egret platform tasks | Declared but not served | Nothing today |
 
-The demo instance for these docs runs the worker only. Everything in sections 1 to 6 was run there. The script, plugin and platform tasks were not.
+Everything in sections 1 to 6 was run on the Docker demo stack, which has the worker and the scheduler on and no container runner. The script, plugin and platform tasks were not: the stack refuses them before they start (see [What runs on the Docker demo stack](../runtime.md#what-runs-on-the-docker-demo-stack)).
 
 All tasks also accept the [common task keys](./yaml-reference.md#task-keys): `id`, `type`, `description`, `disabled`, `timeout`, `retry`, `runIf`, `allowFailure` and `allowWarning`.
 
@@ -84,8 +84,8 @@ Tasks that create and process files the execution owns. A file is addressed by a
 | `core.storage.Concat` | `files`, `separator`, `extension` | `uri` | Joins files into one. |
 | `core.storage.Split` | `from`, `rows`, `bytes`, `partitions`, `regexPattern`, `separator` | `uris` | Splits a file into parts. |
 | `core.storage.Reverse` | `from`, `charset`, `separator` | `uri` | Writes the lines in reverse order. |
-| `core.storage.FilterItems` | `from`, `filterCondition`, `filterType`, `errorOrNullBehavior` | `uri`, `droppedItemsTotal`, `processedItemsTotal` | Keeps or drops lines by an expression. |
-| `core.storage.DeduplicateItems` | `from`, `expr` | `uri`, `droppedItemsTotal`, `numKeys` | Drops repeated lines by a key. |
+| `core.storage.FilterItems` | `from`, `filterCondition`, `filterType`, `errorOrNullBehavior` | `uri`, `droppedItemsTotal`, `processedItemsTotal` | Keeps or drops records by an expression. The file must hold Ion records; a CSV written by `Write` fails with *item 0 … is not a record*. |
+| `core.storage.DeduplicateItems` | `from`, `expr` | `uri`, `droppedItemsTotal`, `numKeys` | Drops repeated records by a key. Reads Ion records, as `FilterItems` does. |
 | `core.storage.Delete` | `uri`, `errorOnMissing` | `deleted`, `uri` | Deletes a file. |
 | `core.storage.PurgeCurrentExecutionFiles` | none | `uris` | Deletes the files this execution created. |
 
@@ -182,8 +182,8 @@ Script tasks run shell or Python in a container.
     print("hello from a container")
 ```
 
-:::note Not available on the demo instance
-Script tasks are refused when the deployment has no container runner. The editor reports *this egret deployment has no container runner (`workflow.container_runner`), so it cannot run `io.kestra.plugin.scripts.python.Script`*, and the flow cannot be started. They also need the **Workflow containers** feature on the workspace (a Control Plane setting, off by default) and the image on the platform's `allowed-images` list. The Python `dependencies`, `pythonVersion` and `packageManager` properties, and the `Process` task runner, are refused. This page documents them from the source; they were not run.
+:::note Not available on the Docker demo stack
+Script tasks are refused when the deployment has no container runner, and the demo stack has none. The editor reports *this egret deployment has no container runner (`workflow.container_runner`), so it cannot run `io.kestra.plugin.scripts.python.Script`*, and the flow cannot be started. They also need the **Workflow containers** feature on the workspace (a Control Plane setting, off by default) and the image on the platform's `allowed-images` list. The Python `dependencies`, `pythonVersion` and `packageManager` properties, and the `Process` task runner, are refused. This page documents them from the source; they were not run. On the demo stack the editor's **Problems** tab shows the message above and **Run** says *Fix 1 error to run*.
 :::
 
 ## 8. Kestra plugin tasks
@@ -201,18 +201,20 @@ A plugin task is written with the `kestra.` prefix, which says "runs in the plug
 ```yaml
 - id: count_orders
   type: kestra.io.kestra.plugin.jdbc.trino.Query
-  url: jdbc:trino://trino:8080/tpch/tiny
+  url: jdbc:trino://trino-demo:8080/tpch/tiny
   sql: select count(*) as n from orders
   fetchType: FETCH_ONE
 ```
 
-:::note Not available on the demo instance
-Plugin tasks need the plugin host image, a container runner, and both workspace features. None of those exist on the demo instance, so the example above is documented from the source and was not run. `secret()` resolves only on these tasks.
+:::note Not available on the Docker demo stack
+Plugin tasks need the plugin host image, a container runner, and both workspace features. The demo stack has none of them: the example above, pointed at the stack's own Trino (`trino-demo`), is refused with *this egret deployment has no container runner*. It is documented from the source. `secret()` resolves only on these tasks.
 :::
 
 ## 9. Egret platform tasks
 
 The schema registers `egret.sql`, `egret.dataapi.call`, `egret.dataset.refresh`, `egret.report.send`, `core.http` and `core.slack` task types, but no deployment starts their handlers yet. A flow that uses one fails the check *this egret deployment has no handler for `egret.sql`* and cannot be started. They do not appear in the editor's suggestions.
+
+So a flow cannot run SQL on an egret database, send a report or post a message today. There is no mail task either: Kestra's `notifications.mail.MailSend` is an unknown type, and the workspace SMTP setting (which delivers alerts and reports, to Mailpit on the demo stack) is not used by workflows. Workflows send no notifications: to find failed runs, filter the [Executions](../executions/index.md) page by **State: Failed**.
 
 ## Tasks Kestra has that egret does not
 
