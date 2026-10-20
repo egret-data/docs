@@ -75,7 +75,7 @@ Webhook delivery has guard rails:
 | **Opening note** | Plain text above the result, at the top of the notification. Say why the alert exists and who to ask. | Empty |
 | **Closing note** | Plain text below the result, before the **Open in egret** button. Say what to do about it. | Empty |
 
-The notes appear in the HTML part of the email. The plain-text part, which some mail clients show, carries only the result line (KI-NEW-4).
+The notes appear in the HTML part of the email. The plain-text part, which some mail clients show, carries only the result line (KI-170).
 
 ## Attachment
 

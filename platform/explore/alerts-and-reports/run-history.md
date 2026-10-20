@@ -82,7 +82,7 @@ Finished runs are kept for the item's **Run log retention (days)**, 90 by defaul
 ## Limits and known issues
 
 - When several destinations fail, only the first failure is recorded in **Detail**.
-- **Value** is empty for reports, and in the run log dialog of a report the **Value** and **Detail** headings run together (KI-NEW-5).
+- **Value** is empty for reports, and in the run log dialog of a report the **Value** and **Detail** headings run together (KI-171).
 - The list's **Last run** and the header badge ignore manual runs (KI-032), so test an item with **Run now** and read the run log, not the list.
 
 ## Further reading

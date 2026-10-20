@@ -39,7 +39,7 @@ The **General** tab is the same as for an [alert](./create-an-alert#general). A 
 | **CSV data** | The data behind the chart as an attached `.csv` file with a header row. | No |
 | **Text** | The data as a plain table in the message body, one row per line, for example `F \| 1.0356810234900002e+9`. | No |
 
-CSV and text read the chart's query result directly. Numbers are written as the engine returned them, so a large decimal appears in scientific notation (`1.0356810234900002e+9`) instead of `1,035,681,023.49` (KI-NEW-3).
+CSV and text read the chart's query result directly. Numbers are written as the engine returned them, so a large decimal appears in scientific notation (`1.0356810234900002e+9`) instead of `1,035,681,023.49` (KI-169).
 
 ## What recipients get
 
@@ -59,7 +59,7 @@ Charts and dashboards are drawn in a browser, so PNG and PDF reports are produce
 The Docker demo stack runs the renderer and sends every email to Mailpit (`http://localhost:8025`), which is where the pictures on this page come from. Nothing leaves the machine.
 :::
 
-On the demo stack a one-dashboard PNG took about 10 seconds, and the six-card **Sales performance** dashboard about 20 seconds as a PDF. Egret waits at most **30 seconds** for the whole render, and the renderer draws the objects of a multi-object PDF one after the other. A report whose objects together take longer fails with the same `render failed: error sending request …` message although the renderer is up (KI-NEW-1).
+On the demo stack a one-dashboard PNG took about 10 seconds, and the six-card **Sales performance** dashboard about 20 seconds as a PDF. Egret waits at most **30 seconds** for the whole render, and the renderer draws the objects of a multi-object PDF one after the other. A report whose objects together take longer fails with the same `render failed: error sending request …` message although the renderer is up (KI-167).
 
 ## A worked example
 
@@ -84,9 +84,9 @@ Reports ignore the grace period. A report that runs on its schedule always deliv
 ## Limits and known issues
 
 - The rendered pages show chart cards only, each under its chart's own name. Text and heading cards, card title overrides and tabs are not reproduced; see [Export, reports and print](../dashboards/export-and-reports#scheduled-report-rendering) (KI-073).
-- A multi-object PDF fails when its renders take longer than 30 seconds together (KI-NEW-1).
-- CSV and text reports write unformatted numbers (KI-NEW-3).
-- The opening and closing notes appear in the HTML part of the email only; the plain-text part has the result line alone (KI-NEW-4).
+- A multi-object PDF fails when its renders take longer than 30 seconds together (KI-167).
+- CSV and text reports write unformatted numbers (KI-169).
+- The opening and closing notes appear in the HTML part of the email only; the plain-text part has the result line alone (KI-170).
 - Report subjects accept the same placeholders as alerts, for example `Weekly sales overview - {{date}}`.
 
 ## Further reading
