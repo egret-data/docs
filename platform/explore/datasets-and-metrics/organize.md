@@ -6,7 +6,7 @@ sidebar_position: 9
 
 When a workspace has many datasets, a few tools keep the list manageable: **bookmarks** to mark the ones you use, **folders** to group them, the **trash** to hide the ones you no longer want, **tags** to classify them, and **sharing** to give individual people access. They all live in the Datasets list and in each row's **…** menu.
 
-![The Datasets list grouped into a folder, with a bookmarked dataset](/img/platform/sql-datasets/datasets-list.png)
+![The Datasets list grouped into the folders Sales analytics and Sample data, then Uncategorized, with two bookmarked datasets](/img/platform/sql-datasets/datasets-list.png)
 
 ## Bookmarks
 
@@ -32,7 +32,7 @@ Use any of these:
 
 ### How the list looks with folders
 
-As soon as the workspace has at least one dataset folder, the list is grouped under headings with the number of datasets in each, for example *Sales analytics (2)* and *Uncategorized (10)*. Click a heading to collapse or expand it; Egret remembers this in your browser. When you search or filter, only the matching datasets are shown, still under their headings. The summary line shows the number of datasets and of folders (*12 datasets · 1 folder*).
+As soon as the workspace has at least one dataset folder, the list is grouped under headings with the number of datasets in each, for example *Sales analytics (3)*, *Sample data (5)* and *Uncategorized (4)*. Click a heading to collapse or expand it; Egret remembers this in your browser. When you search or filter, only the matching datasets are shown, still under their headings. The summary line shows the number of datasets and of folders (*12 datasets · 2 folders*). The Trash view repeats the folder count although it shows no folders.
 
 A folder heading's **…** menu has:
 
@@ -49,7 +49,7 @@ A folder heading's **…** menu has:
 - **Restore**, which returns the dataset to the list.
 - **Delete permanently**, which asks *Permanently delete "name"? This cannot be undone.* and then deletes it for good.
 
-![The Trash view with a dataset waiting to be restored or deleted](/img/platform/sql-datasets/datasets-trash.png)
+![The Trash view with one trashed dataset and its Restore and Delete permanently menu](/img/platform/sql-datasets/datasets-trash.png)
 
 Press the **Trash** button again to leave the view. An empty trash says *Trash is empty.*
 
@@ -75,7 +75,7 @@ For virtual datasets, **Duplicate** in the row menu opens a **Save as dataset** 
 
 **Tags…** in the row menu opens **Tags for "name"** with the text *Classify this dataset with tags.* It lists the tags already assigned (*No tags assigned.* when there are none) and an **Add tag…** list. The **Add tag…** list offers the tags of the organisation-wide catalog that is defined under **Governance → Classifications**; see [Classifications](../../data-governance/classifications). Assign a tag by choosing it, and remove one with the **×** on its chip.
 
-![The Tags dialog](/img/platform/sql-datasets/datasets-tags.png)
+![The Tags dialog of the Line items dataset with the Add tag… list open on the organisation tag catalog](/img/platform/sql-datasets/datasets-tags.png)
 
 ## Share
 

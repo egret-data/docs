@@ -1,4 +1,5 @@
-// Screenshots for platform/explore/charts/*. Charts and datasets come from scripts/seed-charts-deep.mjs.
+// Screenshots for platform/explore/charts/*. Charts and datasets come from scripts/seed-charts-deep.mjs;
+// folders, bookmarks and the trashed chart from scripts/seed-sql-charts-lists.mjs.
 // Every prepare() starts on the Charts list, finds the chart by its exact name, and opens the wanted tab.
 const ws = '/explore/default';
 const PANEL = 'div[class*="w-[400px]"]';
@@ -22,6 +23,34 @@ const seq = (...fns) => async (page) => { for (const f of fns) await f(page); };
 
 export const shots = [
   {id: 'charts/list', path: `${ws}/charts`, settle: 1500},
+  // List states. Folders, bookmarks and the trashed chart come from scripts/seed-sql-charts-lists.mjs.
+  {id: 'charts/list-folders', path: `${ws}/charts`, settle: 800, prepare: async (page) => {
+    await page.waitForTimeout(800);
+    await page.locator('tr', {hasText: 'Visitor flow'}).locator('button').last().click();
+    await page.waitForTimeout(400);
+  }},
+  {id: 'charts/list-bulk', path: `${ws}/charts`, settle: 800, prepare: async (page) => {
+    await page.waitForTimeout(800);
+    await page.getByRole('button', {name: 'Bulk select'}).click();
+    await page.getByLabel('Select Total revenue').check();
+    await page.getByLabel('Select Orders against target').check();
+    await page.waitForTimeout(400);
+  }},
+  {id: 'charts/list-trash', path: `${ws}/charts`, settle: 800, clip: {x: 224, y: 56, width: 1216, height: 400}, prepare: async (page) => {
+    await page.waitForTimeout(800);
+    await page.getByRole('button', {name: 'Trash'}).click();
+    await page.waitForTimeout(1000);
+    await page.locator('tr', {hasText: 'Revenue by clerk (old)'}).locator('button').last().click();
+    await page.waitForTimeout(400);
+  }},
+  {id: 'charts/list-delete-confirm', path: `${ws}/charts`, settle: 800, prepare: async (page) => {
+    await page.waitForTimeout(800);
+    await page.getByRole('button', {name: 'Trash'}).click();
+    await page.waitForTimeout(1000);
+    await page.locator('tr', {hasText: 'Revenue by clerk (old)'}).locator('button').last().click();
+    await page.getByRole('menuitem', {name: 'Delete permanently'}).click();
+    await page.waitForTimeout(600);
+  }},
   {id: 'charts/type-gallery', path: `${ws}/charts/new`, settle: 1200},
   {id: 'charts/new-empty', path: `${ws}/charts/new?type=bar`, prepare: async (page) => { await page.getByText('Set up your Bar').waitFor(); }, settle: 800},
   // Editor basics
@@ -44,9 +73,9 @@ export const shots = [
   shot('area-display', 'Orders by quarter and priority', 'Display', async (page) => { await page.waitForTimeout(3000); }),
   shot('scatter-data', 'Customer balance vs size by nation', 'Data', async (page) => { await page.waitForTimeout(3000); }),
   shot('scatter-axes', 'Customer balance vs size by nation', 'Axes', async (page) => { await page.waitForTimeout(3000); }),
-  shot('combo-display', 'Revenue and orders by month', 'Display', async (page) => { await page.waitForTimeout(3000); }),
-  shot('combo-series-settings', 'Revenue and orders by month', 'Display', async (page) => { await page.waitForTimeout(3000); await page.getByRole('button', {name: 'settings order_count'}).click(); await page.waitForTimeout(600); }),
-  shot('combo-axes', 'Revenue and orders by month', 'Axes', async (page) => { await page.waitForTimeout(3000); }),
+  shot('combo-display', 'Revenue and orders by year', 'Display', async (page) => { await page.waitForTimeout(3000); }),
+  shot('combo-series-settings', 'Revenue and orders by year', 'Display', async (page) => { await page.waitForTimeout(3000); await page.getByRole('button', {name: 'settings order_count'}).click(); await page.waitForTimeout(600); }),
+  shot('combo-axes', 'Revenue and orders by year', 'Axes', async (page) => { await page.waitForTimeout(3000); }),
   // Pie and single value charts
   shot('pie-display', 'Order mix by priority', 'Display', async (page) => { await page.waitForTimeout(3000); }),
   shot('pie-slices', 'Order mix by priority', 'Display', seq(async (page) => { await page.waitForTimeout(3000); }, scroll(2000))),

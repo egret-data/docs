@@ -97,7 +97,7 @@ Press **Run**, or **⌘ Enter** (macOS) or **Ctrl Enter** (Windows and Linux) wh
 
 ![The plan of an EXPLAIN in the results grid](/img/platform/sql-datasets/sqllab-explain.png)
 
-![Run selection appears when text is selected](/img/platform/sql-datasets/sqllab-run-selection.png)
+![Run selection with the second statement selected and its one-row result below](/img/platform/sql-datasets/sqllab-run-selection.png)
 
 ### Row limit
 
@@ -111,6 +111,8 @@ How the limit is applied depends on the statement:
 - Anything else (for example `SHOW`, `DESCRIBE`, `EXPLAIN`, or several statements in one text) is sent unchanged and Egret stops reading after `n` rows. The Results panel then shows the amber chip *Results were limited to n rows.*
 
 For the first kind there is no chip, so a result that has exactly as many rows as your limit may have been cut. If the row count equals the limit, raise the limit or add a `WHERE` clause. See [Query results](./results#limits) for how many of those rows the grid loads.
+
+**`ORDER BY` without `LIMIT` is not kept on Trino.** Because of that wrapping, Trino treats your `ORDER BY` as the order of a subquery, which it is free to ignore. A query such as `SELECT orderstatus, sum(totalprice) AS revenue FROM tpch.tiny.orders GROUP BY 1 ORDER BY 2 DESC` came back in a different row order on almost every run on the demo stack. Add your own `LIMIT` after the `ORDER BY` (for example `ORDER BY 2 DESC LIMIT 1000`), which Trino keeps, or click a column header to sort the loaded rows in the grid.
 
 ## The command palette
 
@@ -155,6 +157,7 @@ The **Run** shortcut belongs to the editor it was pressed in, so it never runs a
 - Switching tabs discards the visible result (see the note above).
 - Cancelling shows no confirmation in the page.
 - Autocomplete does not resolve aliases and only knows expanded Explorer nodes.
+- On Trino, `ORDER BY` without `LIMIT` in a single `SELECT` is not guaranteed to be kept (see [Row limit](#row-limit)).
 
 ## Further reading
 

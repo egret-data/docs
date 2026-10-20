@@ -52,7 +52,7 @@ Below the toolbar:
 
 - **Search name, schema, table…** matches the name, description, catalog, schema, table or database name.
 - **Type** limits the list to *Physical* or *Virtual*; **Database** to one connection.
-- A counter shows how many datasets match, for example *10 datasets*, and how many folders exist.
+- A counter shows how many datasets match, for example *12 datasets*, and how many folders exist (*2 folders*).
 
 The table columns are **Name**, **Kind**, **Database**, **Source**, **Columns** and **Updated**. Click **Name**, **Columns** or **Updated** to sort; the default order is the most recently updated first. In the **Name** cell, the star bookmarks the dataset, the name opens it, and a green check marks a certified dataset.
 

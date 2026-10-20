@@ -49,7 +49,7 @@ Lists are cached in your browser for five minutes. If the schema changed (a tabl
 Type in **Search tables…**. It behaves in two ways depending on the length of what you typed.
 
 - **One character** filters the names that are already loaded in the tree: any level whose name contains the character is kept.
-- **Two or more characters** switch the Explorer from the tree to a flat list of results. After a quarter of a second pause Egret searches the whole database, across all catalogs and schemas, for tables and views whose **name** contains the text. The match is case-insensitive, `%` and `_` are taken literally, and the list is capped at 200 results ordered by table name.
+- **Two or more characters** switch the Explorer from the tree to a flat list of results. After a quarter of a second pause Egret searches the whole database, across all catalogs and schemas, for tables and views whose **name** contains the text. The match is case-insensitive, `%` and `_` are taken literally, and the list is capped at 200 results ordered by table name (tables with the same name, in different schemas, come in no fixed order).
 
 ![Search results for "customer" across catalogs](/img/platform/sql-datasets/sqllab-explorer-search.png)
 
@@ -58,7 +58,7 @@ Each result shows the table name with `catalog.schema` on the right. Click it to
 Messages: *Searching…* while the query runs; *No objects match “text”.* when nothing was found; *Search failed — check access or engine.* when the request errored.
 
 :::tip Narrow wide searches
-On a Trino server with the TPC-H and TPC-DS catalogs, a search for `customer` finds the table in every scale-factor schema (`tiny`, `sf1`, `sf100`, and so on). Add part of the schema you want to the SQL once you have inserted the name, or browse the tree to the exact schema instead.
+On the demo Trino, a search for `customer` finds the TPC-H table once in every scale-factor schema (`tiny`, `sf1`, `sf100`, and so on), nine results that differ only by schema. The results are ordered by table name only, so the schemas come in no particular order. Read the `catalog.schema` on the right before you click, or browse the tree to the exact schema instead.
 :::
 
 ## Preview a table

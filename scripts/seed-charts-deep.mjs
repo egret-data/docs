@@ -1,6 +1,7 @@
 // Creates the datasets and charts used by the Explore > Charts docs pages (platform/explore/charts/*).
 // Uses the REST API with a saved Playwright storage state (no login).
-// Usage: STATE=/path/state.json BASE=http://localhost:5180 node scripts/seed-charts-deep.mjs
+// Usage: STATE=/path/state.json BASE=http://egret.localtest.me:18080 node scripts/seed-charts-deep.mjs
+// On the Docker demo stack (database trino-demo and dataset orders come from its seed). Idempotent by name.
 import fs from 'node:fs';
 const BASE = process.env.BASE ?? 'http://localhost:5180';
 const st = JSON.parse(fs.readFileSync(process.env.STATE, 'utf8'));
@@ -61,7 +62,7 @@ await chart('Top clerks by revenue', 'row', ids.orders, {metrics: ['revenue'], d
 await chart('Monthly revenue trend', 'line', ids.orders, {metrics: ['revenue'], dimensions: ['orderdate'], orderby: [{field: 'orderdate', desc: false}], temporal_units: {orderdate: 'month'}, row_limit: 79}, {[C + 'xAxis']: 'orderdate', [C + 'yMetrics']: ['revenue']});
 await chart('Orders by quarter and priority', 'area', ids.orders, {metrics: ['order_count'], dimensions: ['orderdate', 'orderpriority'], orderby: [{field: 'orderdate', desc: false}], temporal_units: {orderdate: 'quarter'}, row_limit: 120}, {[C + 'xAxis']: 'orderdate', [C + 'series']: 'orderpriority', [C + 'yMetrics']: ['order_count'], [C + 'stacked']: true});
 await chart('Customer balance vs size by nation', 'scatter', ids.customers, {metrics: ['avg_balance', 'customers', 'total_balance'], dimensions: ['nation']}, {[C + 'xAxis']: 'nation', [C + 'xMetric']: 'avg_balance', [C + 'yMetrics']: ['customers'], [C + 'bubbleMetric']: 'total_balance'});
-await chart('Revenue and orders by month', 'combo', ids.orders, {metrics: ['revenue', 'order_count'], dimensions: ['orderdate'], orderby: [{field: 'orderdate', desc: false}], temporal_units: {orderdate: 'year'}}, {[C + 'xAxis']: 'orderdate', [C + 'yMetrics']: ['revenue', 'order_count'], [C + 'seriesTypes']: {revenue: 'bar', order_count: 'line'}, [C + 'rightAxisMetrics']: ['order_count']});
+await chart('Revenue and orders by year', 'combo', ids.orders, {metrics: ['revenue', 'order_count'], dimensions: ['orderdate'], orderby: [{field: 'orderdate', desc: false}], temporal_units: {orderdate: 'year'}}, {[C + 'xAxis']: 'orderdate', [C + 'yMetrics']: ['revenue', 'order_count'], [C + 'seriesTypes']: {revenue: 'bar', order_count: 'line'}, [C + 'rightAxisMetrics']: ['order_count']});
 await chart('Order mix by priority', 'pie', ids.orders, {metrics: ['order_count'], dimensions: ['orderpriority']}, {'pie.dimensions': ['orderpriority'], 'pie.metric': 'order_count', 'pie.donut': true});
 await chart('Orders by priority and status', 'pie', ids.orders, {metrics: ['order_count'], dimensions: ['orderpriority', 'orderstatus']}, {'pie.dimensions': ['orderpriority', 'orderstatus'], 'pie.metric': 'order_count'});
 await chart('Total revenue', 'scalar', ids.orders, {metrics: ['revenue'], row_limit: 1}, {'scalar.metric': 'revenue', 'scalar.label': 'All-time revenue', 'scalar.segments': [{min: null, max: 2000000000, color: '#ef4444', label: 'Below plan'}, {min: 2000000000, max: null, color: '#16a34a', label: 'On plan'}]});

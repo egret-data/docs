@@ -35,6 +35,16 @@ const expandOrders = async (page) => {
   await page.getByRole('button', {name: 'Expand orders', exact: true}).click();
   await page.waitForTimeout(2000);
 };
+// Drag the bar between the editor and the lower panel up, so a list (History, Saved, Snippets) has room.
+const growLower = async (page) => {
+  await page.mouse.move(960, 517);
+  await page.mouse.down();
+  await page.mouse.move(960, 400, {steps: 5});
+  await page.mouse.move(960, 330, {steps: 5});
+  await page.mouse.up();
+  await page.mouse.move(1300, 120);
+  await page.waitForTimeout(300);
+};
 const sqlShot = (id, fn, extra = {}) => ({
   id: `sql-datasets/${id}`,
   path: `${ws}/sql-lab`,
@@ -83,7 +93,8 @@ export const shots = [
     // select the second line only
     await page.keyboard.press('ControlOrMeta+End');
     await page.keyboard.press('Shift+Home');
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(300);
+    await run(page);
   }),
   sqlShot('sqllab-limit', async (page) => {
     await page.getByRole('combobox').filter({hasText: 'rows'}).click();
@@ -163,15 +174,18 @@ export const shots = [
     await typeFormatted(page, REVENUE);
     await run(page);
     await page.getByRole('tab', {name: 'History'}).click();
+    await growLower(page);
     await page.waitForTimeout(1200);
   }),
   sqlShot('sqllab-saved', async (page) => {
     await page.getByRole('tab', {name: 'Saved'}).click();
+    await growLower(page);
     await page.waitForTimeout(800);
     await page.getByText('Top customers by spend').first().hover();
   }),
   sqlShot('sqllab-snippets', async (page) => {
     await page.getByRole('tab', {name: 'Snippets'}).click();
+    await growLower(page);
   }),
   sqlShot('sqllab-save-dialog', async (page) => {
     await typeFormatted(page, REVENUE);
@@ -213,8 +227,7 @@ export const shots = [
     id: 'sql-datasets/datasets-row-menu',
     path: `${ws}/datasets`,
     prepare: async (page) => {
-      await page.getByPlaceholder('Search name, schema, table…').fill('Orders with customers');
-      await page.getByTitle('Actions', {exact: true}).first().click();
+      await page.locator('tr', {hasText: 'Orders with customers'}).getByTitle('Actions', {exact: true}).click();
     },
   },
   {
@@ -262,7 +275,7 @@ export const shots = [
     await page.getByLabel(/Display name/).fill('Average discount');
     await page.getByLabel(/Description/).fill('Mean discount rate across lines.');
   }),
-  dsShot('ds-usage', 'Orders with customers', 'Usage'),
+  dsShot('ds-usage', 'orders', 'Usage'),
   dsShot('ds-preview', 'Orders with customers', 'Preview', undefined, {settle: 3000}),
   dsShot('ds-certify', 'Orders with customers', undefined, async (page) => {
     await page.getByRole('button', {name: 'Certification'}).click();
@@ -285,8 +298,7 @@ export const shots = [
     id: 'sql-datasets/datasets-share',
     path: `${ws}/datasets`,
     prepare: async (page) => {
-      await page.getByPlaceholder('Search name, schema, table…').fill('Line items');
-      await page.getByTitle('Actions', {exact: true}).first().click();
+      await page.locator('tr', {hasText: 'Line items'}).getByTitle('Actions', {exact: true}).click();
       await page.getByRole('menuitem', {name: 'Share…'}).click();
       await page.waitForTimeout(1500);
     },
@@ -295,10 +307,12 @@ export const shots = [
     id: 'sql-datasets/datasets-tags',
     path: `${ws}/datasets`,
     prepare: async (page) => {
-      await page.getByPlaceholder('Search name, schema, table…').fill('Line items');
-      await page.getByTitle('Actions', {exact: true}).first().click();
+      await page.locator('tr', {hasText: 'Line items'}).getByTitle('Actions', {exact: true}).click();
       await page.getByRole('menuitem', {name: 'Tags…'}).click();
       await page.waitForTimeout(1500);
+      // Open the Add tag… list to show the organisation's tag catalog.
+      await page.getByRole('dialog').getByRole('combobox').click();
+      await page.waitForTimeout(500);
     },
   },
   {
@@ -307,6 +321,9 @@ export const shots = [
     prepare: async (page) => {
       await page.getByRole('button', {name: 'Trash'}).click();
       await page.waitForTimeout(800);
+      await page.locator('tr', {hasText: 'Old order extract'}).getByTitle('Actions', {exact: true}).click();
     },
+    // The trash holds one dataset (scripts/seed-sql-charts-lists.mjs); crop to the list and its open menu.
+    clip: {x: 224, y: 56, width: 1216, height: 400},
   },
 ];

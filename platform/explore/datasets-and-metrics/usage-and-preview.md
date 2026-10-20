@@ -6,11 +6,11 @@ sidebar_position: 6
 
 The last two tabs of a dataset answer two practical questions: *who depends on this dataset?* (**Usage**) and *what does the data look like, with my settings applied?* (**Preview**).
 
-![The Usage tab listing the charts built on a dataset](/img/platform/sql-datasets/ds-usage.png)
+![The Usage tab of the orders dataset listing the charts built on it](/img/platform/sql-datasets/ds-usage.png)
 
 ## Usage
 
-Open the **Usage** tab to see every chart built on the dataset. The line at the top counts them, for example *2 charts built on this dataset*, and each row shows a chart's name with an arrow icon. Click a row to open the chart in the chart editor.
+Open the **Usage** tab to see every chart built on the dataset. The line at the top counts them, for example *23 charts built on this dataset* for the demo's `orders` dataset, and each row shows a chart's name (always with the bar-chart icon, whatever the chart type) and an open icon. Click a row to open the chart in the chart editor. Charts in the Trash are not listed.
 
 A dataset with no charts shows *No charts use this dataset yet.* with a **Create a chart** button that opens the chart editor with this dataset already chosen. Press **Create chart** in the dataset header for the same effect.
 

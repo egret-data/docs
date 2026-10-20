@@ -39,11 +39,15 @@ What this means in practice:
 - **Saved queries** can also be shared one by one: **Actions → Share…** gives a user or group access to that query only, whatever their workspace role. See [Shared objects](../../workspace-settings/shared-objects).
 - **Save as dataset** also needs the **Datasets** module to be on; with it off, the dialog fails with a feature-disabled error.
 
-(The viewer behaviour above comes from the role definitions and the server code; it was not reproduced with a viewer account on the demo instance.)
+(The viewer behaviour above comes from the role definitions and the server code. It was not reproduced on the demo stack: its `default` workspace has only the local admin as a member, and adding a viewer would change the workspace membership that other demo users rely on.)
 
 ## Which databases you can use
 
 The database picker lists only the connections that are granted to the workspace; see [Databases](../../workspace-settings/databases). A request for any other database is refused with *database not granted to workspace*.
+
+:::warning Only workspace admins see the picker's list
+The picker is filled from `GET /api/ws/{ws}/databases`, which answers 403 to everyone who is not a workspace admin. A member with `ws_editor`, `ws_viewer` or a custom role that has `query:run` therefore sees an empty picker ("Select a database") even though the connection is granted, and nothing says why. Queries sent through the API with a `database_id` do run. See [Known issues](../../known-issues) (KI-159).
+:::
 
 ## What the engine allows
 

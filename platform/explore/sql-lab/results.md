@@ -92,6 +92,8 @@ A result belongs to the user who ran the query. Another workspace member cannot 
 - The status chip for a cancelled run is missing; a cancelled query leaves the panel in its empty state.
 - A zero-row result is reported with the filter message *No rows match “”.*
 - The chart groups with a sum, so a repeated X value adds its Y values together; it is not a replacement for a dataset chart.
+- The row order of a single `SELECT` with `ORDER BY` but no `LIMIT` is not guaranteed on Trino; sort in the grid or add a `LIMIT` (see [Row limit](./editor#row-limit)).
+- Counters read *1 rows* for a one-row result.
 
 ## Further reading
 
