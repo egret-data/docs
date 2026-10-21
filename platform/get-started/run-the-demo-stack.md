@@ -8,10 +8,10 @@ The demo stack runs the whole platform on Docker with one command: Egret, Postgr
 Keycloak for single sign-on, a Trino engine with sample data, Data Apps, a renderer for PNG and PDF reports and a mail
 catcher. It is the fastest way to try Egret: you need Docker and `just`, and no Rust toolchain, Node.js or Kubernetes.
 
-The stack comes seeded with a workspace, a database connection, a dataset, three charts and a dashboard, so there is
-something to look at as soon as you sign in.
+The stack comes seeded with a workspace, a database connection, datasets, charts and two dashboards, a small **Sales overview** and
+a full **E-commerce Insights** with 22 charts on three tabs, so there is something to look at as soon as you sign in.
 
-![The seeded Sales overview dashboard on the demo stack](/img/platform/ops/get-started/demo-sales-overview.png)
+![The seeded E-commerce Insights dashboard on the demo stack](/img/platform/ops/get-started/demo-ecommerce-overview.png)
 
 :::warning Demo only: never expose it to a network
 Every secret in the stack is a public value committed to the repository (`deploy/demo/demo.env`), the Keycloak realm accepts any
@@ -142,7 +142,12 @@ In the workspace `default` (shown as **Default**):
 | Dataset | `orders` | TPC-H `tpch.tiny.orders`, with the metrics `revenue` (`sum(totalprice)`) and `order_count` (`count(*)`). |
 | Charts | **Revenue by order status**, **Revenue by month**, **Orders by priority** | A bar chart, a line chart by month and a table. |
 | Dashboard | **Sales overview** | The three charts. |
+| Datasets | `ecom_orders`, `ecom_reviews`, `accounts`, `funnel_steps` | Virtual datasets over the TPC-H sample data, reshaped into an online store: product categories, vendors, US states, marketing sources, age groups and ratings. The values are illustrative, and the dates run from 2023 to June 2029. |
+| Charts | 22, from **Revenue per quarter** to **Most recent subscription** | One of every kind: scalar and trend, progress, gauge, combo, bar, row, line, area, pie, box plot, scatter, pivot table, table, object detail, map, funnel, waterfall and Sankey. |
+| Dashboard | **E-commerce Insights (egret clone)** | Three tabs, *Overview*, *Portfolio Performance* and *Website Analysis*, built after Metabase's sample dashboard of the same name. |
 | Mail server | Workspace **Notifications** | SMTP to Mailpit (`mailpit:1025`), sender `egret@demo.local`. |
+
+![The Portfolio Performance tab of E-commerce Insights: a vendor donut, a box plot, best-selling products, a map of revenue by state and a scatter plot](/img/platform/ops/get-started/demo-ecommerce-portfolio.png)
 
 And in the Control Plane, for **Add engine**: the storage connection `demo-rustfs` (the demo object store, bucket `warehouse`) and
 the warehouse `demo-warehouse`, whose catalog is `demo_warehouse`.

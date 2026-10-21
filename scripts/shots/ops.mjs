@@ -47,6 +47,16 @@ const openDashboard = async (page, name) => {
   await page.getByText('Showing 5 rows').first().waitFor({timeout: 60000}).catch(() => {});
 };
 
+// "E-commerce Insights (egret clone)" has three tabs; wait until the charts of the chosen tab have drawn.
+const openEcommerce = async (page, tab) => {
+  await page.getByText('E-commerce Insights (egret clone)', {exact: true}).first().click();
+  await page.waitForLoadState('networkidle');
+  await page.getByRole('tab', {name: tab}).first().click();
+  // Taller than the usual 1440x900 so that three rows of charts show; the next shot starts at 900 again.
+  await page.setViewportSize({width: 1440, height: 1330});
+  await page.waitForTimeout(7000);
+};
+
 export const shots = [
   {
     id: 'ops/get-started/explorer-home',
@@ -151,6 +161,19 @@ export const shots = [
     prepare: async (page) => openDashboard(page, 'Sales overview'),
     settle: 3000,
     clip: {x: 0, y: 0, width: 1440, height: 620},
+  },
+  // The fuller dashboard of the Docker demo stack (scripts/seed_ecommerce_clone.py in the platform repo).
+  {
+    id: 'ops/get-started/demo-ecommerce-overview',
+    path: `${ws}/dashboards`,
+    prepare: async (page) => openEcommerce(page, 'Overview'),
+    settle: 1500,
+  },
+  {
+    id: 'ops/get-started/demo-ecommerce-portfolio',
+    path: `${ws}/dashboards`,
+    prepare: async (page) => openEcommerce(page, 'Portfolio Performance'),
+    settle: 1500,
   },
   // Mailpit (outside Egret): the inbox with a report mail opened.
   {
