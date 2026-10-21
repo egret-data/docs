@@ -56,7 +56,7 @@ Read an input anywhere an expression is allowed as `{{ inputs.<id> }}`.
 | `DURATION` | A text box that expects an ISO-8601 duration such as `PT1H`. | The text. |
 | `EMAIL` | A text box that checks for an email address. | Text. |
 | `URI` | A text box that expects a scheme such as `https://`. | Text. |
-| `SECRET` | A masked box. | The text. See the warning below. |
+| `SECRET` | A masked box. | The text. See [Secret inputs](#secret-inputs). |
 | `SELECT` | A drop-down of `values`. | The chosen text. |
 | `MULTISELECT` | A multi-choice list. | A list. |
 | `ARRAY` | A list of rows of `itemType`. | A list, so `{{ inputs.list \| length }}` works. |
@@ -76,7 +76,15 @@ The API, a schedule, a webhook and a Flow trigger start a flow without checking 
 
 ### Secret inputs
 
-A `SECRET` input is masked in the run form. The value it receives is stored with the execution as plain text and appears in the execution's **Overview** tab and in the execution API response. Do not use it for credentials that must not be readable by people who can see executions. The `secret()` function that reads workspace secrets resolves only on Kestra plugin tasks; see [Expressions](./expressions.md).
+A `SECRET` input is masked in the run form, and stays masked after the run starts:
+
+- Every read shows `******` in its place: the answer to **Run**, the execution's **Overview** tab, the executions lists, the topology and the API responses (`GET …/executions`, `…/executions/{id}`, `…/graph`, `…/logs`, and the replay and resume answers).
+- The run logs and a failed run's message are masked too: a log line that contains the value shows `******` instead.
+- The real value is stored encrypted (AES-256-GCM) with the server's `secrets.master_key`, and only the worker opens it, so `{{ inputs.<id> }}` still renders the real value in a task. A **Replay** uses the stored value, and a loop iteration and a retry keep it; a `Subflow` child masks the inputs that its own flow declares as `SECRET`.
+- Executions stored before this masking existed are masked at the first start of the upgraded server, together with the log lines they wrote.
+- A server without `secrets.master_key` cannot store the value, so a start that would store one is refused with 400: *the flow declares SECRET input(s) …, and this deployment cannot store a secret value: set secrets.master_key*. See [Configuration keys](../../reference/configuration-keys.md).
+
+What is **not** masked, the same rule as for `secret()` values: the outputs of a task (for example a `Return` of the input), the rendered values of a task, and a value the flow passes on into a non-`SECRET` input of another flow. Do not copy a secret input into an output. The `secret()` function that reads workspace secrets resolves only on Kestra plugin tasks; see [Expressions](./expressions.md).
 
 ## Start with inputs
 
@@ -139,7 +147,7 @@ A flow can declare `outputs:` with an `id`, a `type` and a `value`. The engine a
 ## Limits and known issues
 
 - Only the run form validates inputs. Server-side validation of `required`, types and `values` is not implemented.
-- `SECRET` inputs are not masked after the run starts.
+- The outputs and rendered values of a task that uses a `SECRET` input are not masked; only the inputs and the logs are (KI-246).
 - `YAML` inputs are not parsed into an object in expressions.
 - Flow `outputs:` are not evaluated.
 

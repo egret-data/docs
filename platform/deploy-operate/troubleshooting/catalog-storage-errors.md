@@ -13,7 +13,7 @@ catalog:
 
 | Message | Cause and fix |
 |---|---|
-| `Error: the apps API requires [storage] bucket, access_key, secret_key (it stores draft/version content there regardless of apps.pod.launcher)` | The object-store credentials are always required. A copy of `.env.example` does not set them. Set `EGRET_STORAGE__BUCKET`, `EGRET_STORAGE__ACCESS_KEY` and `EGRET_STORAGE__SECRET_KEY`. |
+| `Error: the apps API requires [storage] bucket, access_key, secret_key (it stores draft/version content there regardless of apps.pod.launcher)` | The object-store credentials are always required. `.env.example` sets them; check that they were not removed or misspelled (an unknown name logs a `WARN`). Set `EGRET_STORAGE__BUCKET`, `EGRET_STORAGE__ACCESS_KEY` and `EGRET_STORAGE__SECRET_KEY`. |
 | `Error: catalog.enabled requires warehouse and auth_token` | Set `EGRET_CATALOG__AUTH_TOKEN` (and `EGRET_CATALOG__WAREHOUSE`). |
 | `Error: catalog.enabled requires storage access_key/secret_key/bucket` | The catalog needs the same storage settings. |
 | `Error: secrets.master_key must be base64 of >=32 bytes` | `EGRET_SECRETS__MASTER_KEY` is set but does not decode to 32 bytes or more. Generate one with `head -c 32 /dev/urandom \| base64`. |
@@ -58,8 +58,8 @@ of a real failure:
 curl -s http://<egret>/.well-known/openid-configuration
 ```
 
-If `issuer` or `token_endpoint` names an address clients cannot reach (`http://localhost:8080` on a server that is not on
-localhost, or on a different port: reproduced on port 18080), set `EGRET_CATALOG__PUBLIC_URL` to the address engines use, and
+If `issuer` or `token_endpoint` names an address clients cannot reach (`http://localhost:<port>`, the default when
+`catalog.public_url` is unset, on a server that is not reached as localhost), set `EGRET_CATALOG__PUBLIC_URL` to the address engines use, and
 `EGRET_IDP__ISSUER` to the address of clients outside the cluster. **Changing the issuer strands StarRocks engines already
 provisioned**, because their security integration compares the old issuer byte for byte; re-provision them. See
 [Configuration](../configuration#address-settings-that-people-confuse).

@@ -61,9 +61,20 @@ The header shows the name, provider and the **BUCKET** and **ENDPOINT**, with **
 
 ## Browse a connection
 
-The **Browse** tab lists the bucket's folders and files, so you can confirm a connection works and see what egret stored: for example folders such as `apps`, `query-results`, `workflow` and the warehouse folders named by id. Select a folder to open it; files show their size. An empty folder says *This folder is empty.*
+The **Browse** tab lists the connection's folders and files, so you can confirm a connection works and see what egret stored: for example folders such as `apps`, `query-results`, `workflow` and the warehouse folders named by id. Select a folder to open it; files show their size and can be downloaded. An empty folder says *This folder is empty.*
 
-The demo bucket is shared by everything egret stores, so `query-results` holds the stored result files of every user's SQL Lab queries. Anyone with **storage:read** can list and download them, including the built-in `data_steward` role; these files are what each person was allowed to see, after their masks and row filters. Keep **storage:read** for administrators.
+Browse and download start at the connection's **Key prefix**, not at the bucket root. Keys are relative to that prefix, and the first crumb of the path shows `bucket/prefix`: a connection on bucket `warehouse` with Key prefix `sandbox` opens at `warehouse/sandbox`. A connection without a Key prefix opens at the bucket root and its crumb shows the bucket name.
+
+### Folders only a platform admin can open
+
+In egret's own bucket (the `[storage] bucket` of the server configuration), egret writes other users' data under three prefixes: stored SQL Lab results (`engine.results_prefix`, `query-results` by default), Data App sources (`apps.storage.prefix`) and workflow files (`workflow.storage.prefix`). A stored SQL Lab result is what one person was allowed to see, after their masks and row filters. These prefixes are closed to everyone who is not a platform admin, whatever storage permission they hold:
+
+- Browse leaves them out and says so under the list, for example *apps, query-results, workflow are not shown: egret stores its users' SQL Lab results, Data App sources and workflow files there. Only a platform admin can open them.*
+- Listing or downloading a key under them answers 403 with the reason: *… holds data egret writes for its users (stored SQL Lab results, Data App sources, workflow files), so it cannot be browsed or downloaded with storage:read; only a platform admin can open it*. The match ignores case and also applies after percent-decoding the key.
+
+A platform admin sees and downloads them as before.
+
+Keys that try to leave the folder are refused with 400 for everyone, platform admins included: a `.` or `..` segment, an empty segment (a leading `/`, a trailing `/` on a file, or `//`), a backslash or a control character, also once percent-decoded.
 
 ![The Browse tab listing the top-level folders of the warehouse bucket](/img/platform/admin/cp-storage-browse.png)
 
@@ -74,7 +85,7 @@ Press **Delete**. The dialog *Delete «\<connection\>»?* says *This storage con
 ## Limits and known issues
 
 - Only S3-compatible stores work; Google Cloud Storage and Azure Blob are not available yet.
-- The **Browse** tab lists the bucket root even for a connection with a **Key prefix** (checked with `sandbox-lake`, prefix `sandbox/`).
+- **storage:read** still lets a holder (for example the built-in `data_steward` role) download the raw Iceberg data files of every warehouse in the bucket, which bypasses column masks and row filters (KI-236). Keep **storage:read** for administrators.
 - A key prefix does not keep two egret warehouses apart: a warehouse on `sandbox-lake` was refused with *Storage profile overlaps with existing warehouse demo-warehouse*. Use a separate bucket for each warehouse.
 
 ## Further reading

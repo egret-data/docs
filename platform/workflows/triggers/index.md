@@ -32,7 +32,7 @@ triggers:
 Three things must be on, and the **Triggers** page tells you which is missing:
 
 1. **The scheduler** (`EGRET_WORKFLOW__SCHEDULER_ENABLED=true`). Without it schedules and flow triggers do not fire, and the page says *The scheduler is off on this server, so schedules and flow triggers do not fire.*
-2. **The worker** (`EGRET_WORKFLOW__WORKER_ENABLED=true`). Without it triggers create executions that never run: *The worker is off, so triggered executions are created but do not run.*
+2. **The worker** (`EGRET_WORKFLOW__WORKER_ENABLED=true`). Without it triggers create executions that never run: *The workflow worker is off on this server, so executions are created but do not run. An administrator turns it on with workflow.workerEnabled (EGRET_WORKFLOW__WORKER_ENABLED=true).*
 3. **Webhooks** (`EGRET_WORKFLOW__WEBHOOKS_ENABLED=true`), for webhook triggers only: *Webhooks are off on this server; their URLs answer 404.*
 
 A disabled flow fires nothing: the page says *This flow is disabled, so none of its triggers fire.*

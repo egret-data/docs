@@ -14,7 +14,15 @@ You need **secret:read** to open the page; creating, rotating and deleting need 
 
 A strip counts the **secrets**.
 
-The list also shows the secrets egret creates and manages itself: `engine-internal-<engine id>-…` (the Trino internal-communication secret), `engine-monitor-…` (the egret-monitor password for the native Trino monitor), `engine-tls-…` (the coordinator keystore) for every provisioned engine, and `catalog-client-…` (a Catalog Client credential an engine presents to egret's catalog). Leave them alone: rotating or deleting one breaks the engine or client that uses it. On a 1440-pixel-wide screen the **Used by** and **Created** columns are cut off at the right; scroll the table sideways.
+The list also shows the secrets egret creates and manages itself: `engine-internal-<engine id>-…` (the Trino internal-communication secret), `engine-monitor-…` (the egret-monitor password for the native Trino monitor), `engine-tls-…` (the coordinator keystore) for every provisioned engine, the StarRocks root and Trino delegator passwords, and `catalog-client-…` (a Catalog Client credential an engine presents to egret's catalog). The page says *Secrets marked System are created by egret for engines and catalogs and are managed with them.*
+
+### System secrets
+
+A secret egret manages carries a **System** badge next to its name, in the list and on its page. Egret rotates and deletes it together with the engine or catalog that created it, so you cannot change it by hand:
+
+- **Edit**, **Rotate value** and **Delete** are disabled, with the reason *Managed by egret: it is rotated and deleted with the engine or catalog that created it.*
+- The API refuses a rename, a rotation or a delete with 409: *«name» is managed by egret: it is rotated and deleted with the engine or catalog that created it, not here*. The secret's `system_managed` field is `true`.
+- No secret picker offers it: the **Secret** fields of storage and database connections, the catalog **Password secret** pickers and the engine create and security forms leave it out.
 
 | Column | Meaning |
 |---|---|
@@ -67,7 +75,7 @@ Rotate when a credential changes, or on a schedule. Everything that references t
 
 ## Delete a secret
 
-Press **Delete** on the list or the secret page. A secret that is in use cannot be deleted: the **Used by** count must be zero. Detach it from every connection first.
+Press **Delete** on the list or the secret page. A secret that is in use cannot be deleted: the **Used by** count must be zero. Detach it from every connection first. A **System** secret cannot be deleted here at all ([System secrets](#system-secrets)).
 
 :::warning
 A secret is a platform-wide object. Rotating it changes the credential for every connection that references it.
@@ -83,6 +91,7 @@ A secret is a platform-wide object. Rotating it changes the credential for every
 
 - Values cannot be read back, only replaced.
 - Names are global across the platform.
+- Secrets that existed before the **System** flag was introduced are marked from the engines and catalogs that point at them, and from the name and description of a minted secret. A minted secret that nothing points at any more and whose name or description was changed by hand is not marked.
 
 ## Further reading
 

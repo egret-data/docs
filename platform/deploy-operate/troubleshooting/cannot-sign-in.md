@@ -15,7 +15,7 @@ when the server answers `401 {"error":"unauthorized"}`.
 **Causes**
 
 - The email or password is wrong. The break-glass account is the one `egret init` created; `.env.example` and the Helm chart
-  default it to `admin@egret.local`, but its password is the one `init` printed, or `EGRET_ADMIN_PASSWORD`, or the chart's
+  default it to `admin@egret.local`, but its password is the one `init` generated and printed, or the `EGRET_ADMIN_PASSWORD` it was given (never printed), or the chart's
   `admin.password`.
 - The account was never created: a fresh database has no administrator until `egret init` runs. In Kubernetes the
   `egret-init` hook job creates it after install; check `kubectl get job -n egret-system egret-init`.

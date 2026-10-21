@@ -92,7 +92,7 @@ Because tabs live in the browser, clearing site data or switching browsers gives
 
 ## Limits and known issues
 
-- SQL Lab needs at least one database connection granted to the workspace. Without one the database picker is empty and **Run** reports *Pick a database*.
+- SQL Lab needs at least one database connection granted to the workspace. Without one the database picker is empty, the Explorer says *No connection is granted to this workspace. Ask a workspace admin.*, and **Run** reports *Pick a database*.
 - The row limit, the 60-second query timeout and the 100,000-row ceiling are server settings; see [Query results](./results.md#limits).
 - Cancelling a query leaves the Results panel empty without saying the query was cancelled. See the [editor page](./editor.md#run-and-cancel).
 - On Trino, an `ORDER BY` without a `LIMIT` can be lost, because Egret wraps the query to apply the row limit. See [Row limit](./editor.md#row-limit).

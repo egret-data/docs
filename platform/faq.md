@@ -60,13 +60,14 @@ with a dataset, charts and a dashboard on Trino's `tpch` sample data. Sign in at
 
 ### Why does the server not start after I copied `.env.example`?
 
-`.env.example` does not set the object-store credentials, and the server requires them even if you never use object storage:
-`the apps API requires [storage] bucket, access_key, secret_key`. Add `EGRET_STORAGE__BUCKET`, `EGRET_STORAGE__ACCESS_KEY` and
-`EGRET_STORAGE__SECRET_KEY`. See the [Quick start](./get-started/quick-start).
+A copy of `.env.example` passes the server's startup checks (a test in the repository keeps it so). If the server still
+refuses with `the apps API requires [storage] bucket, access_key, secret_key`, a variable was removed or misspelled: the log
+shows a `WARN` with *ignored environment variable …* for a name it does not know. Also check that the dependencies run
+(`just up`) and that the `warehouse` bucket exists. See the [Quick start](./get-started/quick-start).
 
 ### What is the administrator password?
 
-The one `egret init` printed, or the one you set with `EGRET_ADMIN_PASSWORD`. The Helm chart's default is `Admin12345!` and
+The one `egret init` generated and printed, or the one you set with `EGRET_ADMIN_PASSWORD` (`init` does not print that one). The Helm chart's default is `Admin12345!` and
 you should change it. On the demo stack it is `Admin12345!` for `admin@egret.local`. See [First login tour](./get-started/first-login-tour).
 
 ### Where do I register a database?
@@ -124,8 +125,8 @@ as `SUM(revenue)`. See [Your first dashboard](./get-started/first-dashboard#4-ad
 
 ### My workflow execution stays in *Running* forever. Why?
 
-The workflow worker is off by default. Set `EGRET_WORKFLOW__WORKER_ENABLED=true`, and `EGRET_WORKFLOW__SCHEDULER_ENABLED=true`
-for schedules and triggers. See [Workflows stuck](./deploy-operate/troubleshooting/workflows-stuck).
+The workflow worker is off by default; the flow page, the Run dialog and the execution then say *The workflow worker is off on
+this server*. Set `EGRET_WORKFLOW__WORKER_ENABLED=true`, and `EGRET_WORKFLOW__SCHEDULER_ENABLED=true` for schedules and triggers. See [Workflows stuck](./deploy-operate/troubleshooting/workflows-stuck).
 
 ## Operating
 

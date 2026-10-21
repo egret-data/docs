@@ -10,6 +10,8 @@ A **database connection** (shown in the UI as an *engine connection*) tells the 
 
 *Query engine connections this workspace can use in SQL Lab and charts.* The page needs workspace-admin rights; without them it says *Requires workspace-admin to manage engines.* A new workspace says *No engines connected yet.*
 
+A member who is not a workspace admin but holds `query:run` or `dataset:read` still gets the list of granted connections through the API, cut down to id, name, engine and delegation, so that SQL Lab and the dataset pickers can offer them (see [SQL Lab permissions](../explore/sql-lab/permissions.md#which-databases-you-can-use)). This page shows such a member the *Requires workspace-admin to manage engines.* notice instead of the rows.
+
 ## The connection list
 
 A summary strip counts the **connections**, how many are **ok** and how many are in **error**. **Search connections…** filters by name. If the workspace has engines assigned by the platform admins, they appear in a **Provisioned by egret** section above **Your connections**; those are read-only (*Provisioned by egret — read-only*).
@@ -99,7 +101,7 @@ On the Docker demo stack, the workspace `default` connects to the demo Trino as 
 ## Limits and known issues
 
 - Egret validates reachability on save, but a new connection shows **Unknown** until you press **Test**.
-- Only workspace admins can list the workspace's connections. Members with `ws_editor`, `ws_viewer` or a custom role get *403* on the list, so the database picker in SQL Lab is empty for them, also for a provisioned engine assigned to the workspace.
+- When the workspace has no connection at all, a non-admin sees the same *No engines connected yet.* empty state as an admin, and its **Add connection** button then answers 403 (KI-243).
 - Only Trino and StarRocks connections can be added here. External engines for Governance are registered in the Control Plane (see [Register an external engine](../control-plane/query-engines/register-external.md)).
 
 ## Further reading
