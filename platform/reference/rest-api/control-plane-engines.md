@@ -8,7 +8,7 @@ description: REST endpoints in the control-plane-engines group.
 
 Engine provisioning: Trino-on-Kubernetes clusters, their catalogs, native query monitor, and pod logs/exec.
 
-This page lists 24 endpoints (OpenAPI tag `control-plane-engines`). It is generated from `openapi.json`; see the [REST API overview](../rest-api) for authentication, CSRF and error conventions.
+This page lists 26 endpoints (OpenAPI tag `control-plane-engines`). It is generated from `openapi.json`; see the [REST API overview](../rest-api) for authentication, CSRF and error conventions.
 
 | Method | Path | Operation id | Notes |
 |---|---|---|---|
@@ -33,6 +33,8 @@ This page lists 24 endpoints (OpenAPI tag `control-plane-engines`). It is genera
 | DELETE | `/api/control-plane/engines/{id}/queries/{qid}` | `kill_query` |  |
 | GET | `/api/control-plane/engines/{id}/ranger-plugin-config` | `ranger_plugin_config` | `GET /api/control-plane/engines/\{id\}/ranger-plugin-config`. |
 | POST | `/api/control-plane/engines/{id}/restart` | `restart_engine` | `POST /engines/\{id\}/restart` — roll the engine's pods without changing config (like `kubectl rollout restart`). |
+| POST | `/api/control-plane/engines/{id}/retire-previous-ranger-credential` | `retire_previous_ranger_credential` | `POST /engines/\{id\}/retire-previous-ranger-credential` — the operator's confirmation that an EXTERNAL engine's plugin now runs with the credential named `ins... |
+| POST | `/api/control-plane/engines/{id}/rotate-ranger-credential` | `rotate_ranger_credential` | `POST /engines/\{id\}/rotate-ranger-credential` — mint a new Ranger plugin credential. |
 | POST | `/api/control-plane/engines/{id}/rotate-secrets` | `rotate_engine_secrets` | `POST /engines/\{id\}/rotate-secrets` — mint a new Trino internal-communication secret and `egret-monitor` password and re-apply the engine (pods roll). |
 | GET | `/api/control-plane/engines/{id}/workspaces` | `list_engine_workspaces` |  |
 | PUT | `/api/control-plane/engines/{id}/workspaces` | `set_engine_workspaces` |  |
@@ -124,6 +126,8 @@ Operation id: `list_engines`. Auth: Session cookie. Forbidden (403): Missing eng
 | `rangerPluginVersion` | string, nullable | no | The Ranger plugin version egret reads this engine at. External: the version the operator declared. Provisioned: the version its exact image ships (`egret_perm::plugin_version_for_image`); absent when the image is not one egret has measured. |
 | `rangerPluginVersionModelled` | boolean, nullable | no | Whether egret's Ranger evaluator has been read against this engine's (type, plugin version) PAIR: only the pairs in `egret_perm::MODELLED_RANGER_PLUGINS` are. When `false`, a migration to the profile bound to this engine is refused (never... |
 | `rangerPluginVersionNote` | string, nullable | no | Why the engine is not modelled, and how to fix it (for a provisioned engine: pin its image). Absent when modelled. |
+| `rangerCredentialPending` | boolean | yes | Whether a PREVIOUS Ranger plugin credential is still valid beside the current one (spec 2026-10-20-ranger-surface-auth A10/A11): a rotation is pending. Provisioned: until the rollout of the current credential is observed complete, when... |
+| `rangerCredentialId` | string (uuid), nullable | no | The id of the engine's CURRENT Ranger plugin credential: the `credentialId` registration or the last rotation returned with it. An opaque id that grants nothing (never the password); an external engine's operator sends it as `installed` to... |
 
 | Status | Meaning |
 |---|---|
@@ -172,12 +176,14 @@ Operation id: `create_engine`. Auth: Session cookie and `X-Egret-CSRF` header. F
 | `rangerPluginVersion` | string, nullable | no | The Ranger plugin version egret reads this engine at. External: the version the operator declared. Provisioned: the version its exact image ships (`egret_perm::plugin_version_for_image`); absent when the image is not one egret has measured. |
 | `rangerPluginVersionModelled` | boolean, nullable | no | Whether egret's Ranger evaluator has been read against this engine's (type, plugin version) PAIR: only the pairs in `egret_perm::MODELLED_RANGER_PLUGINS` are. When `false`, a migration to the profile bound to this engine is refused (never... |
 | `rangerPluginVersionNote` | string, nullable | no | Why the engine is not modelled, and how to fix it (for a provisioned engine: pin its image). Absent when modelled. |
+| `rangerCredentialPending` | boolean | yes | Whether a PREVIOUS Ranger plugin credential is still valid beside the current one (spec 2026-10-20-ranger-surface-auth A10/A11): a rotation is pending. Provisioned: until the rollout of the current credential is observed complete, when... |
+| `rangerCredentialId` | string (uuid), nullable | no | The id of the engine's CURRENT Ranger plugin credential: the `credentialId` registration or the last rotation returned with it. An opaque id that grants nothing (never the password); an external engine's operator sends it as `installed` to... |
 | `catalogAttachErrors` | CatalogAttachErrorDto[] | yes | Catalogs from the body's `catalogs` that could not be attached. Empty on success. The engine EXISTS and is provisioned; these catalogs simply are not on it, and each can be retried with `POST /api/control-plane/engines/\{id\}/catalogs/\{cid\}`.... |
 
 | Status | Meaning |
 |---|---|
 | 201 | Engine created and provisioned; the primary catalog is attached, and `catalogAttachErrors` lists any of the request's other `catalogs` the engine came up without |
-| 400 | Unknown/unprovisioned warehouse, invalid input, or provisioning failed |
+| 400 | Unknown/unprovisioned warehouse, invalid input (including a StarRocks engine name longer than 48 characters: the operator derives 63-character pod volume names from it), or provisioning failed |
 | 401 | Not authenticated |
 | 403 | Missing engine:create permission |
 | 409 | An engine with this name already exists, or its same-name policy profile is bound to another engine |
@@ -199,7 +205,7 @@ Operation id: `register_external_engine`. Auth: Session cookie and `X-Egret-CSRF
 | `authzServiceId` | integer (int64), nullable | no | A policy profile to bind. Its type must equal `type`, no other engine may bind it, and a Trino profile needs a usable `tagService`. |
 | `catalogs` | string (uuid)[] | no | Registry catalogs to declare attached. Nothing is applied to the engine. |
 
-**Response 201 (application/json)**: `EngineDto`
+**Response 201 (application/json)**: `RegisteredExternalEngineDto`
 
 | Field | Type | Required | Description |
 |---|---|---|---|
@@ -216,6 +222,9 @@ Operation id: `register_external_engine`. Auth: Session cookie and `X-Egret-CSRF
 | `rangerPluginVersion` | string, nullable | no | The Ranger plugin version egret reads this engine at. External: the version the operator declared. Provisioned: the version its exact image ships (`egret_perm::plugin_version_for_image`); absent when the image is not one egret has measured. |
 | `rangerPluginVersionModelled` | boolean, nullable | no | Whether egret's Ranger evaluator has been read against this engine's (type, plugin version) PAIR: only the pairs in `egret_perm::MODELLED_RANGER_PLUGINS` are. When `false`, a migration to the profile bound to this engine is refused (never... |
 | `rangerPluginVersionNote` | string, nullable | no | Why the engine is not modelled, and how to fix it (for a provisioned engine: pin its image). Absent when modelled. |
+| `rangerCredentialPending` | boolean | yes | Whether a PREVIOUS Ranger plugin credential is still valid beside the current one (spec 2026-10-20-ranger-surface-auth A10/A11): a rotation is pending. Provisioned: until the rollout of the current credential is observed complete, when... |
+| `rangerCredentialId` | string (uuid), nullable | no | The id of the engine's CURRENT Ranger plugin credential: the `credentialId` registration or the last rotation returned with it. An opaque id that grants nothing (never the password); an external engine's operator sends it as `installed` to... |
+| `rangerCredential` | RangerCredentialDto | yes | The credential the engine's Ranger plugin presents to egret's `/ranger` surface (HTTP Basic). **Shown once**: egret never returns this password again; a lost one is replaced with `POST... |
 
 | Status | Meaning |
 |---|---|
@@ -269,10 +278,12 @@ Operation id: `get_engine`. Auth: Session cookie. Forbidden (403): Missing engin
 | `rangerPluginVersion` | string, nullable | no | The Ranger plugin version egret reads this engine at. External: the version the operator declared. Provisioned: the version its exact image ships (`egret_perm::plugin_version_for_image`); absent when the image is not one egret has measured. |
 | `rangerPluginVersionModelled` | boolean, nullable | no | Whether egret's Ranger evaluator has been read against this engine's (type, plugin version) PAIR: only the pairs in `egret_perm::MODELLED_RANGER_PLUGINS` are. When `false`, a migration to the profile bound to this engine is refused (never... |
 | `rangerPluginVersionNote` | string, nullable | no | Why the engine is not modelled, and how to fix it (for a provisioned engine: pin its image). Absent when modelled. |
+| `rangerCredentialPending` | boolean | yes | Whether a PREVIOUS Ranger plugin credential is still valid beside the current one (spec 2026-10-20-ranger-surface-auth A10/A11): a rotation is pending. Provisioned: until the rollout of the current credential is observed complete, when... |
+| `rangerCredentialId` | string (uuid), nullable | no | The id of the engine's CURRENT Ranger plugin credential: the `credentialId` registration or the last rotation returned with it. An opaque id that grants nothing (never the password); an external engine's operator sends it as `installed` to... |
 
 | Status | Meaning |
 |---|---|
-| 200 | The engine row flattened with live Kubernetes status |
+| 200 | The engine row flattened with live Kubernetes status. Side effect: when a provisioned engine's previous Ranger credential is pending and the rollout of the current one is observed complete, this read retires the previous one |
 | 401 | Not authenticated |
 | 403 | Missing engine:read permission |
 | 404 | No such engine |
@@ -322,6 +333,8 @@ Operation id: `update_engine`. Auth: Session cookie and `X-Egret-CSRF` header. F
 | `rangerPluginVersion` | string, nullable | no | The Ranger plugin version egret reads this engine at. External: the version the operator declared. Provisioned: the version its exact image ships (`egret_perm::plugin_version_for_image`); absent when the image is not one egret has measured. |
 | `rangerPluginVersionModelled` | boolean, nullable | no | Whether egret's Ranger evaluator has been read against this engine's (type, plugin version) PAIR: only the pairs in `egret_perm::MODELLED_RANGER_PLUGINS` are. When `false`, a migration to the profile bound to this engine is refused (never... |
 | `rangerPluginVersionNote` | string, nullable | no | Why the engine is not modelled, and how to fix it (for a provisioned engine: pin its image). Absent when modelled. |
+| `rangerCredentialPending` | boolean | yes | Whether a PREVIOUS Ranger plugin credential is still valid beside the current one (spec 2026-10-20-ranger-surface-auth A10/A11): a rotation is pending. Provisioned: until the rollout of the current credential is observed complete, when... |
+| `rangerCredentialId` | string (uuid), nullable | no | The id of the engine's CURRENT Ranger plugin credential: the `credentialId` registration or the last rotation returned with it. An opaque id that grants nothing (never the password); an external engine's operator sends it as `installed` to... |
 
 | Status | Meaning |
 |---|---|
@@ -446,6 +459,8 @@ Operation id: `update_external_engine`. Auth: Session cookie and `X-Egret-CSRF` 
 | `rangerPluginVersion` | string, nullable | no | The Ranger plugin version egret reads this engine at. External: the version the operator declared. Provisioned: the version its exact image ships (`egret_perm::plugin_version_for_image`); absent when the image is not one egret has measured. |
 | `rangerPluginVersionModelled` | boolean, nullable | no | Whether egret's Ranger evaluator has been read against this engine's (type, plugin version) PAIR: only the pairs in `egret_perm::MODELLED_RANGER_PLUGINS` are. When `false`, a migration to the profile bound to this engine is refused (never... |
 | `rangerPluginVersionNote` | string, nullable | no | Why the engine is not modelled, and how to fix it (for a provisioned engine: pin its image). Absent when modelled. |
+| `rangerCredentialPending` | boolean | yes | Whether a PREVIOUS Ranger plugin credential is still valid beside the current one (spec 2026-10-20-ranger-surface-auth A10/A11): a rotation is pending. Provisioned: until the rollout of the current credential is observed complete, when... |
+| `rangerCredentialId` | string (uuid), nullable | no | The id of the engine's CURRENT Ranger plugin credential: the `credentialId` registration or the last rotation returned with it. An opaque id that grants nothing (never the password); an external engine's operator sends it as `installed` to... |
 
 | Status | Meaning |
 |---|---|
@@ -629,18 +644,18 @@ Operation id: `ranger_plugin_config`. Auth: Session cookie. Forbidden (403): Mis
 | Field | Type | Required | Description |
 |---|---|---|---|
 | `serviceName` | string | yes | The bound policy profile: the Ranger service name the plugin asks for. |
-| `downloadUrl` | string | yes | `\{public_url\}/service/plugins/policies/download/\{serviceName\}`: where the plugin's download lands. The files below carry `public_url` itself (the plugin appends the path). |
-| `authMode` | string | yes | `anonymous`, or `bearer-configured` (egret requires a bearer token on `/service`; the token is never shown here). |
+| `downloadUrl` | string | yes | `\{public_url\}/ranger/service/plugins/policies/download/\{serviceName\}`: where the plugin's download lands. The files below carry `public_url` itself (the plugin appends the path). |
+| `authMode` | string | yes | `engine-credential` (egret's `/ranger` surface requires the engine's own Ranger credential, shown once at registration or rotation; the files carry a placeholder in place of its password) or `anonymous` (egret serves the surface to anyone... |
 | `rangerPluginVersion` | string, nullable | no | The plugin version the engine was DECLARED to run. |
 | `rangerPluginVersionModelled` | boolean | yes | Whether egret's evaluator models the (type, version) pair. When `false`, migrations into this profile are refused. |
 | `warnings` | string[] | yes | Things that make the install not work, or not safe, as configured. |
 | `assumptions` | string[] | yes | What egret's `explain` and migration gate assume about the plugin and cannot check on an external engine. |
-| `adminMustSupply` | string[] | yes | What the admin must supply themselves. egret renders no credential and invents none. |
+| `adminMustSupply` | string[] | yes | What the admin must supply themselves, the credential's password among them: egret shows it only once and renders a placeholder here. |
 | `files` | RangerPluginFileDto[] | yes |  |
 
 | Status | Meaning |
 |---|---|
-| 200 | The Ranger plugin files to install on this external engine, rendered by the same code that renders the files egret mounts into its own engines. No credential is included or minted |
+| 200 | The Ranger plugin files to install on this external engine, rendered by the same code that renders the files egret mounts into its own engines. The security XML carries the engine's username and a placeholder in place of its password: the... |
 | 401 | Not authenticated |
 | 403 | Missing engine:read permission |
 | 404 | No such engine |
@@ -666,6 +681,66 @@ Operation id: `restart_engine`. Auth: Session cookie and `X-Egret-CSRF` header. 
 | 404 | No such engine |
 | 409 | The engine is external (`code` = `engine_is_external`): egret does not restart it |
 | 500 | Internal error |
+
+## POST `/api/control-plane/engines/{id}/retire-previous-ranger-credential`
+
+Operation id: `retire_previous_ranger_credential`. Auth: Session cookie and `X-Egret-CSRF` header. Forbidden (403): Missing engine:update permission.
+
+`POST /engines/\{id\}/retire-previous-ranger-credential` — the operator's confirmation that an EXTERNAL engine's plugin now runs with the credential named `installed` (the `credentialId` registration or the last rotation returned): the previous one is deleted by its exact id and stops authenticating. Standing rule: egret never deletes a credential the cluster may still hold, and for an external engine only its operator can say it no longer does — about a SPECIFIC credential, so a stale or duplicated confirmation sent before a later rotation retires nothing (409).
+
+The check is one compare-and-set on both columns (current = `installed`, previous = the id read from the row). Idempotent: with nothing pending and a matching `installed` it answers 204 and deletes nothing. A provisioned engine's previous credential is retired by egret once the rollout of the current one is observed complete, so it is refused (409).
+
+| Parameter | In | Type | Required | Description |
+|---|---|---|---|---|
+| `id` | path | string (uuid) | yes | Engine id |
+
+**Request body (application/json)**: `RetirePreviousRangerCredential`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `installed` | string (uuid) | yes | The `credentialId` that registration or the last rotation returned with the credential now installed on the engine. |
+
+| Status | Meaning |
+|---|---|
+| 204 | `installed` is the current credential: the previous Ranger plugin credential is retired (it no longer authenticates), or none was pending. The current one is untouched, and a further rotation is allowed again |
+| 400 | The body is missing or malformed |
+| 401 | Not authenticated |
+| 403 | Missing engine:update permission |
+| 404 | No such engine |
+| 409 | Nothing was retired: the engine is provisioned (egret retires its previous credential itself once the rollout of the current one is observed complete), or `installed` is not the engine's current credential (a confirmation sent before a... |
+| 500 | Internal error |
+
+## POST `/api/control-plane/engines/{id}/rotate-ranger-credential`
+
+Operation id: `rotate_ranger_credential`. Auth: Session cookie and `X-Egret-CSRF` header. Forbidden (403): Missing engine:update permission.
+
+`POST /engines/\{id\}/rotate-ranger-credential` — mint a new Ranger plugin credential. Spec 2026-10-20-ranger-surface-auth A10/A11: the new credential is committed and the old one demoted to previous; both authenticate until the previous one is retired. A rotation is refused (409) while a previous one is still pending, so a rotation never deletes a credential.
+
+**Provisioned engine** (Trino or StarRocks): the new credential is applied and the route answers 204 once Kubernetes ACCEPTS the apply; the pods then roll. The previous credential stays valid until that rollout is OBSERVED complete — every pod that runs the plugin (Trino: coordinator and workers; StarRocks: the FE) runs the new credential and none of an older template is left — and is then deleted by its exact id, by a periodic sweep or the next read of the engine ([`crate::ranger_credential::RangerCredentialStore::retire_previous_if_rolled_out`]). A stalled rollout keeps it valid for as long as it stalls. A failed apply deletes nothing; the previous one is retired once a later apply has...
+
+| Parameter | In | Type | Required | Description |
+|---|---|---|---|---|
+| `id` | path | string (uuid) | yes | Engine id |
+
+**Response 200 (application/json)**: `RangerCredentialDto`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `username` | string | yes | `engine-&lt;engine id>`. |
+| `password` | string | yes | The password. egret does not show it again. |
+| `credentialId` | string (uuid) | yes | Names THIS credential. Send it as `installed` to `POST /api/control-plane/engines/\{id\}/retire-previous-ranger-credential` once the engine runs with it; a confirmation naming any other credential retires nothing. An opaque id: it grants... |
+
+| Status | Meaning |
+|---|---|
+| 200 | External engine: the new Ranger plugin credential, shown only here (`Cache-Control: no-store`). The previous credential still authenticates until the operator, once the new one is installed, sends its `credentialId` as `installed` to `POST... |
+| 204 | Provisioned engine: Kubernetes accepted the apply of a new Ranger plugin credential; the engine's pods restart. The previous credential remains valid until the rollout is observed complete (every pod that runs the Ranger plugin runs the new... |
+| 400 | Provisioned engine bound to no policy profile (it has no Ranger credential), or Kubernetes is not configured |
+| 401 | Not authenticated |
+| 403 | Missing engine:update permission |
+| 404 | No such engine |
+| 409 | Nothing was rotated, for one of two reasons: a previous rotation is still pending (provisioned: the rollout of the current credential has not been observed complete yet, so the previous one is still valid; retry once the rollout has... |
+| 500 | Internal error |
+| 502 | Provisioned engine: Kubernetes rejected the apply; the engine row now names the new credential and keeps the previous one — both still authenticate — until a later apply of the new one has been observed to roll out |
 
 ## POST `/api/control-plane/engines/{id}/rotate-secrets`
 

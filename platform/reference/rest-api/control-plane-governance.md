@@ -8,17 +8,79 @@ description: REST endpoints in the control-plane-governance group.
 
 Governance Data: browse a catalog and read an object's lineage (DG frontend redesign #1).
 
-This page lists 7 endpoints (OpenAPI tag `control-plane-governance`). It is generated from `openapi.json`; see the [REST API overview](../rest-api) for authentication, CSRF and error conventions.
+This page lists 11 endpoints (OpenAPI tag `control-plane-governance`). It is generated from `openapi.json`; see the [REST API overview](../rest-api) for authentication, CSRF and error conventions.
 
 | Method | Path | Operation id | Notes |
 |---|---|---|---|
+| GET | `/api/control-plane/classifications/{id}/handwritten` | `tag_handwritten` | Hand-written tag policies of a classification. |
+| GET | `/api/control-plane/classifications/{id}/usage` | `tag_usage` | Where a classification is used. |
 | GET | `/api/control-plane/governance/attention` | `attention` | What needs attention in governance, per the reader's permissions. |
 | GET | `/api/control-plane/governance/browse/{catalog_id}` | `browse` |  |
 | GET | `/api/control-plane/governance/catalogs` | `list_catalogs` | `GET /governance/catalogs`: every registry catalog, by name, for the Governance Data tree. |
 | GET | `/api/control-plane/governance/changes` | `changes` | Recent governance changes, newest first. |
 | GET | `/api/control-plane/governance/engines/{id}/plugin` | `engine_plugin` | What the Ranger plugins of an engine's profile report downloading. |
 | GET | `/api/control-plane/governance/lineage/{catalog_id}` | `object_lineage` |  |
+| GET | `/api/control-plane/governance/objects/{catalog_id}/handwritten` | `object_handwritten` | Hand-written policies that reach a Data object. |
+| GET | `/api/control-plane/governance/principals/{kind}/{id}/handwritten` | `principal_handwritten` | Hand-written policies that name a principal. |
 | GET | `/api/control-plane/governance/tags/{catalog_id}` | `object_tags` |  |
+
+## GET `/api/control-plane/classifications/{id}/handwritten`
+
+Operation id: `tag_handwritten`. Auth: Session cookie. Forbidden (403): Lacks policy:read.
+
+Hand-written tag policies of a classification.
+
+Every hand-written (operator) policy of every usable tag service whose tag resource matches this classification's NAME through the tag service-def's matcher (wildcards yes, case folding no), with the Trino profiles and engines that download it; `sameName` lists other tags with this name, which those policies reach too. `no_tag_service` when no Trino profile has a tag service. Requires policy:read.
+
+| Parameter | In | Type | Required | Description |
+|---|---|---|---|---|
+| `id` | path | string (uuid) | yes | Tag id |
+
+**Response 200 (application/json)**: `TagHandWritten`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `tag` | TagRef | yes |  |
+| `state` | TagPolicyState | yes |  |
+| `policies` | TagPolicyRow[] | yes |  |
+| `sameName` | SameNameTag[] | yes | Other tags with this name: engine tag policies on the name apply to them too (CL10). |
+| `unreadable` | UnreadablePolicy[] | yes | Hand-written tag policies whose body could not be read: they may name this tag, so the list above may be incomplete. |
+
+| Status | Meaning |
+|---|---|
+| 200 | The hand-written tag policies naming the classification |
+| 401 | Not authenticated |
+| 403 | Lacks policy:read |
+| 404 | No tag with this id |
+| 500 | Internal error |
+
+## GET `/api/control-plane/classifications/{id}/usage`
+
+Operation id: `tag_usage`. Auth: Session cookie. Forbidden (403): Lacks both tag:read and policy:read.
+
+Where a classification is used.
+
+The tables and columns of egret catalogs carrying the classification (grouped by table; assignments in a warehouse no catalog names are counted as `orphaned`), and the BI objects carrying it: each is checked with the caller's read permission, in workspace, kind, id order, up to 500 per request; readable ones are listed, unreadable ones only counted (no name, no workspace), the rest reported as `remaining`, and assignments to deleted objects counted. Requires tag:read or policy:read.
+
+| Parameter | In | Type | Required | Description |
+|---|---|---|---|---|
+| `id` | path | string (uuid) | yes | Tag id |
+
+**Response 200 (application/json)**: `TagUsage`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `tag` | UsageTag | yes |  |
+| `data` | DataUsage | yes |  |
+| `bi` | BiUsage | yes |  |
+
+| Status | Meaning |
+|---|---|
+| 200 | Where the classification is used |
+| 401 | Not authenticated |
+| 403 | Lacks both tag:read and policy:read |
+| 404 | No tag with this id |
+| 500 | Internal error |
 
 ## GET `/api/control-plane/governance/attention`
 
@@ -189,6 +251,74 @@ Operation id: `object_lineage`. Auth: Session cookie. Forbidden (403): Missing p
 | 500 | Internal error |
 | 503 | (egret catalog) egret's warehouse could not be read to tell a table from a view |
 | 504 | (egret catalog) egret's warehouse did not answer within the deadline |
+
+## GET `/api/control-plane/governance/objects/{catalog_id}/handwritten`
+
+Operation id: `object_handwritten`. Auth: Session cookie. Forbidden (403): Lacks policy:read.
+
+Hand-written policies that reach a Data object.
+
+Every hand-written (operator) Ranger policy of the profiles whose engines reach the catalog, and of their tag services, that reaches the object: `applies` (the policy names this object, or it and everything below it), `part` (it names something below), `parent` (it names a parent only, which engines do not apply to this object's data) or `unknown` (the body cannot be read). A resource match, not an access decision. egret-seeded policies are counted per profile. External engines are read from the database only. Requires policy:read.
+
+| Parameter | In | Type | Required | Description |
+|---|---|---|---|---|
+| `catalog_id` | path | string (uuid) | yes | Registry catalog id |
+| `schema` | query | string | no | The schema (StarRocks: database); needed for `table`. |
+| `table` | query | string | no | The table or view; needs `schema`, needed for `column`. |
+| `column` | query | string | no | The column; needs `table`. |
+
+**Response 200 (application/json)**: `ObjectHandWritten`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `catalog` | HandWrittenCatalog | yes |  |
+| `target` | HandWrittenTarget | yes |  |
+| `state` | ListedState | yes |  |
+| `reason` | NotDeterminedReason | no |  |
+| `profiles` | HandWrittenProfile[] | yes |  |
+| `policies` | HandWrittenPolicy[] | yes |  |
+| `seeded` | SeededCount[] | yes | egret-seeded (`infra`) policies that reach the object, counted per profile and never listed. |
+
+| Status | Meaning |
+|---|---|
+| 200 | The hand-written policies reaching the object |
+| 400 | A level named without its parent, or empty or `*` |
+| 401 | Not authenticated |
+| 403 | Lacks policy:read |
+| 404 | No catalog with this id |
+| 500 | Internal error |
+
+## GET `/api/control-plane/governance/principals/{kind}/{id}/handwritten`
+
+Operation id: `principal_handwritten`. Auth: Session cookie. Forbidden (403): Lacks policy:read.
+
+Hand-written policies that name a principal.
+
+Every hand-written (operator) Ranger policy, in every profile and tag service, with an item naming the principal: a user's username (`direct`), or a group or role the user holds (`group` / `role`, with `onEngines: false`: engines resolve no groups or roles, so such an item reaches nobody there). Items naming `public` or `\{USER\}` are reported under `everyone`, never attributed. A user with no username is `no_username` with only the `everyone` policies. Requires policy:read.
+
+| Parameter | In | Type | Required | Description |
+|---|---|---|---|---|
+| `kind` | path | string | yes | `user`, `group` or `role` |
+| `id` | path | string | yes | A user's id, or a group's or role's name |
+
+**Response 200 (application/json)**: `PrincipalHandWritten`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `principal` | PrincipalRef | yes |  |
+| `state` | PrincipalState | yes |  |
+| `policies` | PrincipalPolicy[] | yes |  |
+| `everyone` | EveryoneSummary | yes | Policies with an item naming `public` or `\{USER\}`: they apply to everyone, never attributed to this principal. |
+| `unreadable` | UnreadablePolicy[] | yes | Hand-written policies whose body could not be read: they may name this principal, so the list above may be incomplete. |
+
+| Status | Meaning |
+|---|---|
+| 200 | The hand-written policies naming the principal |
+| 400 | An unknown kind |
+| 401 | Not authenticated |
+| 403 | Lacks policy:read |
+| 404 | No such user, group or role |
+| 500 | Internal error |
 
 ## GET `/api/control-plane/governance/tags/{catalog_id}`
 
