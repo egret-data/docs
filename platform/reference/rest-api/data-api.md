@@ -160,6 +160,8 @@ Operation id: `list_endpoints`. Auth: Session cookie. Forbidden (403): Missing d
 | `source_kind` | string | yes |  |
 | `source_ref` | string (uuid), nullable | no |  |
 | `live_version_id` | string (uuid), nullable | no | The version currently served. Never written by this module — publishing is a separate lifecycle. |
+| `live_method` | string, nullable | no | The method and path the LIVE version is served at, or `null` for an endpoint never published. Written only by publish and rollback, from the snapshot they make live; the serving router matches these, never `method`/`path`. When they differ... |
+| `live_path` | string, nullable | no | See [`Self::live_method`]. |
 | `state` | string | yes |  |
 | `created_by` | string (uuid), nullable | no |  |
 | `created_at` | string (date-time) | yes |  |
@@ -221,6 +223,8 @@ Operation id: `create_endpoint`. Auth: Session cookie and `X-Egret-CSRF` header.
 | `source_kind` | string | yes |  |
 | `source_ref` | string (uuid), nullable | no |  |
 | `live_version_id` | string (uuid), nullable | no | The version currently served. Never written by this module — publishing is a separate lifecycle. |
+| `live_method` | string, nullable | no | The method and path the LIVE version is served at, or `null` for an endpoint never published. Written only by publish and rollback, from the snapshot they make live; the serving router matches these, never `method`/`path`. When they differ... |
+| `live_path` | string, nullable | no | See [`Self::live_method`]. |
 | `state` | string | yes |  |
 | `created_by` | string (uuid), nullable | no |  |
 | `created_at` | string (date-time) | yes |  |
@@ -234,7 +238,7 @@ Operation id: `create_endpoint`. Auth: Session cookie and `X-Egret-CSRF` header.
 | 401 | Not authenticated |
 | 403 | Missing data_api_endpoint:manage permission — :read does not imply authoring |
 | 404 | No such database in this workspace |
-| 409 | Another endpoint already serves that method and path |
+| 409 | Another endpoint's draft already sits at that method and path |
 | 500 | Internal error |
 
 ## GET `/api/ws/{workspace}/data-api/endpoints/{id}`
@@ -267,6 +271,8 @@ Operation id: `get_endpoint`. Auth: Session cookie. Forbidden (403): Missing dat
 | `source_kind` | string | yes |  |
 | `source_ref` | string (uuid), nullable | no |  |
 | `live_version_id` | string (uuid), nullable | no | The version currently served. Never written by this module — publishing is a separate lifecycle. |
+| `live_method` | string, nullable | no | The method and path the LIVE version is served at, or `null` for an endpoint never published. Written only by publish and rollback, from the snapshot they make live; the serving router matches these, never `method`/`path`. When they differ... |
+| `live_path` | string, nullable | no | See [`Self::live_method`]. |
 | `state` | string | yes |  |
 | `created_by` | string (uuid), nullable | no |  |
 | `created_at` | string (date-time) | yes |  |
@@ -330,6 +336,8 @@ Operation id: `update_endpoint`. Auth: Session cookie and `X-Egret-CSRF` header.
 | `source_kind` | string | yes |  |
 | `source_ref` | string (uuid), nullable | no |  |
 | `live_version_id` | string (uuid), nullable | no | The version currently served. Never written by this module — publishing is a separate lifecycle. |
+| `live_method` | string, nullable | no | The method and path the LIVE version is served at, or `null` for an endpoint never published. Written only by publish and rollback, from the snapshot they make live; the serving router matches these, never `method`/`path`. When they differ... |
+| `live_path` | string, nullable | no | See [`Self::live_method`]. |
 | `state` | string | yes |  |
 | `created_by` | string (uuid), nullable | no |  |
 | `created_at` | string (date-time) | yes |  |
@@ -343,7 +351,7 @@ Operation id: `update_endpoint`. Auth: Session cookie and `X-Egret-CSRF` header.
 | 401 | Not authenticated |
 | 403 | Missing data_api_endpoint:manage permission |
 | 404 | No such endpoint, or no such database, in this workspace |
-| 409 | Another endpoint already serves that method and path, or the endpoint is in the trash — restore it before editing it |
+| 409 | Another endpoint's draft already sits at that method and path, or the endpoint is in the trash — restore it before editing it. A new path or method on a live endpoint's draft is saved but not served: it goes live at the next publish |
 | 500 | Internal error |
 
 ## DELETE `/api/ws/{workspace}/data-api/endpoints/{id}`
@@ -448,6 +456,8 @@ Operation id: `disable_endpoint`. Auth: Session cookie and `X-Egret-CSRF` header
 | `source_kind` | string | yes |  |
 | `source_ref` | string (uuid), nullable | no |  |
 | `live_version_id` | string (uuid), nullable | no | The version currently served. Never written by this module — publishing is a separate lifecycle. |
+| `live_method` | string, nullable | no | The method and path the LIVE version is served at, or `null` for an endpoint never published. Written only by publish and rollback, from the snapshot they make live; the serving router matches these, never `method`/`path`. When they differ... |
+| `live_path` | string, nullable | no | See [`Self::live_method`]. |
 | `state` | string | yes |  |
 | `created_by` | string (uuid), nullable | no |  |
 | `created_at` | string (date-time) | yes |  |
@@ -495,6 +505,8 @@ The other half of `disable`, and the reason `disable` keeps `live_version_id`: w
 | `source_kind` | string | yes |  |
 | `source_ref` | string (uuid), nullable | no |  |
 | `live_version_id` | string (uuid), nullable | no | The version currently served. Never written by this module — publishing is a separate lifecycle. |
+| `live_method` | string, nullable | no | The method and path the LIVE version is served at, or `null` for an endpoint never published. Written only by publish and rollback, from the snapshot they make live; the serving router matches these, never `method`/`path`. When they differ... |
+| `live_path` | string, nullable | no | See [`Self::live_method`]. |
 | `state` | string | yes |  |
 | `created_by` | string (uuid), nullable | no |  |
 | `created_at` | string (date-time) | yes |  |
@@ -528,6 +540,7 @@ Operation id: `list_endpoint_grants`. Auth: Session cookie. Forbidden (403): Mis
 | `service_account_id` | string (uuid) | yes | The granted service account (its `users.id`). |
 | `service_account_name` | string, nullable | no | The account's display name, so the list is readable without a second call. `None` if the account row has since been deleted. |
 | `created_at` | string (date-time) | yes |  |
+| `inherits_invoke` | boolean | yes | Whether the account ALSO reaches invoke through the workspace (a workspace role carrying `data_api_endpoint:invoke`), so that revoking this grant would not remove its access. Asked of the PDP at workspace scope, where this grant cannot... |
 
 | Status | Meaning |
 |---|---|
@@ -561,6 +574,7 @@ Operation id: `grant_endpoint_invoke`. Auth: Session cookie and `X-Egret-CSRF` h
 | `service_account_id` | string (uuid) | yes | The granted service account (its `users.id`). |
 | `service_account_name` | string, nullable | no | The account's display name, so the list is readable without a second call. `None` if the account row has since been deleted. |
 | `created_at` | string (date-time) | yes |  |
+| `inherits_invoke` | boolean | yes | Whether the account ALSO reaches invoke through the workspace (a workspace role carrying `data_api_endpoint:invoke`), so that revoking this grant would not remove its access. Asked of the PDP at workspace scope, where this grant cannot... |
 
 | Status | Meaning |
 |---|---|
@@ -707,6 +721,8 @@ Comes back `disabled`, never `live`. See [`EndpointStore::restore`].
 | `source_kind` | string | yes |  |
 | `source_ref` | string (uuid), nullable | no |  |
 | `live_version_id` | string (uuid), nullable | no | The version currently served. Never written by this module — publishing is a separate lifecycle. |
+| `live_method` | string, nullable | no | The method and path the LIVE version is served at, or `null` for an endpoint never published. Written only by publish and rollback, from the snapshot they make live; the serving router matches these, never `method`/`path`. When they differ... |
+| `live_path` | string, nullable | no | See [`Self::live_method`]. |
 | `state` | string | yes |  |
 | `created_by` | string (uuid), nullable | no |  |
 | `created_at` | string (date-time) | yes |  |
@@ -790,6 +806,8 @@ Operation id: `trash_endpoint`. Auth: Session cookie and `X-Egret-CSRF` header. 
 | `source_kind` | string | yes |  |
 | `source_ref` | string (uuid), nullable | no |  |
 | `live_version_id` | string (uuid), nullable | no | The version currently served. Never written by this module — publishing is a separate lifecycle. |
+| `live_method` | string, nullable | no | The method and path the LIVE version is served at, or `null` for an endpoint never published. Written only by publish and rollback, from the snapshot they make live; the serving router matches these, never `method`/`path`. When they differ... |
+| `live_path` | string, nullable | no | See [`Self::live_method`]. |
 | `state` | string | yes |  |
 | `created_by` | string (uuid), nullable | no |  |
 | `created_at` | string (date-time) | yes |  |
