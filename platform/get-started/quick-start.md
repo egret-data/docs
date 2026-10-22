@@ -43,28 +43,15 @@ Docker Compose](../deploy-operate/local) page describes each service.
 Never reuse it anywhere else; see the [security checklist](../deploy-operate/security-hardening).
 :::
 
-## Add the settings `.env.example` leaves out
+## Create the bucket
 
-The server refuses to start unless the object-store credentials are set, even if you never use object storage:
+The server refuses to start unless the object-store credentials are set, even if you never use object storage.
+`.env.example` sets them (`EGRET_STORAGE__BUCKET=warehouse` and the credentials the compose file gives RustFS), and a test
+in the repository keeps the file passing the server's startup checks. It also sets `EGRET_SECRETS__MASTER_KEY`, which
+encrypts the credentials you store (for example a database password). Like the secret key above, that value is public:
+replace it with `head -c 32 /dev/urandom | base64` for anything but your laptop.
 
-```text
-the apps API requires [storage] bucket, access_key, secret_key (it stores draft/version content there ...)
-```
-
-`.env.example` sets `AWS_*` variables but not the `EGRET_STORAGE__*` ones the server reads. Append these to `.env`. The
-credentials are the ones the compose file gives RustFS.
-
-```bash
-{
-  echo "EGRET_STORAGE__BUCKET=warehouse"
-  echo "EGRET_STORAGE__ACCESS_KEY=egret"
-  echo "EGRET_STORAGE__SECRET_KEY=egretsecret"
-  echo "EGRET_SECRETS__MASTER_KEY=$(head -c 32 /dev/urandom | base64)"
-} >> .env
-```
-
-`EGRET_SECRETS__MASTER_KEY` encrypts the credentials you store (for example a database password). Without it, saving a
-connection **with a secret** fails. The bucket does not exist yet: nothing creates it. Create it in the RustFS console at
+The bucket does not exist yet: nothing creates it. Create it in the RustFS console at
 [http://localhost:9001](http://localhost:9001) (user `egret`, password `egretsecret`), or with any S3 client pointed at `http://localhost:9000`:
 
 ```bash
@@ -88,10 +75,12 @@ cargo run -p egret-bin -- init
 ```text
 Bootstrap admin: admin@egret.local
 Password: <a generated password>
+(generated; shown only this once)
 Default workspace: default
 ```
 
-Copy the password. To choose it yourself, set `EGRET_ADMIN_PASSWORD` (and `EGRET_ADMIN_EMAIL`) before running `init`.
+Copy the password. To choose it yourself, set `EGRET_ADMIN_PASSWORD` (and `EGRET_ADMIN_EMAIL`) before running `init`; `init`
+then prints `Password: taken from EGRET_ADMIN_PASSWORD (not shown)` instead of the value.
 `init` does nothing if a platform administrator already exists; add `--force` to create another one.
 
 ```bash

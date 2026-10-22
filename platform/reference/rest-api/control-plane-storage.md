@@ -202,48 +202,50 @@ Operation id: `remove`. Auth: Session cookie and `X-Egret-CSRF` header. Forbidde
 
 ## GET `/api/control-plane/storage/{id}/download`
 
-Operation id: `download_object`. Auth: Session cookie. Forbidden (403): Missing storage:read permission.
+Operation id: `download_object`. Auth: Session cookie. Forbidden (403): Missing storage:read permission, or the key is under a prefix egret writes for its users and the caller is not a platform admin.
 
 Stream a single object from a storage connection's bucket as an attachment.
 
 | Parameter | In | Type | Required | Description |
 |---|---|---|---|---|
 | `id` | path | string (uuid) | yes | Storage connection id |
-| `key` | query | string | yes | Object key to download |
+| `key` | query | string | yes | Object key to download, relative to the connection's key prefix |
 
 | Status | Meaning |
 |---|---|
 | 200 | Object bytes streamed as an attachment |
-| 400 | Invalid request or object could not be read |
+| 400 | Invalid key (a `.`/`..` or empty segment, a backslash or a control character, also once percent-decoded), or the object could not be read |
 | 401 | Not authenticated |
-| 403 | Missing storage:read permission |
+| 403 | Missing storage:read permission, or the key is under a prefix egret writes for its users and the caller is not a platform admin |
 | 404 | No such storage connection |
 | 500 | Internal error |
 
 ## GET `/api/control-plane/storage/{id}/objects`
 
-Operation id: `browse_objects`. Auth: Session cookie. Forbidden (403): Missing storage:read permission.
+Operation id: `browse_objects`. Auth: Session cookie. Forbidden (403): Missing storage:read permission, or the prefix is one egret writes for its users and the caller is not a platform admin.
 
 Browse the objects/folders in a storage connection's bucket (folder-style).
 
 | Parameter | In | Type | Required | Description |
 |---|---|---|---|---|
 | `id` | path | string (uuid) | yes | Storage connection id |
-| `prefix` | query | string | no | Folder prefix to list under |
+| `prefix` | query | string | no | Folder prefix to list under, relative to the connection's key prefix |
 
 **Response 200 (application/json)**: `ListingDto`
 
 | Field | Type | Required | Description |
 |---|---|---|---|
+| `root` | string | yes | The connection's key prefix (`""` when it has none). Every key in this listing, and every `prefix`/`key` the routes take, is relative to it. |
 | `folders` | string[] | yes |  |
 | `objects` | ObjectDto[] | yes |  |
+| `hiddenSystemFolders` | string[] | yes | Folders at this level left out because egret writes its users' data there (stored SQL Lab results, Data App sources, workflow files) and the caller is not a platform admin. |
 
 | Status | Meaning |
 |---|---|
 | 200 | Folders and objects under the prefix |
-| 400 | Invalid request or bucket could not be listed |
+| 400 | Invalid prefix, or the bucket could not be listed |
 | 401 | Not authenticated |
-| 403 | Missing storage:read permission |
+| 403 | Missing storage:read permission, or the prefix is one egret writes for its users and the caller is not a platform admin |
 | 404 | No such storage connection |
 | 500 | Internal error |
 

@@ -12,16 +12,16 @@ This page lists 6 endpoints (OpenAPI tag `ranger`). It is generated from `openap
 
 | Method | Path | Operation id | Notes |
 |---|---|---|---|
-| GET | `/service/plugins/definitions` | `list_defs` |  |
-| GET | `/service/plugins/definitions/name/{name}` | `get_def` |  |
-| GET | `/service/plugins/policies/download/{service}` | `download_policies` | `GET /plugins/policies/download/\{service\}?lastKnownVersion=N` |
-| GET | `/service/plugins/policies/{id}` | `get_policy` |  |
-| GET | `/service/plugins/services` | `list_services` |  |
-| GET | `/service/tags/download/{service}` | `download_tags` | `GET /tags/download/\{service\}?lastKnownVersion=N` |
+| GET | `/ranger/service/plugins/definitions` | `list_defs` |  |
+| GET | `/ranger/service/plugins/definitions/name/{name}` | `get_def` |  |
+| GET | `/ranger/service/plugins/policies/download/{service}` | `download_policies` | `GET /plugins/policies/download/\{service\}?lastKnownVersion=N` |
+| GET | `/ranger/service/plugins/policies/{id}` | `get_policy` |  |
+| GET | `/ranger/service/plugins/services` | `list_services` |  |
+| GET | `/ranger/service/tags/download/{service}` | `download_tags` | `GET /tags/download/\{service\}?lastKnownVersion=N` |
 
-## GET `/service/plugins/definitions`
+## GET `/ranger/service/plugins/definitions`
 
-Operation id: `list_defs`. Auth: Bearer token equal to `ranger.auth_token` (open when the token is empty).
+Operation id: `list_defs`. Auth: Session cookie. Forbidden (403): An engine credential: these routes are for the operator bearer only.
 
 **Response 200 (application/json)**: `RangerServiceDefs`
 
@@ -32,12 +32,13 @@ Operation id: `list_defs`. Auth: Bearer token equal to `ranger.auth_token` (open
 | Status | Meaning |
 |---|---|
 | 200 | All stored Ranger service-definitions |
-| 401 | Missing or invalid bearer token (when a ranger auth token is configured) |
+| 401 | Missing or invalid credential while `ranger.auth_mode` is `required` |
+| 403 | An engine credential: these routes are for the operator bearer only |
 | 500 | Internal error |
 
-## GET `/service/plugins/definitions/name/{name}`
+## GET `/ranger/service/plugins/definitions/name/{name}`
 
-Operation id: `get_def`. Auth: Bearer token equal to `ranger.auth_token` (open when the token is empty).
+Operation id: `get_def`. Auth: Session cookie. Forbidden (403): An engine credential: these routes are for the operator bearer only.
 
 | Parameter | In | Type | Required | Description |
 |---|---|---|---|---|
@@ -48,13 +49,14 @@ Operation id: `get_def`. Auth: Bearer token equal to `ranger.auth_token` (open w
 | Status | Meaning |
 |---|---|
 | 200 | The raw Ranger service-definition |
-| 401 | Missing or invalid bearer token (when a ranger auth token is configured) |
+| 401 | Missing or invalid credential while `ranger.auth_mode` is `required` |
+| 403 | An engine credential: these routes are for the operator bearer only |
 | 404 | No such service-definition |
 | 500 | Internal error |
 
-## GET `/service/plugins/policies/download/{service}`
+## GET `/ranger/service/plugins/policies/download/{service}`
 
-Operation id: `download_policies`. Auth: Bearer token equal to `ranger.auth_token` (open when the token is empty).
+Operation id: `download_policies`. Auth: Session cookie. Forbidden (403): An engine credential asked for a profile its engine is not bound to.
 
 `GET /plugins/policies/download/\{service\}?lastKnownVersion=N`
 
@@ -81,13 +83,14 @@ Returns 304 when the plugin's cached version matches; 200 + `ServicePolicies` ot
 |---|---|
 | 200 | The service's enabled policies + service-def (plugin download envelope) |
 | 304 | Not modified — the plugin's lastKnownVersion matches the current policy version |
-| 401 | Missing or invalid bearer token (when a ranger auth token is configured) |
+| 401 | Missing or invalid credential (engine Basic or operator bearer) while `ranger.auth_mode` is `required` |
+| 403 | An engine credential asked for a profile its engine is not bound to |
 | 404 | No such policy profile |
 | 500 | Internal error |
 
-## GET `/service/plugins/policies/{id}`
+## GET `/ranger/service/plugins/policies/{id}`
 
-Operation id: `get_policy`. Auth: Bearer token equal to `ranger.auth_token` (open when the token is empty).
+Operation id: `get_policy`. Auth: Session cookie. Forbidden (403): An engine credential: these routes are for the operator bearer only.
 
 | Parameter | In | Type | Required | Description |
 |---|---|---|---|---|
@@ -98,13 +101,14 @@ Operation id: `get_policy`. Auth: Bearer token equal to `ranger.auth_token` (ope
 | Status | Meaning |
 |---|---|
 | 200 | The raw stored Ranger policy body (with id) |
-| 401 | Missing or invalid bearer token (when a ranger auth token is configured) |
+| 401 | Missing or invalid credential while `ranger.auth_mode` is `required` |
+| 403 | An engine credential: these routes are for the operator bearer only |
 | 404 | No such policy |
 | 500 | Internal error |
 
-## GET `/service/plugins/services`
+## GET `/ranger/service/plugins/services`
 
-Operation id: `list_services`. Auth: Bearer token equal to `ranger.auth_token` (open when the token is empty).
+Operation id: `list_services`. Auth: Session cookie. Forbidden (403): An engine credential: these routes are for the operator bearer only.
 
 **Response 200 (application/json)**: array of `RangerServiceRef`
 
@@ -120,12 +124,13 @@ Operation id: `list_services`. Auth: Bearer token equal to `ranger.auth_token` (
 | Status | Meaning |
 |---|---|
 | 200 | All policy profiles (Ranger services) |
-| 401 | Missing or invalid bearer token (when a ranger auth token is configured) |
+| 401 | Missing or invalid credential while `ranger.auth_mode` is `required` |
+| 403 | An engine credential: these routes are for the operator bearer only |
 | 500 | Internal error |
 
-## GET `/service/tags/download/{service}`
+## GET `/ranger/service/tags/download/{service}`
 
-Operation id: `download_tags`. Auth: Bearer token equal to `ranger.auth_token` (open when the token is empty).
+Operation id: `download_tags`. Auth: Session cookie. Forbidden (403): An engine credential asked for a profile its engine is not bound to.
 
 `GET /tags/download/\{service\}?lastKnownVersion=N`
 
@@ -151,7 +156,8 @@ Serves the real resource→tag mapping (`catalog_tag_assignments`) for the servi
 |---|---|
 | 200 | The service's catalog tag assignments (plugin tag-download envelope) |
 | 304 | Not modified — the plugin's lastKnownVersion matches the current tag version |
-| 401 | Missing or invalid bearer token (when a ranger auth token is configured) |
+| 401 | Missing or invalid credential (engine Basic or operator bearer) while `ranger.auth_mode` is `required` |
+| 403 | An engine credential asked for a profile its engine is not bound to |
 | 404 | No such policy profile |
 | 500 | Internal error |
 

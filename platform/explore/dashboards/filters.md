@@ -64,13 +64,11 @@ Shown for `text`, `number` and `date` filters. It decides how the value becomes 
 | `date` `relative` | the last 7, 30, 90 or 365 days up to today |
 | `date` `month-year` | the whole chosen month |
 | `date` `quarter-year` | the whole chosen quarter of a year |
-| `date` `all-options` | a relative window (past, next or current n days, weeks, months, quarters, years) or a specific date (on, before, after, between). See the warning below. |
+| `date` `all-options` | a relative window (past, next or current n days, weeks, months, quarters, years) or a specific date (on, before, after, between). |
 
 Dates are compared as calendar dates in UTC.
 
-:::warning
-A viewer's choice in an `all-options` date filter is not kept: the picker writes it to the link as a JSON object, and Egret reads that back as plain text, so the chip shows no value and the cards are not filtered. Only a **default value** set by the editor works. Use `range`, `relative`, `single`, `month-year` or `quarter-year` for dates that viewers change.
-::: `id` and `category` filters match any of the chosen values (`in`); an `id` filter with one value matches that value exactly. A `boolean` filter offers **Any**, **True** and **False**. A `location` filter with `is-not` excludes the chosen values.
+`id` and `category` filters match any of the chosen values (`in`); an `id` filter with one value matches that value exactly. A `boolean` filter offers **Any**, **True** and **False**. A `location` filter with `is-not` excludes the chosen values.
 
 A `temporal_unit` filter does not filter rows. It changes how a date column on the connected card is grouped, for example from month to quarter. It works only on charts whose date column is already grouped by a time unit.
 
@@ -109,7 +107,7 @@ Shown for `category`, `location` and `id` filters, except when the widget is **I
 
 The value the filter has when a viewer opens the dashboard without a value in the link. Set it with the same widget viewers use; **Clear** removes the default.
 
-A viewer cannot clear a filter that has a default. Pressing the **✕** on its chip removes the value from the link, and the default comes back at once. Change the value instead, or ask an editor to remove the default.
+A viewer can clear a filter that has a default with the **✕** on its chip; the filter then stays empty after a reload and in a shared link. A **required** filter cannot be emptied: its **✕** returns it to the default. **Reset all filters** puts every filter back to its default ([Use filters and URL parameters](./using-filters#reset-all-filters)).
 
 ### Limit this filter's choices
 
@@ -176,8 +174,6 @@ If the header is too narrow for the title and filters, the filters collapse into
 
 - The **Search box** widget is the same as **Dropdown**.
 - The `text` and `number` types accept a single value only; a "Multiple values" choice is not offered.
-- A filter with a default cannot be cleared by a viewer ([above](#default-value)).
-- `all-options` date filters do not keep a value chosen by a viewer, and their `{{slug}}` prints `[object Object]` in text cards.
 - Limiting a filter's choices is described from the product source. It has not been verified end to end on the demo data, where every priority occurs with every status.
 
 ## Further reading

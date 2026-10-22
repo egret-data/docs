@@ -11,8 +11,9 @@ sidebar_position: 4
 ### Cause: the workflow worker is off
 
 The worker that claims and runs tasks is **off by default** (`workflow.worker_enabled = false`). With it off, **Run** works:
-Egret creates the execution, shows it as *Running*, and nothing ever advances it. There is no error and the flow editor shows
-no warning.
+Egret creates the execution, shows it as *Running*, and nothing ever advances it. There is no error, but the flow page, the
+**Run** dialog, the **Executions** list and the execution show the notice *The workflow worker is off on this server, so executions are created but do not run. An administrator turns it on with workflow.workerEnabled (EGRET_WORKFLOW__WORKER_ENABLED=true).* The answer to **Run** carries
+`"worker_enabled": false`.
 
 Reproduced on a server started with the defaults:
 

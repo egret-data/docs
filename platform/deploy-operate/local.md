@@ -49,11 +49,11 @@ keys](../reference/configuration-keys); the ones that matter for the compose sta
 | Need | Variable | Value for the compose stack |
 |---|---|---|
 | Metadata database | `EGRET_DATABASE__URL` | `postgres://egret:egret@localhost:5432/egret` |
-| Object storage | `EGRET_STORAGE__ENDPOINT`, `__BUCKET`, `__ACCESS_KEY`, `__SECRET_KEY` | `http://localhost:9000`, a bucket you create, `egret`, `egretsecret` |
+| Object storage | `EGRET_STORAGE__ENDPOINT`, `__BUCKET`, `__ACCESS_KEY`, `__SECRET_KEY` | `http://localhost:9000`, `warehouse` (create it yourself), `egret`, `egretsecret` |
 | Single sign-on | `EGRET_OIDC__ISSUER_URL`, `__CLIENT_ID`, `__CLIENT_SECRET`, `__REDIRECT_URL` | `http://localhost:8081/realms/egret`, `egret`, `egret-secret`, `http://localhost:5173/api/auth/oidc/callback` |
 
-`.env.example` does not include the `EGRET_STORAGE__*` variables, and the server will not start without them; the Quick
-start shows the lines to add.
+`.env.example` sets all of these, and a test in the repository keeps it passing the server's startup checks. The bucket
+itself is not created for you; the Quick start shows how.
 
 The OIDC redirect URL must be on the origin the browser uses. With the Vite dev server that is port 5173, so the session
 cookie is set for the app and not for port 8080.
@@ -73,9 +73,9 @@ EGRET_STORAGE__ACCESS_KEY=egret EGRET_STORAGE__SECRET_KEY=egretsecret \
 ```
 
 If you also enable Data Apps (`apps.origin`), give each instance its own `apps.listen`: that listener binds
-`0.0.0.0:8081` by default. Changing the port does not change the catalog's advertised address: with the catalog on, also
-set `EGRET_CATALOG__PUBLIC_URL` to the new origin, or the token issuer in `/.well-known/openid-configuration` keeps
-saying `http://localhost:8080` (observed on an instance started on port 18080).
+`0.0.0.0:8081` by default. When `EGRET_CATALOG__PUBLIC_URL` is unset, the catalog's advertised address (and with it the token issuer in
+`/.well-known/openid-configuration`) follows the port: `http://localhost:18080` here. Set it yourself when clients reach the
+instance under another name.
 
 ## StarRocks and Ranger in the compose stack
 

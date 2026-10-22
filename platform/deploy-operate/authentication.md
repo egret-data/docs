@@ -61,7 +61,8 @@ The decoded access token for `tester` in this realm contains `"groups": ["data-t
 
 :::danger The realm file is for development only
 It disables TLS (`sslRequired: none`), accepts `*` as a redirect URI, enables the password grant, contains a client secret
-and three users with known passwords. Do not import it into a shared Keycloak. Create your own realm.
+and three users with known passwords. Do not import it into a shared Keycloak. Create your own realm. The Helm chart
+bundles this realm with `oidc.enabled=true` only when you also set `oidc.devRealm=true` (see [Kubernetes](./kubernetes)).
 :::
 
 ### Set up your own realm
@@ -114,7 +115,8 @@ misconfigured, or has not been connected yet.
 EGRET_ADMIN_EMAIL=ops@example.com EGRET_ADMIN_PASSWORD='a long random password' egret init
 ```
 
-- Without `EGRET_ADMIN_PASSWORD`, `init` generates a password and prints it once. Store it in a vault.
+- Without `EGRET_ADMIN_PASSWORD` (or with it empty), `init` generates a password and prints it once. Store it in a vault. A
+  password you supply is never printed: `init` prints `Password: taken from EGRET_ADMIN_PASSWORD (not shown)`.
 - `init` does nothing when a platform administrator already exists. `egret init --force` adds another one.
 - On the sign-in page the account is behind **Admin sign-in (break-glass)** when SSO is on.
 - Local sign-in is rate limited (`rate_limit.login_*`: 5 attempts per 5 minutes, successful attempts included), which also

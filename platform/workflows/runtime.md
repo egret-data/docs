@@ -10,12 +10,14 @@ This page is for the person who runs the platform: which switches make workflows
 
 | Setting | What it does | Default |
 |---|---|---|
-| `worker_enabled` | Starts the claim loop and the lease reaper. Without it an execution is created and then waits in *Running* for ever. | `false` |
+| `worker_enabled` | Starts the claim loop and the lease reaper. Without it an execution is created and then waits in *Running* for ever; the pages say so (see below). | `false` |
 | `scheduler_enabled` | Starts the trigger loop that fires schedules and flow triggers. Independent of the worker. | `false` |
 | `webhooks_enabled` | Mounts the unauthenticated webhook routes. Off, they answer 404. | `false` |
 | `container_runner` | `none`, `docker` or `kubernetes`. Needed for script tasks and the plugin host. | `none` |
 
 Run the worker and the scheduler together unless you want a replica that only serves. A scheduler without a worker creates executions nobody advances, and the **Triggers** page says so.
+
+When the worker is off, the flow page, the **Run** dialog, the **Executions** list and an execution that has not ended show the notice *The workflow worker is off on this server, so executions are created but do not run. An administrator turns it on with workflow.workerEnabled (EGRET_WORKFLOW__WORKER_ENABLED=true).* The **Triggers** page uses the same sentence. The API carries the same information as `worker_enabled` on a flow, on the executions list, on an execution and in the answer to **Run**, replay and restart.
 
 ## What runs on the Docker demo stack
 
@@ -40,6 +42,7 @@ The Docker demo stack (`just demo-up`) sets `EGRET_WORKFLOW__WORKER_ENABLED=true
 |---|---|---|
 | `tick_interval_secs` | Seconds between claim ticks: the floor on how soon a ready task starts. | 1 |
 | `batch` | Task runs one tick may claim. | 8 |
+| `max_concurrent_runs` | Claimed task runs one replica runs at the same time. A tick claims at most the free slots (and at most `batch`), so a slow task holds one slot, not the replica; a ready run beyond the bound stays unclaimed for another replica or a later tick. `0` is refused at start. Environment variable `EGRET_WORKFLOW__MAX_CONCURRENT_RUNS`. | 8 |
 | `trigger_interval_secs` | Seconds between trigger evaluations. | 1 |
 | `reaper_interval_secs` | Seconds between passes that hand back abandoned task runs. | 60 |
 | `working_timeout_s` | How long a task run may hold its lease before the reaper takes it back. | 3600 |
@@ -86,7 +89,8 @@ Script and plugin tasks also need a `container_runner`, and the image on the pla
 - Flow `concurrency:`, `sla:`, `checks:` and `quotas:` are accepted and not enforced.
 - Flow-level `finally:` and `afterExecution:` do not run.
 - Deleting a flow keeps its namespace and id reserved.
-- **One slow task holds up the others on its replica**. The worker runs the task runs it claimed in one tick one after another, and claims more only when they have all ended. On the demo stack a long `Sleep` kept four storage tasks of other executions in *Running* for 2 min 13 s, and no new task started, until the `Sleep` was killed. Keep long waits out of flows that share a replica with others, or kill them; a `Pause` does not hold the worker.
+- A replica runs at most `max_concurrent_runs` task runs at once (8 by default). With that many long tasks running, further ready tasks wait for a free slot or another replica.
+- Restarting Egret while a long task runs can leave the run in *Running* until the reaper takes it back after `working_timeout_s`, an hour by default (KI-237).
 - The webhook URL is served by the backend under `/workflows/v1/`, a path the frontend's web server and the Helm ingress do not forward to the backend. Route it yourself before you switch webhooks on.
 - Script tasks, plugin tasks and webhook calls were not run on the Docker demo stack; see the table above.
 

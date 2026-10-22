@@ -19,6 +19,8 @@ The `[storage]` section is the object store the server itself uses. One bucket h
 | Data Apps drafts and versions | `apps.storage.prefix` | `apps/` |
 | The default catalog warehouse | `catalog.warehouse` (`s3://<bucket>`) | `s3://warehouse` |
 
+The first three prefixes hold other users' data, so **Control Plane → Storage → Browse** and its download close them to everyone except a platform admin ([Storage](../control-plane/storage/index.md#folders-only-a-platform-admin-can-open)).
+
 ```bash
 EGRET_STORAGE__ENDPOINT=http://localhost:9000   # omit for AWS S3
 EGRET_STORAGE__REGION=us-east-1
@@ -59,7 +61,7 @@ EGRET_CATALOG__PUBLIC_URL=http://egret.example.internal:8080
 | `catalog.enabled` | Off by default. When on, `warehouse`, `auth_token` and the storage credentials are required. The server logs lakekeeper's own migrations on first start, in the same database. |
 | `catalog.auth_token` | A static token for catalog administration. Treat it as a secret. |
 | `catalog.warehouse` | The default catalog's location. |
-| `catalog.public_url` | The address clients and engines use to reach this server, without `/catalog`. The default is `http://localhost:8080`, **whatever `server.port` is**: change it when the server is reachable under another name, port or scheme. It is also where the machine identity provider's issuer falls back to. |
+| `catalog.public_url` | The address clients and engines use to reach this server, without `/catalog`. Unset, it is `http://localhost:<server.port>`: change it when the server is reachable under another name or scheme. It is also where the machine identity provider's issuer falls back to. |
 | `catalog.system_user` | The stable name (`egret-system`) of the principal that bootstraps the catalog's default project. Keep it stable across deploys. |
 
 ### What an engine sees

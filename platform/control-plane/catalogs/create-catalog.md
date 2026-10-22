@@ -38,7 +38,7 @@ The catalog's page opens. Continue with [Catalog detail](./catalog-detail.md) to
 | **TPC-DS** | Generated benchmark data. | **Scale**. |
 | **Generic** | Whatever properties you write in **Advanced properties**. | The engines it is valid for (**trino** needs `connector.name`; **starrocks** needs `type`) and the property pairs. |
 
-The **Storage connection** list is the platform's [storage connections](../storage/index.md). **Password secret** lists [secrets](../secrets.md), so a credential is never typed into the catalog. The list shows every secret, including the ones egret creates for engines and catalog clients (`engine-internal-…`, `engine-monitor-…`, `engine-tls-…`, `catalog-client-…`); pick one of your own.
+The **Storage connection** list is the platform's [storage connections](../storage/index.md). **Password secret** lists [secrets](../secrets.md), so a credential is never typed into the catalog. The list leaves out the **System** secrets egret creates for engines and catalog clients (`engine-internal-…`, `engine-monitor-…`, `engine-tls-…`, `catalog-client-…`).
 
 ## Advanced properties
 

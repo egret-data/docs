@@ -30,25 +30,11 @@ Operation id: `list`. Auth: Session cookie. Forbidden (403): Missing workspace p
 |---|---|---|---|---|
 | `workspace` | path | string | yes | Workspace slug |
 
-**Response 200 (application/json)**: array of `DatabaseDetailDto`
-
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `id` | string | yes |  |
-| `name` | string | yes |  |
-| `engine` | Engine | yes | Supported query engines. |
-| `host` | string | yes |  |
-| `port` | integer (int32) | yes |  |
-| `options` | ConnOptions | yes | Non-secret connection options stored in `databases.options` (jsonb). |
-| `has_secret` | boolean | yes |  |
-| `status` | string | yes |  |
-| `delegated` | boolean | yes |  |
-| `governed` | boolean | yes | See [`Database::governed`]. Surfaced on the detail DTO so the Data API author's database picker can warn BEFORE publish that the connection it is pointed at cannot carry a governed endpoint. |
-| `engine_id` | string, nullable | no | Set (as a UUID string) when this connection was materialized by an engine→workspace assignment (read-only, provisioned by egret); `None` for a self-service connection. The frontend uses it to split the workspace Engines page into... |
+**Response 200 (application/json)**: `DatabaseListing`, one of `DatabaseDetailDto[]`, `DatabaseListDto[]`.
 
 | Status | Meaning |
 |---|---|
-| 200 | Registered databases in the workspace |
+| 200 | Connections granted to the workspace: the full detail for a workspace admin, id/name/engine only for a member with query:run or dataset:read |
 | 401 | Not authenticated |
 | 403 | Missing workspace permission |
 | 500 | Internal error |

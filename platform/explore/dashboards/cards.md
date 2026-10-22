@@ -70,7 +70,7 @@ A heading is one line of large bold text, drawn without a card background (switc
 
 ## Text cards
 
-A text card shows **GitHub-flavoured Markdown**: headings, lists, bold and italic, links, tables, code. Raw HTML is not rendered. In edit mode the card is a plain text box that shows the Markdown source; the rendered result appears in view mode.
+A text card shows **GitHub-flavoured Markdown**: headings, lists, bold and italic, links, tables, code. Raw HTML is not rendered. In edit mode the card is a plain text box that shows the Markdown source; the rendered result appears in view mode. Spaces and Enter typed in the box go into the text (Enter starts a new line); Enter or Space pressed on the selected card itself, outside the box, opens its settings.
 
 ### Show a filter value in text
 
@@ -89,7 +89,8 @@ How values are written into the text:
 | No value | Nothing (an empty string) |
 | One value | The value |
 | Several values | The values joined with a comma and a space, for example `O, P` |
-| A date filter of type `all-options` | `[object Object]` (a known defect; use a different date type if you need the value in text) |
+| A date filter | The value as its chip reads it, for example `1995-01-01 – 1996-12-31`, `After 1997-06-01`, `Past 3 months` or `Q2 1997` |
+| A number `between` | `min – max`, for example `10 – 20` |
 
 An unknown slug is left as typed. Text cards cannot be connected to a column like chart cards; they only read filter values.
 
@@ -130,9 +131,7 @@ Iframe cards have no title, no description, no auto height and cannot host filte
 
 ## Limits and known issues
 
-- A space or Enter typed into a heading or text card in edit mode is not inserted; paste the text instead. See [Edit a dashboard](./editing#limits-and-known-issues).
 - The card description supports plain text only.
-- Text cards show `[object Object]` for `all-options` date filters.
 
 ## Further reading
 

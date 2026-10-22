@@ -45,9 +45,17 @@ What this means in practice:
 
 The database picker lists only the connections that are granted to the workspace; see [Databases](../../workspace-settings/databases). A request for any other database is refused with *database not granted to workspace*.
 
-:::warning Only workspace admins see the picker's list
-The picker is filled from `GET /api/ws/{ws}/databases`, which answers 403 to everyone who is not a workspace admin. A member with `ws_editor`, `ws_viewer` or a custom role that has `query:run` therefore sees an empty picker ("Select a database") even though the connection is granted, and nothing says why. Queries sent through the API with a `database_id` do run. See [Known issues](../../known-issues) (KI-159).
-:::
+The picker is filled from `GET /api/ws/{ws}/databases`. What that list holds depends on your role in the workspace:
+
+| You hold | You get |
+|---|---|
+| Workspace admin (`workspace:manage_members`) | Every granted connection with its full settings |
+| `query:run` or `dataset:read` (for example `ws_editor`, `ws_viewer` or a custom role) | Every granted connection, with only its id, name, engine and whether it uses per-user delegation. Host, port, options, secret and status are left out. |
+| Neither | A 403 |
+
+Creating, editing, deleting, testing and opening one connection stay with workspace admins.
+
+When no connection is granted to the workspace, the Explorer says *No connection is granted to this workspace. Ask a workspace admin.* If the list is refused (403), it says *You can't list this workspace's connections. Ask a workspace admin for a role that can run queries.*
 
 ## What the engine allows
 

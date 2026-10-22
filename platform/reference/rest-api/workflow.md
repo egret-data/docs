@@ -93,6 +93,7 @@ Operation id: `list_executions`. Auth: Session cookie. Forbidden (403): Missing 
 | `total` | integer (int64) | yes | Every execution matching the filter, not just this page's. Counted by a second statement carrying the same predicates, workspace one included. |
 | `limit` | integer (int64) | yes | The page size actually used, after the clamp. |
 | `offset` | integer (int64) | yes | The offset actually used, after the clamp. |
+| `worker_enabled` | boolean | yes | Whether this deployment runs the workflow worker (`workflow.worker_enabled`, `EGRET_WORKFLOW__WORKER_ENABLED`; off by default). **False: an execution is created and stays `RUNNING`, and nothing runs it until an administrator turns the... |
 
 | Status | Meaning |
 |---|---|
@@ -145,6 +146,7 @@ Operation id: `get_execution`. Auth: Session cookie. Forbidden (403): Missing wo
 | `runs` | TaskRunDto[] | yes | Every task run, in `run_ix` order — the executor's creation order. |
 | `can_manage` | boolean | yes | Whether the caller may resume and replay this execution: they hold `workflow:manage` in this workspace. A detail page hides both actions when this is false; the routes still check for themselves. |
 | `effective_labels` | LabelDto[] | yes | What the run sees as `labels`: the flow's, then `labels`, the later key winning. Empty when the frozen source does not parse. |
+| `worker_enabled` | boolean | yes | Whether this deployment runs the workflow worker (`workflow.worker_enabled`, `EGRET_WORKFLOW__WORKER_ENABLED`; off by default). **False: an execution is created and stays `RUNNING`, and nothing runs it until an administrator turns the... |
 
 | Status | Meaning |
 |---|---|
@@ -306,6 +308,7 @@ Tasks retrying, paused or not yet started end `KILLED` at once; a running task i
 | `runs` | TaskRunDto[] | yes | Every task run, in `run_ix` order — the executor's creation order. |
 | `can_manage` | boolean | yes | Whether the caller may resume and replay this execution: they hold `workflow:manage` in this workspace. A detail page hides both actions when this is false; the routes still check for themselves. |
 | `effective_labels` | LabelDto[] | yes | What the run sees as `labels`: the flow's, then `labels`, the later key winning. Empty when the frozen source does not parse. |
+| `worker_enabled` | boolean | yes | Whether this deployment runs the workflow worker (`workflow.worker_enabled`, `EGRET_WORKFLOW__WORKER_ENABLED`; off by default). **False: an execution is created and stays `RUNNING`, and nothing runs it until an administrator turns the... |
 
 | Status | Meaning |
 |---|---|
@@ -400,6 +403,7 @@ Run a finished execution again.
 | `runs` | TaskRunDto[] | yes | Every task run, in `run_ix` order — the executor's creation order. |
 | `can_manage` | boolean | yes | Whether the caller may resume and replay this execution: they hold `workflow:manage` in this workspace. A detail page hides both actions when this is false; the routes still check for themselves. |
 | `effective_labels` | LabelDto[] | yes | What the run sees as `labels`: the flow's, then `labels`, the later key winning. Empty when the frozen source does not parse. |
+| `worker_enabled` | boolean | yes | Whether this deployment runs the workflow worker (`workflow.worker_enabled`, `EGRET_WORKFLOW__WORKER_ENABLED`; off by default). **False: an execution is created and stays `RUNNING`, and nothing runs it until an administrator turns the... |
 
 | Status | Meaning |
 |---|---|
@@ -457,6 +461,7 @@ W7b Task 3 fix round 1, the user's ruling of 2026-10-11, after review found the 
 | `runs` | TaskRunDto[] | yes | Every task run, in `run_ix` order — the executor's creation order. |
 | `can_manage` | boolean | yes | Whether the caller may resume and replay this execution: they hold `workflow:manage` in this workspace. A detail page hides both actions when this is false; the routes still check for themselves. |
 | `effective_labels` | LabelDto[] | yes | What the run sees as `labels`: the flow's, then `labels`, the later key winning. Empty when the frozen source does not parse. |
+| `worker_enabled` | boolean | yes | Whether this deployment runs the workflow worker (`workflow.worker_enabled`, `EGRET_WORKFLOW__WORKER_ENABLED`; off by default). **False: an execution is created and stays `RUNNING`, and nothing runs it until an administrator turns the... |
 
 | Status | Meaning |
 |---|---|
@@ -535,6 +540,7 @@ Operation id: `create_flow`. Auth: Session cookie and `X-Egret-CSRF` header. For
 | `updated_at` | string (date-time) | yes |  |
 | `validation` | ValidationReportDto | yes | A flow's validation report, over the wire. Errors block publish; warnings do not — see [`ValidationReport`]'s own doc comment. |
 | `can_manage` | boolean | yes | Whether the caller may save, publish, run and delete this flow: they hold `workflow:manage` in this workspace. An editor opens read-only when this is false; every mutating route still checks for itself. |
+| `worker_enabled` | boolean | yes | Whether this deployment runs the workflow worker (`workflow.worker_enabled`, `EGRET_WORKFLOW__WORKER_ENABLED`; off by default). **False: an execution is created and stays `RUNNING`, and nothing runs it until an administrator turns the... |
 
 | Status | Meaning |
 |---|---|
@@ -635,6 +641,7 @@ Operation id: `get_flow`. Auth: Session cookie. Forbidden (403): Missing workflo
 | `updated_at` | string (date-time) | yes |  |
 | `validation` | ValidationReportDto | yes | A flow's validation report, over the wire. Errors block publish; warnings do not — see [`ValidationReport`]'s own doc comment. |
 | `can_manage` | boolean | yes | Whether the caller may save, publish, run and delete this flow: they hold `workflow:manage` in this workspace. An editor opens read-only when this is false; every mutating route still checks for itself. |
+| `worker_enabled` | boolean | yes | Whether this deployment runs the workflow worker (`workflow.worker_enabled`, `EGRET_WORKFLOW__WORKER_ENABLED`; off by default). **False: an execution is created and stays `RUNNING`, and nothing runs it until an administrator turns the... |
 
 | Status | Meaning |
 |---|---|
@@ -685,6 +692,7 @@ With `if_updated_at`, the save happens only if the draft is still the one the ed
 | `updated_at` | string (date-time) | yes |  |
 | `validation` | ValidationReportDto | yes | A flow's validation report, over the wire. Errors block publish; warnings do not — see [`ValidationReport`]'s own doc comment. |
 | `can_manage` | boolean | yes | Whether the caller may save, publish, run and delete this flow: they hold `workflow:manage` in this workspace. An editor opens read-only when this is false; every mutating route still checks for itself. |
+| `worker_enabled` | boolean | yes | Whether this deployment runs the workflow worker (`workflow.worker_enabled`, `EGRET_WORKFLOW__WORKER_ENABLED`; off by default). **False: an execution is created and stays `RUNNING`, and nothing runs it until an administrator turns the... |
 
 | Status | Meaning |
 |---|---|
@@ -768,6 +776,7 @@ Operation id: `start_flow_execution`. Auth: Session cookie and `X-Egret-CSRF` he
 | `runs` | TaskRunDto[] | yes | Every task run, in `run_ix` order — the executor's creation order. |
 | `can_manage` | boolean | yes | Whether the caller may resume and replay this execution: they hold `workflow:manage` in this workspace. A detail page hides both actions when this is false; the routes still check for themselves. |
 | `effective_labels` | LabelDto[] | yes | What the run sees as `labels`: the flow's, then `labels`, the later key winning. Empty when the frozen source does not parse. |
+| `worker_enabled` | boolean | yes | Whether this deployment runs the workflow worker (`workflow.worker_enabled`, `EGRET_WORKFLOW__WORKER_ENABLED`; off by default). **False: an execution is created and stays `RUNNING`, and nothing runs it until an administrator turns the... |
 
 | Status | Meaning |
 |---|---|

@@ -146,7 +146,6 @@ Shortcuts work when focus is not in a text field, and not with Ctrl, Cmd or Alt 
 
 ## Limits and known issues
 
-- In edit mode, a space or Enter typed into a **heading** or **text** card is not inserted, because the card treats those keys as "open settings". Paste text that already contains spaces and line breaks. This is recorded in the project backlog.
 - Scalar cards (a single number) and any chart whose columns are only metrics cannot be connected to a filter in the editor. See [Dashboard filters](./filters#connect-a-filter-to-cards).
 
 ## Further reading

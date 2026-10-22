@@ -39,8 +39,8 @@ The **Overview** tab is the summary. Its sections:
 
 ![A loop's execution lists one child execution per value](/img/platform/workflows/execution-children.png)
 
-:::warning Secret inputs are visible
-A `SECRET` input is stored with the execution and shown here as plain text. See [Inputs and outputs](../flows/inputs-and-outputs.md).
+:::note Secret inputs
+A `SECRET` input shows `******` here, in the logs and in every API answer; the real value is stored encrypted and used only by the tasks. Task outputs are not masked. See [Secret inputs](../flows/inputs-and-outputs.md#secret-inputs).
 :::
 
 ## Topology

@@ -130,10 +130,10 @@ described by their auth line here.
 | Data governance | [Permission model](rest-api/perm) | 30 |
 | Data governance | [Policy administration](rest-api/policy-admin) | 14 |
 | Data governance | [Ranger-compatible policy service](rest-api/ranger) | 6 |
-| Data governance | [Governance data browser](rest-api/control-plane-governance) | 7 |
+| Data governance | [Governance data browser](rest-api/control-plane-governance) | 11 |
 | Data governance | [Classification tags](rest-api/control-plane-tags) | 8 |
 | Control plane | [Access control](rest-api/control-plane-access) | 26 |
-| Control plane | [Engines](rest-api/control-plane-engines) | 24 |
+| Control plane | [Engines](rest-api/control-plane-engines) | 26 |
 | Control plane | [Catalog registry](rest-api/control-plane-catalog-registry) | 14 |
 | Control plane | [Egret warehouses](rest-api/control-plane-catalog) | 30 |
 | Control plane | [Storage connections](rest-api/control-plane-storage) | 7 |

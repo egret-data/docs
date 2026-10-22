@@ -40,7 +40,7 @@ Optional objects appear with these values:
 
 | When | Extra objects |
 |---|---|
-| `oidc.enabled=true` | `Deployment/keycloak`, `Service/keycloak`, `ConfigMap/keycloak-realm` (the realm file). |
+| `oidc.enabled=true` and `oidc.devRealm=true` | `Deployment/keycloak`, `Service/keycloak`, `ConfigMap/keycloak-realm` (the realm file). |
 | `ingress.enabled=true` | `Ingress/egret` (routes `/auth`, `/data-api`, `/oauth`, `/.well-known/*` and `/`) and `Ingress/egret-catalog`. `/service` (the policy API) is not routed. |
 | `sharedStore.enabled=true` | `Deployment/valkey` and `Service/valkey`. |
 | `workflow.containerRunner=kubernetes` | `Namespace/egret-tasks` (Pod Security `restricted`), `Role` and `RoleBinding` `egret-task-runner`, `NetworkPolicy/egret-task-isolation`. |
@@ -61,7 +61,8 @@ just deploy-kind     # builds egret-backend, -frontend, -renderer and -apps imag
 10m` and then restarts the pods, because a rebuilt `:dev` image with an unchanged tag is otherwise ignored. The web app is
 at [http://localhost:30080](http://localhost:30080); sign in as `admin@egret.local` with the password from `values.yaml` (`admin.password`).
 
-For single sign-on and an ingress, `just deploy-kind-oidc` adds `--set oidc.enabled=true --set ingress.enabled=true`. It
+For single sign-on and an ingress, `just deploy-kind-oidc` adds `--set oidc.enabled=true --set oidc.devRealm=true --set
+ingress.enabled=true` (`just deploy-kind-governance` sets the same two OIDC values). It
 needs the ingress controller and the DNS rewrite recipes (`just ingress-install`, `just coredns-rewrite`) first.
 
 Tear down with `just kind-undeploy` (the release only) or `just k8s-down` (the cluster).
@@ -128,7 +129,8 @@ with more than one replica and no shared store, so the guard holds outside the c
 | Value | Default | Meaning |
 |---|---|---|
 | `admin.email`, `admin.password` | `admin@egret.local`, `Admin12345!` | The break-glass administrator `egret init` creates. **Change the password.** |
-| `oidc.enabled` | `false` | Turn on SSO against the **bundled Keycloak** (`oidc.realm`, `clientId`, `clientSecret`, `keycloakImage`, `keycloakAdmin`, `keycloakAdminPassword`). The bundled Keycloak runs in development mode with default credentials. |
+| `oidc.enabled` | `false` | Turn on SSO against the **bundled Keycloak** (`oidc.realm`, `clientId`, `clientSecret`, `keycloakImage`, `keycloakAdmin`, `keycloakAdminPassword`). The bundled Keycloak runs in development mode with default credentials. Requires `oidc.devRealm=true`. |
+| `oidc.devRealm` | `false` | Confirms that you want the bundled Keycloak with the only realm the chart ships, the **development** realm (`files/egret-realm.json`: no TLS requirement, a `*` redirect URI, the password grant, users with published passwords, client secret `egret-secret`). With `oidc.enabled=true` and this left `false`, the chart refuses to render and names those settings. With it on, the install notes print a warning that anyone who reaches the Keycloak can sign in as a platform admin. Never set it on a cluster other people can reach. |
 
 To use your own identity provider, leave `oidc.enabled=false` (so no Keycloak is deployed) and set the `EGRET_OIDC__*`
 variables on the Deployment yourself, as in [Authentication setup](./authentication). The chart has no values for an

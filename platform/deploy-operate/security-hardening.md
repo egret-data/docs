@@ -30,8 +30,8 @@ that means. Each item says how to check it. Tick them in order.
 
 ## 2. The break-glass administrator
 
-- [ ] **Set the password yourself** with `EGRET_ADMIN_PASSWORD` at `egret init` (or let `init` generate one and store it in a
-  vault). Never keep the Helm default `Admin12345!` (`admin.password`).
+- [ ] **Set the password yourself** with `EGRET_ADMIN_PASSWORD` at `egret init`; `init` does not print a supplied password
+  (or let `init` generate one, printed once, and store it in a vault). Never keep the Helm default `Admin12345!` (`admin.password`).
 - [ ] **Move day-to-day administration to IdP groups.** Grant `platform_admin` to a group in **Control Plane → Groups**, and
   keep the local account for recovery.
 - [ ] **Keep the local sign-in rate limit.** Five attempts per five minutes (`rate_limit.login_*`) is what stands in front of
@@ -54,6 +54,8 @@ Egret speaks plain HTTP; terminate TLS in front of it.
   which is the safe direction.
 - [ ] **Use HTTPS to the identity provider**, and register only the exact redirect URI. The development realm uses
   `sslRequired: none` and `*` as a redirect URI.
+- [ ] **Do not set `oidc.devRealm=true` in the Helm chart** outside a cluster only you can reach. It is the opt-in that lets
+  `oidc.enabled=true` install the bundled Keycloak with the development realm; without it the chart refuses to render.
 - [ ] **Enable TLS on the engines.** Trino enforces JWT only over HTTPS (over HTTP it accepts a valid token but also trusts a
   bare `X-Trino-User`). StarRocks' per-user JWT login sends the token in clear text with `mysql_clear_password` unless the
   front end has TLS.
