@@ -1,7 +1,8 @@
 // Screenshots for the SQL Lab and Datasets & metrics pages (area: sql-datasets).
 // Objects used here are created by scripts/seed-sql-datasets.mjs (datasets "Orders with customers" and
 // "Line items", saved queries, snippets, charts, query history).
-const ws = '/explore/default';
+// DOCS_WS picks the workspace the Explore objects live in (default: `default`).
+const ws = `/explore/${process.env.DOCS_WS ?? 'default'}`;
 
 // ---------------------------------------------------------------- SQL Lab helpers
 // Replace the editor text.

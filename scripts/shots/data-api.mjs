@@ -1,6 +1,7 @@
 // Screenshots for the Data API and Alerts & reports pages (Apps: scripts/shots/apps.mjs).
 // Data API objects are created by scripts/seed-data-api.mjs (TRAFFIC=1 also fills Activity).
-const ws = '/explore/default';
+// DOCS_WS picks the workspace the Explore objects live in (default: `default`).
+const ws = `/explore/${process.env.DOCS_WS ?? 'default'}`;
 const A = 'data-api';
 const tall = (h) => (page) => page.setViewportSize({width: 1440, height: h});
 

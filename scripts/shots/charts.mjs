@@ -1,7 +1,8 @@
 // Screenshots for platform/explore/charts/*. Charts and datasets come from scripts/seed-charts-deep.mjs;
 // folders, bookmarks and the trashed chart from scripts/seed-sql-charts-lists.mjs.
 // Every prepare() starts on the Charts list, finds the chart by its exact name, and opens the wanted tab.
-const ws = '/explore/default';
+// DOCS_WS picks the workspace the Explore objects live in (default: `default`).
+const ws = `/explore/${process.env.DOCS_WS ?? 'default'}`;
 const PANEL = 'div[class*="w-[400px]"]';
 
 const open = (name, tab, then) => async (page) => {

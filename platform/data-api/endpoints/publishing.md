@@ -6,7 +6,7 @@ sidebar_position: 8
 
 Consumers never see your draft. They see a **version**: a frozen snapshot of the endpoint's contract (SQL, parameters, response settings, cache, limits and rate limit) taken when you press **Publish**. You can edit the draft as much as you like without affecting anyone, and go back to an earlier version in one click.
 
-![The Versions tab of Orders by status: v2 Live with a 1 breaking change badge over its note, and v1 with Roll back](/img/platform/data-api/endpoint-versions.png)
+![The Versions tab of Orders by status: v2 Live with a 1 breaking change badge beside its note, and v1 with Roll back](/img/platform/data-api/endpoint-versions.png)
 
 ## Publish an endpoint
 
