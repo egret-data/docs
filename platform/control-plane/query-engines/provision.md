@@ -21,7 +21,7 @@ You need **engine:create** and **engine:provision**. Egret runs the engine where
 The engine page opens with the status **provisioning**. It turns **running** when the coordinator answers. Measured on the demo stack: 72 seconds for the first engine on a Docker host that already had the image, and 38 seconds for a restart.
 
 :::tip Single-node engine
-For a small engine, open **Worker** and set **Replicas** to `0`: the coordinator then schedules the work itself. Left blank, the engine gets the default worker count. On the demo stack a blank value started one worker container next to the coordinator.
+For a small engine, open **Worker** and set **Replicas** to `0`: the coordinator then schedules the work itself, and the Overview strip shows *Worker 0*. Left blank, the engine gets one worker: on the demo stack a blank value started one worker container next to the coordinator.
 :::
 
 ## The Configuration sections (Trino)
@@ -50,7 +50,7 @@ The form shows *Cluster-wide, coordinator, and worker Trino config. Leave fields
 | **Password users** | *Each user signs in with a username and the password held in the selected egret secret (hashed server-side).* For clients that cannot use JWT. |
 | **JWT authentication** | *Also accept egret-issued JWTs (e.g. from notebooks) as client credentials.* An engine needs JWT before it can be assigned to a workspace. |
 | **Per-user delegation** | How queries from SQL Lab, charts and dashboards run as the calling user (below). |
-| **Ingress exposure** | *Create a Kubernetes Ingress for the coordinator. TLS terminates at the ingress.* With **Expose via ingress** on you set **Host**, **Ingress class**, **Ingress TLS cert** and **Annotations**. |
+| **Ingress exposure** | *Create a Kubernetes Ingress for the coordinator. TLS terminates at the ingress.* With **Expose via ingress** on you set **Host**, **Ingress class**, **Ingress TLS cert** and **Annotations**. **Host** is required: without it the field says *Enter the host the ingress serves, or turn off Expose via ingress.* and **Create** stays disabled. |
 
 The delegation modes:
 
@@ -87,7 +87,7 @@ The Docker provisioner runs the same Trino image with the same configuration fil
 | CPU and memory **requests**, health probes, placement | Yes | Accepted, no effect |
 | Ingress, autoscaling, ConfigMap and Secret mounts, init and sidecar containers, image pull secrets, additional exposed ports, `shareProcessNamespace` | Yes | Refused with an error that names the setting |
 | StarRocks engines | Yes | Refused |
-| Pod logs, log follow and the shell (**Logs**, **Exec**) | Yes | Not available (see [Engine detail](./engine-detail.md#kubernetes-only-features)) |
+| Pod logs, log follow and the shell (**Logs**, **Exec**) | Yes | Not shown; use `docker logs` (see [Engine detail](./engine-detail.md#kubernetes-only-features)) |
 
 :::note Demo stack
 The demo's Docker provisioner only starts images from `trinodb/trino`, with no published ports, no mounts and all capabilities dropped, on the network `egret-demo_default`. Read an engine's log with `docker logs egret-engine-egret-engines-<name>-coordinator`.
@@ -96,8 +96,7 @@ The demo's Docker provisioner only starts images from `trinodb/trino`, with no p
 ## Limits and known issues
 
 - A Trino catalog attach or detach restarts the coordinator, so queries in flight are lost.
-- Right after creation the Overview strip can show the default worker count (`Worker 2`) even when you set **Replicas** to `0`; it shows the real count after the first save of the settings.
-- The engine monitor lists no queries on Trino 483 engines (see [Engine detail](./engine-detail.md#monitor)).
+- The Ingress section is offered on the Docker provisioner, which refuses any ingress (KI-264).
 
 ## Further reading
 

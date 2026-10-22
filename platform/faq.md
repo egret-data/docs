@@ -84,7 +84,8 @@ Under **Manage → Workspace settings → Engines**, not under Explore. See [You
 
 ### Why do I get *429 Too Many Requests* at sign-in?
 
-Local sign-in allows 5 attempts per 5 minutes, and successful attempts count. Wait for the window to pass. See [Cannot sign
+Five failed local sign-ins within 5 minutes lock that address and email out for 5 minutes. The sign-in page says how long
+to wait, and the response carries `Retry-After`. Successful sign-ins do not count. See [Cannot sign
 in](./deploy-operate/troubleshooting/cannot-sign-in).
 
 ### I signed in with SSO and can see nothing. Why?

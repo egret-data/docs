@@ -41,7 +41,7 @@ Optional objects appear with these values:
 | When | Extra objects |
 |---|---|
 | `oidc.enabled=true` and `oidc.devRealm=true` | `Deployment/keycloak`, `Service/keycloak`, `ConfigMap/keycloak-realm` (the realm file). |
-| `ingress.enabled=true` | `Ingress/egret` (routes `/auth`, `/data-api`, `/oauth`, `/.well-known/*` and `/`) and `Ingress/egret-catalog`. `/service` (the policy API) is not routed. |
+| `ingress.enabled=true` | `Ingress/egret` (routes `/auth`, `/data-api`, `/oauth`, `/ranger`, `/.well-known/*` and `/`) and `Ingress/egret-catalog`. `/ranger` (the policy API) is routed to Egret's backend so that engines outside the cluster can reach it. |
 | `sharedStore.enabled=true` | `Deployment/valkey` and `Service/valkey`. |
 | `workflow.containerRunner=kubernetes` | `Namespace/egret-tasks` (Pod Security `restricted`), `Role` and `RoleBinding` `egret-task-runner`, `NetworkPolicy/egret-task-isolation`. |
 | `apps.pod.launcher=kubernetes` | `Namespace/egret-apps` and `NetworkPolicy/egret-app-pod-isolation`. With `apps.origin` and `ingress.enabled` also set, `Ingress/egret-apps`. |

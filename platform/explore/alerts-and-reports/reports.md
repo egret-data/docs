@@ -37,13 +37,20 @@ The **General** tab is the same as for an [alert](./create-an-alert#general). A 
 | **PNG image** | The picture inside the email body, not as a file. | Yes |
 | **PDF** | A file attached to the email and named after the report, for example `leadership-weekly-pack.pdf`. Several objects are always delivered as one PDF with one sheet per object, so the format switches to PDF when you add a second object. | Yes |
 | **CSV data** | The data behind the chart as an attached `.csv` file with a header row. | No |
-| **Text** | The data as a plain table in the message body, one row per line, for example `F \| 1.0356810234900002e+9`. | No |
+| **Text** | The data as a plain table in the message body, one row per line, for example `F \| 1,035,681,023.49`. | No |
 
-CSV and text read the chart's query result directly. Numbers are written as the engine returned them, so a large decimal appears in scientific notation (`1.0356810234900002e+9`) instead of `1,035,681,023.49` (KI-169).
+CSV and text read the chart's query result directly and write numbers the way the chart's table shows them by default: rounded to at most three decimals, with trailing zeros dropped. Integers keep every digit.
+
+| Format | Example |
+|---|---|
+| **Text** | `1,035,681,023.49`, digits grouped |
+| **CSV data** | `1035681023.49`, not grouped, so a spreadsheet reads it as a number whatever its locale |
+
+A column's own format settings (decimals, currency, prefix and so on) are not applied; only the table's defaults are. Round or format the value in the chart's SQL if you need something else.
 
 ## What recipients get
 
-A report sends one email to all the addresses of an email destination. The subject is your **Email subject**, or `[egret] <report name> report` when you leave it blank. The body has the report name as a heading, your **Opening note**, the result (the picture for PNG, a line saying the file is attached for PDF and CSV, the table for text), your **Closing note**, and an **Open in egret** button that links to the first object.
+A report sends one email to all the addresses of an email destination. The subject is your **Email subject**, or `[egret] <report name> report` when you leave it blank. When the name already ends in the word *report*, the subject is `[egret] <report name>`, so `Weekly report` does not mail as `Weekly report report`. The body has the report name as a heading, your **Opening note**, the result (the picture for PNG, a line saying the file is attached for PDF and CSV, the table for text), your **Closing note**, and an **Open in egret** button that links to the first object.
 
 ![A PNG report of the Executive summary dashboard as it arrives, in the demo stack's Mailpit inbox](/img/platform/alerts/mail-report-png.png)
 
@@ -59,7 +66,9 @@ Charts and dashboards are drawn in a browser, so PNG and PDF reports are produce
 The Docker demo stack runs the renderer and sends every email to Mailpit (`http://localhost:8025`), which is where the pictures on this page come from. Nothing leaves the machine.
 :::
 
-On the demo stack a one-dashboard PNG took about 10 seconds, and the six-card **Sales performance** dashboard about 20 seconds as a PDF. Egret waits at most **30 seconds** for the whole render, and the renderer draws the objects of a multi-object PDF one after the other. A report whose objects together take longer fails with the same `render failed: error sending request …` message although the renderer is up (KI-167).
+On the demo stack a one-dashboard PNG took about 10 seconds, and the six-card **Sales performance** dashboard about 20 seconds as a PDF. The renderer draws the objects of a multi-object PDF one after the other and waits up to 20 seconds for each page to finish drawing, so Egret's time limit grows with the number of objects: **30 seconds per object, plus 30 seconds** (60 seconds for one object, 90 for two, 180 for five). A five-dashboard PDF that took 36.9 seconds was delivered.
+
+A render that runs past the limit fails with `render failed: the renderer did not finish within 90s for 2 page(s) (timeout)`. A page that never signals it is ready fails earlier with the renderer's own message, for example `print page … did not signal readiness within 20000ms (timeout)`: a dashboard with many cards can hit this, so split it or deliver fewer cards.
 
 ## A worked example
 
@@ -71,11 +80,9 @@ These reports were created on the demo workspace and run with **Run now** and on
 | **Revenue by status (text)** | Chart **Revenue by status** | **Text** | **Success**. The three rows were in the message body. |
 | **Executive summary snapshot** | Dashboard **Executive summary** | **PNG image** | **Success**. The picture was in the message body. |
 | **Leadership weekly pack** | Dashboards **Executive summary** and **Weekly sales review** | **PDF** | **Success**. A two-page PDF, one dashboard per page, rendered in about 26 seconds. |
-| **Sales performance weekly digest** | Dashboards **Sales performance** and **Executive summary** | **PDF** | **Error** on every run: `render failed: error sending request for url (http://renderer:8080/render)`, the 30-second limit above. |
+| **Sales performance weekly digest** | Dashboards **Sales performance** and **Executive summary** | **PDF** | **Error** on every run before platform #726, when the time limit was a fixed 30 seconds. |
 
 A successful run shows **Notification sent** in the run log's **Detail** column; a failed one shows the error. See [Run history](./run-history).
-
-![The run log of a two-dashboard PDF report that exceeds the render time limit](/img/platform/alerts/run-log-report-error.png)
 
 ## Reports and grace
 
@@ -84,8 +91,7 @@ Reports ignore the grace period. A report that runs on its schedule always deliv
 ## Limits and known issues
 
 - The rendered pages show chart cards only, each under its chart's own name. Text and heading cards, card title overrides and tabs are not reproduced; see [Export, reports and print](../dashboards/export-and-reports#scheduled-report-rendering) (KI-073).
-- A multi-object PDF fails when its renders take longer than 30 seconds together (KI-167).
-- CSV and text reports write unformatted numbers (KI-169).
+- CSV and text reports apply the table's default number format, not a column's own format settings (KI-266).
 - The opening and closing notes appear in the HTML part of the email only; the plain-text part has the result line alone (KI-170).
 - Report subjects accept the same placeholders as alerts, for example `Weekly sales overview - {{date}}`.
 

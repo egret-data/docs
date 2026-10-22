@@ -21,7 +21,7 @@ A strip counts the **roles**, how many are **built-in** and how many are **custo
 
 ## The roles
 
-Each role is a row with its name, a **built-in** label for the three platform defaults, and its permission count.
+Each role is a row with its name, a **built-in** label for the three platform defaults, and its permission count. The count includes what the role inherits from its parent, for example **9 permissions (7 inherited)**.
 
 | Role | Permissions | Intended for |
 |---|---|---|
@@ -29,7 +29,7 @@ Each role is a row with its name, a **built-in** label for the three platform de
 | `ws_editor` | 17 | Building and editing content. |
 | `ws_viewer` | 7 | Reading content. |
 
-Custom roles, for example `finance_reporter`, are listed after the built-in ones with an **Inherits from \<parent\>** label when they have a parent. The summary counts them as **custom**. The page lists only these roles; `data_api_invoker`, which only calls published Data API endpoints, is not listed here although the **Members** role picker offers it.
+Custom roles, for example `finance_reporter`, are listed after the built-in ones with an **Inherits from \<parent\>** label when they have a parent. The summary counts them as **custom**. The page lists only these roles. A note under the title explains why `data_api_invoker`, listed in the Control Plane, is missing: it is granted on one Data API endpoint, never as a workspace role. The **Members** and **Access requests** role pickers offer the same roles as this page.
 
 ## See what a role grants
 
@@ -47,7 +47,7 @@ Select a row to expand it. The permissions are grouped by area, each with its de
 
 ![The custom role finance_reporter expanded: it inherits from ws_viewer and adds chart and dashboard management](/img/platform/admin/ws-roles-expanded.png)
 
-A role that inherits from another shows only the permissions it adds itself. `finance_reporter`, which inherits from `ws_viewer` and adds `chart:manage` and `dashboard:manage`, shows **2 permissions** here, while the Control Plane role page counts 8 because it includes the seven inherited reads. Read the parent's row to see the inherited ones.
+A role that inherits from another lists its own permissions first, then the ones it inherits under **Inherited from \<parent\>**. A role that inherits from `ws_viewer` (seven reads) and adds two permissions of its own, such as `finance_reporter` with `chart:manage` and `dashboard:manage`, shows **9 permissions (7 inherited)**. A permission the role also holds directly is listed once, under its own permissions.
 
 ## Choose a role for someone
 

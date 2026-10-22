@@ -39,8 +39,9 @@ The sign-in page changes with the server configuration.
 Egret creates the account as a plain member. What a person can do comes from roles granted to their **groups**, and those
 grants are made by an administrator: assign a platform role to the group under **Control Plane → Groups**, or add the group
 to a workspace under **Manage → Workspace settings → Members**. From a terminal, `egret workspace add-group --workspace
-<slug> --group <idp-group> --role ws_editor` does the second one. Until a grant exists, the person can sign in and sees
-only *No workspaces yet. Ask an admin to add you to one.*
+<slug> --group <idp-group> --role ws_editor` does the second one. A workspace administrator can also add the person by
+email before their first sign-in. Until a grant exists, the person can sign in and sees only a **No workspaces yet** card
+with their email, **Check again** and **Sign out**.
 :::
 
 ### Break-glass administrator
@@ -64,7 +65,7 @@ covers securing it.
 | Message | Meaning |
 |---|---|
 | *Invalid email or password* | The email and password do not match a local account. |
-| *Too many attempts. Please wait a few minutes and try again.* | The local sign-in limit (5 attempts per 5 minutes) was exceeded. Successful attempts count too. |
+| *Too many failed sign-in attempts. Try again in 5 minutes.* | Five failed attempts within 5 minutes. Wait the time the message gives; successful attempts do not count. |
 
 For SSO errors see [SSO errors](../deploy-operate/troubleshooting/sso-errors).
 

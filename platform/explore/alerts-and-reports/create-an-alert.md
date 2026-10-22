@@ -21,7 +21,7 @@ The editor has four tabs, **General**, **Condition**, **Schedule** and **Notific
 
 ## General
 
-![The General tab of an existing alert, with Recent runs underneath: On grace runs and a Success run with a webhook error](/img/platform/alerts/detail.png)
+![The General tab of an existing alert, with Recent runs underneath](/img/platform/alerts/detail.png)
 
 | Setting | What it does | Default |
 |---|---|---|
@@ -64,7 +64,7 @@ The alert **Pending orders above 100** uses these settings:
 | **Grace period** | 3600 seconds |
 | **Notification** | Email `ops@example.com` and a webhook to `https://example.com/egret-hook`, subject `[egret] {{name}} on {{date}}`, an opening and a closing note, and the **Order operations** dashboard attached as a PNG |
 
-Pressing **Run now** from the list ran it once. The sample data has 363 partially shipped orders, so the value `363` passed `> 100`: the run was recorded as **Success**, meaning the alert fired. The email arrived (below). The webhook receiver answered `405`, so the run log's **Detail** reads `webhook returned 405`; see [Run history](./run-history). A second **Run now** a few minutes later, and the next scheduled run, were recorded as **On grace** and sent nothing.
+Pressing **Run now** from the list ran it once. The sample data has 363 partially shipped orders, so the value `363` passed `> 100`: the alert fired. The email arrived (below). The webhook receiver answered `405`, so the run is recorded as **Error** and the run log's **Detail** reads `webhook example.com: webhook returned 405`; see [Run history](./run-history). Because the email reached someone, the grace period started anyway. A second **Run now** a few minutes later, and the next scheduled run, were recorded as **On grace** and sent nothing.
 
 A second alert, **Cancelled orders spike**, counts orders with status `X`. There are none, so the value is `0`, which does not pass `> 0`: each run is recorded as **Not triggered** and nobody is notified.
 
@@ -79,7 +79,7 @@ The email has the alert name as a heading, the **Opening note**, the attached ch
 When a run's value meets the condition, Egret:
 
 1. skips notification and records **On grace** if the alert already fired within its [grace period](./schedules#grace-period-seconds);
-2. otherwise sends the message to every destination and records **Success**.
+2. otherwise sends the message to every destination and records **Success**, or **Error** with each failed destination named if any destination did not take it. See [When delivery fails](./notifications#when-delivery-fails).
 
 The triggering rows are attached to the notification: as a CSV file on email, as JSON in the payload of a webhook. Slack does not receive them. See [Notifications](./notifications).
 

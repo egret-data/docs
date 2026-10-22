@@ -18,7 +18,7 @@ Under **Deliver to**, press **Add delivery method** and choose **Email**, **Slac
 |---|---|
 | **Addresses** | Comma-separated recipients, for example `ops@example.com, data-team@example.com`. |
 
-All addresses on one email destination receive a single message. For an alert the triggering rows are attached as a CSV file named after the alert, for example `urgent-open-orders-exist.csv`. Sending needs SMTP configured for the workspace; without it the run records the error `smtp is not configured for this workspace`. What an email looks like is shown in [Create an alert](./create-an-alert#what-the-recipient-gets) and [Reports](./reports#what-recipients-get).
+All addresses on one email destination receive a single message. For an alert the triggering rows are attached as a CSV file named after the alert, for example `urgent-open-orders-exist.csv`. Sending needs SMTP configured for the workspace; without it the run is an **Error** with `email: smtp is not configured for this workspace` in its detail. What an email looks like is shown in [Create an alert](./create-an-alert#what-the-recipient-gets) and [Reports](./reports#what-recipients-get).
 
 ### Slack
 
@@ -26,7 +26,7 @@ All addresses on one email destination receive a single message. For an alert th
 |---|---|
 | **Channel** | The channel to post to, for example `#data-alerts`. |
 
-The credential lives in the workspace's Slack app, set in **Workspace settings → Notifications**. The bot needs the `chat:write` permission and an invite to the channel. Slack receives the message text only, not the rows. Without a configured app the run records `no slack bot token is configured for this destination`, and the run still counts as fired, so the grace period starts.
+The credential lives in the workspace's Slack app, set in **Workspace settings → Notifications**. The bot needs the `chat:write` permission and an invite to the channel. Slack receives the message text only, not the rows. Without a configured app the run is an **Error** with `slack #channel: no slack bot token is configured for this destination`. If no other destination took the message, no grace period starts, so the next scheduled run tries again.
 
 :::note Demo stack
 The demo workspace has no Slack app, because a working one needs a real Slack workspace and bot token. A Slack destination there records the error above; posting to a channel could not be observed.
@@ -65,13 +65,15 @@ Webhook delivery has guard rails:
 
 - The request times out after 10 seconds, and redirects are **not** followed, because a redirect would be a second destination that bypasses the checks.
 - A destination that resolves to a private, loopback or link-local address is refused before any request is sent: `webhook host resolves to a blocked address (127.0.0.1): loopback`, or for a container on the same Docker network `webhook host resolves to a blocked address (172.24.0.5): private`. An operator can allow specific in-cluster hosts with the `automation.webhook_allow_hosts` setting.
-- A response that is not `2xx` is recorded with its status, for example `webhook returned 405`.
+- A response that is not `2xx` is recorded with its status, for example `webhook example.com: webhook returned 405`.
+
+In the run log a webhook is named by its host only (`webhook example.com: …`), never by its full URL, because the path or query of a webhook URL often carries its secret.
 
 ## Message
 
 | Setting | What it does | Default |
 |---|---|---|
-| **Email subject** | The subject line. Placeholders: `{{date}}`, `{{time}}`, `{{datetime}}`, `{{day}}`, `{{month}}`, `{{year}}`, `{{weekday}}`, `{{name}}`. Dates and times use the schedule's timezone. Under the box, **Sends as** previews the subject with today's values. | `[egret] name triggered` for an alert, `[egret] name report` for a report |
+| **Email subject** | The subject line. Placeholders: `{{date}}`, `{{time}}`, `{{datetime}}`, `{{day}}`, `{{month}}`, `{{year}}`, `{{weekday}}`, `{{name}}`. Dates and times use the schedule's timezone. Under the box, **Sends as** previews the subject with today's values. | `[egret] name triggered` for an alert, `[egret] name report` for a report (`[egret] name` when the name already ends in the word *report*) |
 | **Opening note** | Plain text above the result, at the top of the notification. Say why the alert exists and who to ask. | Empty |
 | **Closing note** | Plain text below the result, before the **Open in egret** button. Say what to do about it. | Empty |
 
@@ -100,13 +102,22 @@ For an alert, tick this to skip the notification when the query returned no rows
 
 ## When delivery fails
 
-A failed delivery does not fail the run. The alert already fired, so the run is recorded as **Success** and the grace period starts, and the delivery error is shown in the run log's **Detail** column. When an item has several destinations, only the first error is recorded. See [Run history](./run-history).
+Egret tries every destination of a run, even after one has failed. A run is **Success** only when every destination took the message; otherwise it is **Error**, the item counts as failing in the list, and the run log's **Detail** column names each destination that failed, for example `webhook 127.0.0.1: webhook host resolves to a blocked address (127.0.0.1): loopback; slack #ops: no slack bot token is configured for this destination`.
+
+What happens next depends on whether anyone received the message:
+
+| Outcome of the run | State | Grace period |
+|---|---|---|
+| Every destination took the message | **Success** | Starts |
+| Some destinations took it, others failed | **Error** | Starts, so the recipients who got it are not sent the same message again on every run |
+| Every destination failed | **Error** | Does not start: the next scheduled run tries again |
+
+An item with no destination at all counts as delivered. A note about a message that did go out, such as an attachment that was skipped, is shown in **Detail** but does not make the run an **Error**. See [Run history](./run-history).
 
 ## Limits and known issues
 
 - Webhooks to loopback and private addresses are blocked unless an operator allow-lists the host, so a local receiver cannot be used for testing without that setting (KI-035). The demo stack does not set it.
 - Slack messages do not carry the rows. Slack delivery was not observed on the demo stack (no Slack app).
-- When several destinations fail, only the first error is recorded (KI-034).
 
 ## Further reading
 

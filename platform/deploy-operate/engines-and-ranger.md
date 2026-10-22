@@ -29,6 +29,8 @@ jar out of each.
 | StarRocks | `starrocks/fe-ubuntu:4.1.4` | 2.8.0 |
 | StarRocks | `starrocks/fe-ubuntu:4.1.6` | 2.9.0 |
 
+Plugin 2.5.0 cannot present the engine credential the policy service requires (see [Authentication of the plugin](#authentication-of-the-plugin)), so Egret refuses to create an engine on `trinodb/trino:470` or update one onto it (400), and refuses to register an external engine that declares a plugin older than 2.8.0. An existing Trino 470 engine must move to Trino 483.
+
 New provisioned engines default to **Trino 483** and **StarRocks 4.1.6**, pinned by digest. `GET
 /api/control-plane/engines/modelled-ranger-plugins` lists the modelled pairs: Trino 2.5.0 and 2.8.0, StarRocks 2.8.0 and
 2.9.0. An engine on a floating tag (`latest`, `4.1-latest`) or a rebuilt image is reported as **not modelled**: policies
@@ -93,43 +95,56 @@ TLS on both before any real use.
 ## The policy service
 
 Turn it on with `ranger.enabled = true` (`EGRET_RANGER__ENABLED`). Egret then serves a read-only, Ranger-compatible API
-under `/service`:
+under `/ranger`, on the same server and port as `/api`. A plugin's `policy.rest.url` is `<egret>/ranger`, and the plugin
+appends Ranger's own `/service/...` paths itself:
 
 | Route | Purpose |
 |---|---|
-| `GET /service/plugins/policies/download/{service}?lastKnownVersion=N` | The policies of a policy profile. Answers `304` when `N` is the current version, `200` with the policy set otherwise, `404` for an unknown profile. |
-| `GET /service/tags/download/{service}?lastKnownVersion=N` | The resource-to-tag mapping, from the classification tags assigned in Governance. |
-| `GET /service/plugins/definitions`, `/definitions/name/{name}`, `/services`, `/policies/{id}` | Service definitions and listings. |
+| `GET /ranger/service/plugins/secure/policies/download/{service}?lastKnownVersion=N` | The policies of a policy profile, for a plugin that sends a username and password (what Egret's engines do). The same answer is served at `/ranger/service/plugins/policies/download/{service}`. `304` when `N` is the current version, `200` with the policy set otherwise, `404` for an unknown profile. |
+| `GET /ranger/service/tags/secure/download/{service}?lastKnownVersion=N` | The resource-to-tag mapping, from the classification tags assigned in Governance. Also served at `/ranger/service/tags/download/{service}`. |
+| `GET /ranger/service/plugins/definitions`, `/definitions/name/{name}`, `/services`, `/policies/{id}` | Service definitions and listings, for the operator token only. |
 
 `{service}` is the name of a **policy profile**, created under **Governance → Engine & policy**. The plugin's
-`service.name` must equal it. Egret has no write routes under `/service`: policies are authored through the authenticated
-control-plane API.
+`service.name` must equal it. Egret has no write routes under `/ranger`: policies are authored through the authenticated
+control-plane API. The old `/service/...` paths at the server root answer `404`. Egret serves no Ranger roles or user
+store: `/ranger/service/roles/secure/download/...` answers `404`, and the plugin carries on.
 
 ### Authentication of the plugin
 
-`ranger.auth_token` decides who may call `/service`:
+Every request under `/ranger/service/` is authenticated. `ranger.auth_mode` (`EGRET_RANGER__AUTH_MODE`, Helm
+`ranger.authMode`) is `required` by default:
 
-| `EGRET_RANGER__AUTH_TOKEN` | Behaviour |
-|---|---|
-| Empty | `/service` is open to anyone who can reach it. Stock plugins send no credentials, so they work. It is read-only. |
-| Set | Every call needs `Authorization: Bearer <token>`. Without it the answer is `401`. |
+| Caller | Header | May read |
+|---|---|---|
+| An engine | `Authorization: Basic` with the engine's own credential, username `engine-<engine id>` | The profile its engine is bound to and that profile's tag service. Anything else is `403`. |
+| An operator | `Authorization: Bearer <ranger.auth_token>` | Everything. An empty `auth_token` (the default) accepts no bearer. |
+| Anyone else | none | Nothing: `401`, with the same body whatever was wrong. |
 
-A **stock Ranger plugin cannot send a bearer token**, and the plugin configuration Egret renders contains no credential. So a
-token set on Egret locks stock plugins out unless something in front of Egret adds the header. Egret says so itself: the
-plugin-config endpoint for an external engine warns *egret requires a bearer token on /service, and a stock Ranger plugin
-cannot send it*. The usual arrangement is an empty token plus a network policy or ingress rule that exposes `/service` only
-to the engines; the Helm chart's ingress does not route `/service` at all. See the [security
-checklist](./security-hardening).
+`ranger.auth_token` (`EGRET_RANGER__AUTH_TOKEN`) is therefore only the operator's token for tooling. It does not lock the
+plugins out: each engine presents its own credential, which needs a Ranger plugin 2.8.0 or later.
 
-Checked on a running instance with the token set:
+- **Engines Egret provisions** get their credential on the first apply of an engine bound to a policy profile. On
+  Kubernetes it reaches the pods in a Secret; on the Docker provisioner it is written into the containers. You never see
+  the password.
+- **External engines** get theirs at registration: the register page shows the username, the password and a credential id
+  **once**, and no other response carries the password. The Plugin config tab renders the files with the username and the
+  placeholder `REPLACE_WITH_THE_ENGINE_PASSWORD`. **Rotate credential** on the engine's Overview tab issues a new one; the
+  previous one keeps working until you confirm the new one is installed (**Retire previous credential**).
+
+`ranger.auth_mode = "anonymous"` serves requests without a credential, and lets them read every profile. Use it only on a
+throwaway local stack. The credential travels as HTTP Basic, so serve `/ranger` over TLS or keep it inside the cluster.
+
+Checked against an engine's credential:
 
 ```bash
-curl -s -o /dev/null -w '%{http_code}\n' http://localhost:8080/service/plugins/policies/download/docs-trino-policy
-# 401
-curl -s -o /dev/null -w '%{http_code}\n' -H 'Authorization: Bearer <token>' \
-  'http://localhost:8080/service/plugins/policies/download/docs-trino-policy?lastKnownVersion=3'
-# 304   (3 is the current policy version)
+curl -s -o ranger-check.json -w '%{http_code} %{content_type}\n' \
+  -u 'engine-<engine id>:<password>' \
+  'https://egret.example.com/ranger/service/plugins/secure/policies/download/<profile>'
+# 200 application/json   (a 200 with text/html is not Egret: route /ranger to Egret's backend)
 ```
+
+A running plugin that is refused keeps enforcing the policies it holds in memory and retries every poll interval; a plugin
+that starts with no cached policies and is refused denies everything.
 
 ## The plugin configuration Egret serves
 
@@ -157,7 +172,9 @@ ranger.plugin.config.resource=/etc/trino/ranger-trino-security.xml
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 <property><name>ranger.plugin.trino.service.name</name><value>docs-trino-policy</value></property>
-<property><name>ranger.plugin.trino.policy.rest.url</name><value>http://egret:8080</value></property>
+<property><name>ranger.plugin.trino.policy.rest.url</name><value>http://egret:8080/ranger</value></property>
+<property><name>ranger.plugin.trino.policy.rest.client.username</name><value>engine-0b8f6c1e-…</value></property>
+<property><name>ranger.plugin.trino.policy.rest.client.password</name><value>REPLACE_WITH_THE_ENGINE_PASSWORD</value></property>
 <property><name>ranger.plugin.trino.policy.source.impl</name><value>org.apache.ranger.admin.client.RangerAdminRESTClient</value></property>
 <property><name>ranger.plugin.trino.policy.cache.dir</name><value>/tmp/ranger/docs-trino-policy/policycache</value></property>
 <property><name>ranger.plugin.trino.policy.pollIntervalMs</name><value>30000</value></property>
@@ -166,8 +183,9 @@ ranger.plugin.config.resource=/etc/trino/ranger-trino-security.xml
 </configuration>
 ```
 
-`policy.rest.url` is Egret's base URL as the engine sees it (the plugin appends `/service/plugins/policies/download/...`
-itself). The example above was returned by the API; on a fresh install it says `http://localhost:8080`, taken from
+`policy.rest.url` is Egret's base URL as the engine sees it, followed by `/ranger` (the plugin appends
+`/service/plugins/...` itself). The username and password lines carry the engine's credential; for an external engine the
+password is a placeholder you replace with the one shown at registration. The example above follows what the API returns; on a fresh install it says `http://localhost:8080`, taken from
 `catalog.public_url`, which is not reachable from an engine in a cluster. Set `catalog.public_url` first.
 
 ### StarRocks

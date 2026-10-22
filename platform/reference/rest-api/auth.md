@@ -96,7 +96,7 @@ Operation id: `login`. Auth: None (public).
 |---|---|
 | 200 | Logged in; sets session + CSRF cookies |
 | 401 | Invalid email or password |
-| 429 | Too many login attempts |
+| 429 | Too many failed attempts; `Retry-After` says when to try again |
 | 500 | Internal error |
 
 ## POST `/api/auth/logout`

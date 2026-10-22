@@ -112,7 +112,7 @@ described by their auth line here.
 | Authentication and identity | [Current user](rest-api/me) | 1 |
 | Workspaces and members | [Workspace administration](rest-api/admin-workspaces) | 10 |
 | Workspaces and members | [User administration](rest-api/admin-users) | 3 |
-| Workspaces and members | [Workspace members](rest-api/workspace-members) | 9 |
+| Workspaces and members | [Workspace members](rest-api/workspace-members) | 11 |
 | Workspaces and members | [Access requests](rest-api/access-requests) | 4 |
 | Workspaces and members | [Sharing](rest-api/shares) | 6 |
 | Explore (BI) | [Databases](rest-api/databases) | 9 |

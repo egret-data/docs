@@ -18,7 +18,7 @@ A summary strip counts **engines**, how many are **running** and **not running**
 |---|---|
 | **Name** | The engine name. It links to the engine page. |
 | **Type** | `trino` or `starrocks`. |
-| **Endpoint** | Where it listens: `docs-trino-coordinator.egret-engines` for a provisioned engine, the host and port you entered (for example `trino-demo:8080`) for an external one. |
+| **Endpoint** | The `host:port` a workspace connection to the engine dials: for example `docs-trino-trino.egret-engines.svc:8443` for a provisioned Trino engine with JWT delegation, the host and port you entered (for example `trino-demo:8080`) for an external one. |
 | **Status** | The lifecycle status of a provisioned engine (**provisioning**, **running**, **failed**). **External** for a registered one: egret does not monitor it. |
 | Actions | **Details** opens the engine. |
 
@@ -34,7 +34,7 @@ Two buttons sit at the top right:
 Where a provisioned engine runs depends on how egret is deployed. On Kubernetes egret creates Deployments and Services in the engine namespace. With the Docker provisioner (`[engines] provisioner = "docker"`), egret starts each engine as Docker containers on the same Docker host.
 
 :::note Demo stack
-The Docker demo stack uses the Docker provisioner: **Add engine** starts Trino as containers named `egret-engine-egret-engines-<name>-coordinator` (and `…-worker-<i>`). The first engine pulls the `trinodb/trino` image; plan about 1.5 to 2 GB of memory per engine. StarRocks engines, pod logs and the shell are Kubernetes-only (see [Engine detail](./engine-detail.md#kubernetes-only-features)).
+The Docker demo stack uses the Docker provisioner: **Add engine** starts Trino as containers named `egret-engine-egret-engines-<name>-coordinator` (and `…-worker-<i>`). The first engine pulls the `trinodb/trino` image; plan about 1.5 to 2 GB of memory per engine. StarRocks engines, ingress, pod logs and the shell are Kubernetes-only (see [Engine detail](./engine-detail.md#kubernetes-only-features)). After `just demo-down` and `just demo-up` the engine containers are gone: press **Restart** on each engine to create them again.
 :::
 
 ## Which one to choose

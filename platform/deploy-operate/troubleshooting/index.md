@@ -36,7 +36,7 @@ docs.
 | Symptom | Cause and fix | Page |
 |---|---|---|
 | *502 Bad Gateway* creating a dataset or testing a database on Trino | Trino answered HTTP 406. Set `http-server.process-forwarded=true` on Trino. | [406 and 502](troubleshooting/engine-406-502) |
-| *429 Too Many Requests* at sign-in | Five attempts per five minutes, successful ones included. Wait. | [Cannot sign in](troubleshooting/cannot-sign-in) |
+| *429 Too Many Requests* at sign-in | Five failed attempts within five minutes lock you out for five minutes. Wait the time the page gives. | [Cannot sign in](troubleshooting/cannot-sign-in) |
 | A workflow execution stays in *Running* | The worker is off by default: `EGRET_WORKFLOW__WORKER_ENABLED=true`. | [Workflows stuck](troubleshooting/workflows-stuck) |
 | `Error: the apps API requires [storage] bucket, access_key, secret_key` at start | The object-store credentials are always required. | [Catalog and storage errors](troubleshooting/catalog-storage-errors) |
 | *secrets master_key is not configured* when saving a connection | Set `EGRET_SECRETS__MASTER_KEY`. | [Catalog and storage errors](troubleshooting/catalog-storage-errors) |

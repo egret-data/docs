@@ -74,7 +74,7 @@ A view change on a catalog whose profile has a classified column is held until t
 
 ## Limits and known issues
 
-- On the demo stack the view `demo_warehouse.analytics.revenue_by_country` (a DEFINER view over the tagged `sessions` table) is listed with *clearance unknown* and *may read classified data*, because egret could not compute its lineage: reading the view through the engine was refused (*Access Denied: Cannot access catalog demo_warehouse*). The row says *lineage could not be computed; egret has not judged this view. Run the lineage sweep, whose report names the reason.* The console has no button for the sweep; it is the API call `POST /api/control-plane/classifications/lineage-sweep`.
+- A view whose lineage egret could not compute is listed with *clearance unknown* and *may read classified data*. The row says *lineage could not be computed; egret has not judged this view. Run the lineage sweep, whose report names the reason.* The console has no button for the sweep; it is the API call `POST /api/control-plane/classifications/lineage-sweep`. Lineage is computed only through a provisioned Trino engine in JWT delegation mode (see [Lineage](../lineage.md#how-egret-computes-lineage)); on the demo stack, the sweep through such an engine recorded the lineage of `demo_warehouse.analytics.revenue_by_country`.
 - A view created before its base table was tagged waited no time; the hold applies only once the catalog has a classified column.
 - The Trino list has a 15 second deadline. If egret's views cannot all be read, the page shows an error instead of a partial list.
 

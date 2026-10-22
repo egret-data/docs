@@ -115,8 +115,8 @@ user starts with no access: the group-to-role grants are made by an administrato
 tour](./first-login-tour) explains both.
 
 :::caution Sign-in rate limit
-Local sign-in allows 5 attempts per 5 minutes, successful ones included. Further attempts answer *429 Too Many Requests*
-until the window passes.
+Five failed local sign-ins within 5 minutes lock that address and email out for 5 minutes: further attempts answer
+*429 Too Many Requests* with a `Retry-After` header. Successful sign-ins do not count.
 :::
 
 ## Connect Trino

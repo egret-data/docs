@@ -34,8 +34,8 @@ that means. Each item says how to check it. Tick them in order.
   (or let `init` generate one, printed once, and store it in a vault). Never keep the Helm default `Admin12345!` (`admin.password`).
 - [ ] **Move day-to-day administration to IdP groups.** Grant `platform_admin` to a group in **Control Plane → Groups**, and
   keep the local account for recovery.
-- [ ] **Keep the local sign-in rate limit.** Five attempts per five minutes (`rate_limit.login_*`) is what stands in front of
-  password guessing, and successful attempts count.
+- [ ] **Keep the local sign-in rate limit.** Five failed attempts per five minutes, then a five-minute lockout
+  (`rate_limit.login_*`), is what stands in front of password guessing. Only failures count.
 - [ ] **Know that local sign-in cannot be switched off.** With SSO on, the local form is only hidden behind **Admin sign-in
   (break-glass)**; the `POST /api/auth/login` route still answers. Restrict who can reach it at the network layer if that
   matters to you.
@@ -71,14 +71,15 @@ Expose only what clients need.
 | `/` and `/api/*` | People | Behind TLS. |
 | `/data-api/*`, `/oauth/token`, `/.well-known/*` | Data API consumers and clients of Egret's machine identity provider | Rate limited (`rate_limit.token_*`). |
 | `/catalog/*` | Engines and Iceberg clients | Authenticated with Egret-issued tokens. |
-| `/service/*` | **Engines only** | Read-only policy API; see below. |
+| `/ranger/*` | **Engines only** | Read-only policy API, authenticated with each engine's own credential; see below. |
 | `/metrics`, `/healthz`, `/readyz` | **Your monitoring only** | **Unauthenticated.** `/metrics` answers `200` with Prometheus metrics to anyone who can reach it. The chart's ingress does not route them. |
 
-- [ ] **Do not route `/service`, `/metrics`, `/healthz` or `/readyz` to the internet.**
-- [ ] **Decide how the policy API is protected.** With `EGRET_RANGER__AUTH_TOKEN` empty, `/service` is open to anyone who can
-  reach it (read-only: policies and tags). With a token set, a stock Ranger plugin cannot send it and is refused with 401.
-  Prefer an empty token plus a network policy that admits only the engines. See [Engines and Ranger
-  setup](./engines-and-ranger).
+- [ ] **Do not route `/ranger`, `/metrics`, `/healthz` or `/readyz` to the internet.**
+- [ ] **Keep the policy API authenticated.** `ranger.auth_mode` is `required` by default: each engine presents its own
+  credential, and `ranger.auth_token` is only an operator token (leave it empty unless tooling needs it). Never run
+  `anonymous` outside a throwaway stack: it lets anyone who can reach `/ranger` download every profile's policies. Serve
+  `/ranger` over TLS or keep it inside the cluster, because the engine credential travels as HTTP Basic. See [Engines and
+  Ranger setup](./engines-and-ranger#authentication-of-the-plugin).
 - [ ] **Keep PostgreSQL and the object store off the public network.** In Kubernetes, the chart's task and app pod network
   policies exist to keep user code away from the metadata database: set `workflow.tasks.networkPolicy.podCidr`,
   `serviceCidr` and `apiServerCidrs` correctly, because wrong values silently re-open PostgreSQL on some network plugins.
@@ -119,7 +120,7 @@ Expose only what clients need.
 
 ```bash
 curl -s -o /dev/null -w '%{http_code}\n' https://egret.example.com/metrics                 # 404 or 403 from the proxy, not 200
-curl -s -o /dev/null -w '%{http_code}\n' https://egret.example.com/service/plugins/services # not reachable from the internet
+curl -s -o /dev/null -w '%{http_code}\n' https://egret.example.com/ranger/service/plugins/services # not reachable from the internet
 curl -sI https://egret.example.com/api/auth/config | grep -i set-cookie                     # no cookie yet; sign in and check Secure
 ```
 
