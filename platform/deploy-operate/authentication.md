@@ -15,7 +15,8 @@ the realm file in the repository, and shows how groups become access.
 2. The provider authenticates the person and redirects to `oidc.redirect_url` (`/api/auth/oidc/callback`).
 3. Egret exchanges the code, validates the ID token and creates or updates the user. Users are matched by the token's `sub`;
    the email and name are refreshed at every sign-in. Group names from the `groups` claim are recorded and the user's
-   membership of them is synchronized.
+   membership of them is synchronized. If a workspace administrator added this email before the person's first sign-in,
+   those memberships are created now, but only when the ID token says `email_verified: true` (see [Members](../workspace-settings/members#add-someone-who-has-not-signed-in-yet)).
 4. Egret sets a session cookie (`egret_session`, `HttpOnly`) and a CSRF cookie (`egret_csrf`), and redirects to
    `oidc.post_login_redirect` (`/`).
 
@@ -32,7 +33,7 @@ request. The provider can end it earlier with OIDC back-channel logout; see belo
 | `oidc.client_secret` | `EGRET_OIDC__CLIENT_SECRET` | The client's secret. |
 | `oidc.redirect_url` | `EGRET_OIDC__REDIRECT_URL` | `https://<egret-host>/api/auth/oidc/callback`, exactly as registered at the provider. |
 | `oidc.groups_claim` | `EGRET_OIDC__GROUPS_CLAIM` | `groups` |
-| `oidc.scopes` | `EGRET_OIDC__SCOPES` | Default `["openid","email","profile"]`. |
+| `oidc.scopes` | `EGRET_OIDC__SCOPES` | Default `["openid","email","profile"]`. `openid` is always requested, once, whether or not you list it: the request carries `scope=openid email profile`. |
 | `security.secret_key` | `EGRET_SECURITY__SECRET_KEY` | Base64, at least 64 bytes. **Required** when OIDC is on. |
 | `session.secure` | `EGRET_SESSION__SECURE` | `true` when Egret is served over HTTPS. |
 
@@ -119,8 +120,9 @@ EGRET_ADMIN_EMAIL=ops@example.com EGRET_ADMIN_PASSWORD='a long random password' 
   password you supply is never printed: `init` prints `Password: taken from EGRET_ADMIN_PASSWORD (not shown)`.
 - `init` does nothing when a platform administrator already exists. `egret init --force` adds another one.
 - On the sign-in page the account is behind **Admin sign-in (break-glass)** when SSO is on.
-- Local sign-in is rate limited (`rate_limit.login_*`: 5 attempts per 5 minutes, successful attempts included), which also
-  slows password guessing.
+- Local sign-in is rate limited (`rate_limit.login_*`): 5 failed attempts within 5 minutes lock the address and email out
+  for 5 minutes. Successful attempts do not count, and a successful sign-in clears the failures before it. This slows
+  password guessing.
 
 See the [security checklist](./security-hardening) for how to protect and monitor it.
 

@@ -33,7 +33,7 @@ The link switches to a **Cron expression** box. It takes five fields, as in cron
 The list shows each item's schedule in words (`Every 15 minutes`, `Every day at 08:00`) and its **Next run**.
 
 :::note
-The scheduler checks for due items on a fixed interval, 30 seconds by default (`automation.tick_interval_secs`). An item runs at its next tick after it becomes due, so a run can start up to one interval late. Items that fall due together run one after another: on the demo stack twelve items due at 12:10:00 started between 12:10:18 and 12:11:21, the slow PNG and PDF renders holding up the rest. While an item waits its turn the list shows **Working**.
+The scheduler checks for due items on a fixed interval, 30 seconds by default (`automation.tick_interval_secs`). An item runs at its next tick after it becomes due, so a run can start up to one interval late. Items that fall due together run side by side, up to four at a time, so a slow PNG or PDF render no longer holds up the other alerts: on the demo stack five items due at 02:37:00 were picked up together, the three quick ones finished within half a second and the two PDFs after 28.7 and 36.9 seconds. A tick picks up at most 20 due items; the rest wait for the next tick. While an item runs or waits its turn the list shows **Working**.
 :::
 
 ### Timezone
@@ -48,7 +48,7 @@ After an alert fires, it stays quiet for this long so a condition that stays tru
 
 The default in the editor is 14,400 seconds (four hours). Set `0` to notify on every run that meets the condition. Reports ignore the grace period.
 
-A run counts as having fired once the condition was met, even if delivery then failed. A destination that was down therefore still starts the grace period.
+The grace period starts from the last run that reached at least one destination. A run whose every destination failed starts none, so the next run tries again; a run that reached some destinations and failed on others starts it, so the recipients who got the message are not sent it again on every run. Both are recorded as **Error**; see [Notifications](./notifications#when-delivery-fails).
 
 ### Working timeout (seconds)
 
@@ -60,7 +60,7 @@ How long a finished run stays in the [run log](./run-history). Default 90 days.
 
 ## What a manual run does
 
-**Run now** in the list runs the item immediately through the same code the scheduler uses. It is subject to the same condition test and the same grace period.
+**Run now** in the list runs the item immediately through the same code the scheduler uses. It is subject to the same condition test and the same grace period. Its result updates **Last run** and the status badge, but not **Next run**.
 
 ## Limits and known issues
 

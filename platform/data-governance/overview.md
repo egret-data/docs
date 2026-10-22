@@ -43,7 +43,7 @@ The checks the server runs are:
 
 On the demo stack, with the engine `docs-trino` serving `demo_warehouse`, the list held two findings:
 
-- **Warning**: *egret could not compute the lineage of 1 view, so the tables it reads are not known.*, with the view and the engine's answer: `demo_warehouse.analytics.revenue_by_country — engine docs-trino: engine: Access Denied: Cannot access catalog demo_warehouse`. Egret reads view definitions through the engine, and the engine's policy did not let egret's own account into the catalog.
+- **Warning**: *egret could not compute the lineage of 1 view, so the tables it reads are not known.*, with the view and the engine's answer: `demo_warehouse.analytics.revenue_by_country — engine docs-trino: engine: Access Denied: Cannot access catalog demo_warehouse`. Egret reads view definitions through the engine as its lineage reader. That answer came from a Docker engine before platform #728, when the engine's plugin was not recognised and so did not receive the reader's access; see [Lineage](./lineage.md#how-egret-computes-lineage) for which engines do.
 - **Info**: *3 classifications have no clearance: they gate nothing.*, listing the tags.
 
 Before an engine serves a catalog, the finding is that the catalog is attached to no engine. When everything is in order the list reads *Nothing needs attention.*

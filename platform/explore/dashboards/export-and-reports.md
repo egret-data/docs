@@ -73,7 +73,7 @@ This is what a PDF of **Sales performance** (two tabs, a heading, a text card an
 - There is no whole-dashboard export button; reports (PNG, PDF) are the way to get the dashboard as one file.
 - Rendered reports ignore card title and visualization overrides, text cards and tabs.
 - The download popover's row limit text does not match the real limit (10,000 rows).
-- PNG and PDF report rendering needs the rendering service. A large dashboard takes about 20 seconds to render, and a multi-dashboard PDF fails when the renders together exceed 30 seconds (KI-167).
+- PNG and PDF report rendering needs the rendering service. A large dashboard takes about 20 seconds to render. Egret allows 30 seconds per dashboard plus 30 seconds for the whole render, and a page that does not finish drawing within 20 seconds fails.
 - A table card overflows its box on the rendered page (KI-168).
 
 ## Further reading

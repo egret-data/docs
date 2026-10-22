@@ -8,15 +8,15 @@ Select an engine in **Control Plane → Engines** to open its page. The tabs dep
 
 ## Provisioned engine
 
-![The Overview tab of the provisioned engine docs-trino: phase running, one pod, two catalogs, one workspace](/img/platform/admin/cp-engine-overview.png)
+![The Overview tab of a provisioned engine on the Docker demo stack: phase running, one container, its catalogs and workspaces](/img/platform/admin/cp-engine-overview.png)
 
-The header shows the engine name, its namespace (`egret-engines`), the image, the coordinator address, the authentication (*JWT auth*) and the Ranger plugin version, with the type and status badges. **Open in Engine & policy** opens the engine in Governance, **Restart** rolls the engine, and the **More engine actions** menu (**⋯**) holds **Delete engine**. The tabs are **Overview**, **Catalogs**, **Workspaces**, **Settings** and **Monitor**.
+The header shows the engine name, its namespace (`egret-engines`), the image, the endpoint, the authentication (*JWT auth*) and the Ranger plugin version, with the type and status badges. The endpoint is the `host:port` a workspace connection to the engine dials, for example `docs-trino-trino.egret-engines.svc:8443` (port 8443 is the HTTPS listener of an engine with JWT delegation). **Open in Engine & policy** opens the engine in Governance, **Restart** restarts the engine, and the **More engine actions** menu (**⋯**) holds **Delete engine**. The tabs are **Overview**, **Catalogs**, **Workspaces**, **Settings** and **Monitor**.
 
 ### Overview
 
-A strip shows the **phase**, **pods** (ready/total), **replicas** (for example *Coord 1 · Worker 0*), **catalogs**, **workspaces** and **auth** (*JWT auth*, impersonation, password auth or no delegation). For StarRocks, **FE replicas** and **CN replicas** replace *replicas*.
+A strip shows the **phase**, **pods** (ready/total; **containers** on the Docker provisioner), **replicas** (for example *Coord 1 · Worker 0*, the counts the engine runs with), **catalogs**, **workspaces** and **auth** (*JWT auth*, impersonation, password auth or no delegation). For StarRocks, **FE replicas** and **CN replicas** replace *replicas*.
 
-**Status** lists each pod with its **Phase** and **Ready** state and the **Logs** and **Exec** actions. With the Docker provisioner a "pod" is a container, for example `egret-engine-egret-engines-docs-trino-coordinator`.
+**Status** lists each pod with its **Phase** and **Ready** state and the **Logs** and **Exec** actions. On the Docker provisioner the table lists containers, for example `egret-engine-egret-engines-docs-trino-coordinator`, without **Logs** and **Exec**, and a note says *Logs and a shell are not available here for an engine Docker runs: read a container's log with docker logs on the Docker host.*
 
 If the engine cannot start the page shows *The engine failed to start.* with the reason. While starting it reads *Starting up — the engine isn't reachable yet.*
 
@@ -24,7 +24,7 @@ If the engine cannot start the page shows *The engine failed to start.* with the
 
 ![The Catalogs tab: demo_warehouse is primary and applied, tpch_bench is applied](/img/platform/admin/cp-engine-catalogs.png)
 
-*Data sources this engine can query. Attaching or detaching a catalog applies it to the cluster and restarts the Trino coordinator, so queries in flight are lost.* Each catalog shows its **Kind**, **Primary**, the **Apply** state and when it was **Applied**, with **Test** (runs `SHOW SCHEMAS` on the engine) and **Detach**. The primary catalog cannot be detached: *demo_warehouse is this engine's primary catalog. Detach it by deleting the engine.*
+*Data sources this engine can query. Attaching or detaching a catalog applies it to the cluster and restarts the Trino coordinator, so queries in flight are lost.* Each catalog shows its **Kind**, **Primary**, the **Apply** state and when it was **Applied**, with **Test** (runs `SHOW SCHEMAS` on the engine) and **Detach**. On an engine with JWT delegation the test runs as you, with the engine token Egret mints for you, so it fails if the engine's policy does not let you read the catalog. The primary catalog cannot be detached: *demo_warehouse is this engine's primary catalog. Detach it by deleting the engine.*
 
 To attach another, choose it in **Catalog to attach** and press **Attach**. With nothing left the form says *Every catalog egret can show you is already on this engine.*
 
@@ -45,25 +45,37 @@ The engine then appears in that workspace's SQL Lab as a database named after th
 
 ![The Settings tab with the configuration sections; Worker and Security & Exposure carry values](/img/platform/admin/cp-engine-settings.png)
 
-*Cluster-wide, coordinator, and worker Trino config plus security and exposure. Saving re-provisions the engine.* The sections are the ones of the create form (see [Provision an engine](./provision.md#the-configuration-sections-trino)).
+*Cluster-wide, coordinator, and worker Trino config plus security and exposure. Saving re-provisions the engine.* (on the Docker provisioner: *Saving recreates the engine's containers.*) The sections are the ones of the create form (see [Provision an engine](./provision.md#the-configuration-sections-trino)).
 
 1. Change a value, for example **Server → config.properties → Add property** `query.max-run-time` = `2h`.
-2. Press **Review changes** to see the diff. The dialog says, for example, *2 fields will change.* with each field's old and new value, and *Saving re-provisions (rolls) the engine pods.* It only shows the diff; close it.
-3. Press **Save changes**. There is no further confirmation.
+2. Press **Save changes**. The **Review changes** dialog lists only what changes, for example *1 field will change.* with the old and new value, and says *Saving re-provisions (rolls) the engine pods; running queries are interrupted.* (on Docker: *Saving recreates the engine's containers; running queries are interrupted.*).
+3. Press **Save changes** in the dialog to apply, or **Cancel** to save nothing.
 
 On the demo stack the save recreated the coordinator container within a minute while the header kept showing **running**, and the new value was in effect: `SHOW SESSION LIKE 'query_max_run_time'` reported the default `2.00h`.
 
+With **Expose via ingress** on and no **Host**, the field says *Enter the host the ingress serves, or turn off Expose via ingress.* and **Save changes** stays disabled. The Docker provisioner refuses an ingress whatever the host (see [Provision an engine](./provision.md#kubernetes-and-docker)), although the section is still offered there (KI-264).
+
 ### Monitor
 
-![The Monitor tab on the demo stack: Engine not reachable, and no live queries](/img/platform/admin/cp-engine-monitor.png)
+![The Monitor tab on the demo stack: the query counts, the node count and the live queries](/img/platform/admin/cp-engine-monitor.png)
 
 The tab has a strip with the **running**, **queued** and **blocked** query counts and the **nodes**, and the **Queries** table (*Live queries on the coordinator, refreshed every 3s*) with **Query**, **User**, **State**, **SQL**, **Progress**, **Elapsed**, **Memory** and **CPU**, a state filter (**All states**) and **Search user or SQL…**.
 
-On Trino 483 engines the tab shows *Engine not reachable — is a coordinator running?* and *Coordinator unreachable — no live queries.* even while the engine is running and answering queries. This is a product issue, not a Docker limitation: the cluster summary asks Trino for `GET /v1/node`, which Trino 483 answers with 404, and an engine with JWT delegation gives egret's monitor account no sign-in.
+How Egret signs in to the coordinator depends on the engine:
+
+| Engine | Egret asks as | What you see |
+|---|---|---|
+| JWT delegation (the default for a provisioned Trino engine) | **You**, with the engine token Egret mints for you | What the engine's own policy lets you see: other users' queries only if it lets you view them. Killing a query is decided the same way. |
+| Password users or impersonation | The engine's `egret-monitor` account | The queries that account may see. |
+| No authentication | `egret-monitor` | Every query. |
+
+The node list comes from Trino's `GET /v1/node` where the coordinator serves it. Trino 483 does not by default, and then Egret reads `system.runtime.nodes` instead. If that is refused too, **nodes** shows `—`: the count is unknown, not zero, and the query counts are still shown.
 
 ### Restart
 
-**Restart** asks *Restart engine?* (*This rolls the coordinator and worker pods; running queries are interrupted.*). On the demo stack the status went to **provisioning** and back to **running** in 38 seconds, and the container was recreated.
+**Restart** asks *Restart engine?* (*This rolls the coordinator and worker pods; running queries are interrupted.* On the Docker provisioner: *This restarts the coordinator and worker containers; running queries are interrupted.*). For a Trino engine it adds *If the pods (containers) are gone, they are created again.* On the demo stack the status went to **provisioning** and back to **running** in 38 seconds, and the container was recreated.
+
+A Trino engine that has run before and now has no pod or container at all, for example after `just demo-down` and `just demo-up` on the demo stack, is created again from its stored settings when you press **Restart**. An engine that is still being created (status **provisioning**) is left to finish.
 
 ### Delete
 
@@ -75,18 +87,16 @@ On Trino 483 engines the tab shows *Engine not reachable — is a coordinator ru
 - *Saved queries that use it lose their connection.*
 - *Data API endpoints (including trashed ones), alerts and datasets that use it block the delete — you will be shown where they are.*
 
-Type the engine name and press **Delete**. You return to the Engines list. With the Docker provisioner the engine's containers are removed (measured: 7 seconds). The dialog says *This destroys the engine's Kubernetes cluster* whatever the provisioner is. The engine's policy profile is kept and appears under **Profiles without an engine** in Governance.
+Type the engine name and press **Delete**. You return to the Engines list. The dialog says *This destroys the engine's Kubernetes cluster. It cannot be undone.*, or on the Docker provisioner *This removes the engine's containers. It cannot be undone.* (measured: 7 seconds). The engine's policy profile is kept and appears under **Profiles without an engine** in Governance.
 
 ### Kubernetes-only features
 
-**Logs** and **Exec** work only with the Kubernetes provisioner:
+**Logs** and **Exec** work only with the Kubernetes provisioner, and are not shown for an engine Docker runs:
 
-| Action | Kubernetes | Docker provisioner |
-|---|---|---|
-| **Logs** | Container logs for the pod, with **Last 1000 lines**, **Previous container**, **Follow** and **Refresh**. | The dialog opens and says *bad request: not available with the Docker engine provisioner*. |
-| **Exec** | *Open shell into \<pod\>?* opens an interactive shell (bash) inside the running pod. | The shell opens and closes at once with *[connection closed]*, without saying why. |
-
-![The Logs dialog on the Docker demo stack](/img/platform/admin/cp-engine-logs.png)
+| Action | Kubernetes |
+|---|---|
+| **Logs** | Container logs for the pod, with **Last 1000 lines**, **Previous container**, **Follow** and **Refresh**. |
+| **Exec** | *Open shell into \<pod\>?* opens an interactive shell (bash) inside the running pod. |
 
 With the Docker provisioner, read the log on the Docker host with `docker logs egret-engine-egret-engines-<name>-coordinator`. A failed engine's status message carries its last log lines.
 
@@ -154,8 +164,9 @@ A Trino apply rebuilds the engine's entire catalog configuration. When one catal
 ## Limits and known issues
 
 - An external engine's page has no health status or restart. Egret cannot see the cluster.
-- The monitor lists no queries on Trino 483 engines (see [Monitor](#monitor)).
-- **Logs** and **Exec** are offered on Docker engines although they cannot work there.
+- On the Docker provisioner, a save interrupted by the browser disconnecting (a closed tab, a dropped connection) can stop the old containers without creating new ones; the engine shows **failed** until the next save (KI-263).
+- The Ingress section is offered on Docker engines, which refuse any ingress (KI-264).
+- On an engine with impersonation and a Ranger policy, the monitor's `egret-monitor` account probably sees only its own queries (KI-265, not verified).
 - Delete is permanent. After a delete the Engines list can keep the row until you reload.
 
 ## Further reading

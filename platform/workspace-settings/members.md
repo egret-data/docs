@@ -28,7 +28,7 @@ A note under the title says *Workspace roles apply only inside \<workspace\> —
 
 1. Press **Add member**.
 2. Under **Type**, choose **User** or **Group**.
-3. Type the person's email (*User email…*) or the group's name (*Group name…*). A few letters are enough: matching people are suggested with their name and email (typing `emma` suggests *Emma Schmidt emma.schmidt@egret.local*); pick one. The person must already exist in the platform: an SSO user has signed in once, or a local account has been created.
+3. Type the person's email (*User email…*) or the group's name (*Group name…*). A few letters are enough: matching people are suggested with their name and email (typing `emma` suggests *Emma Schmidt emma.schmidt@egret.local*); pick one. The person must already exist in the platform (an SSO user has signed in once, or a local account has been created), unless single sign-on is on: then you can type the email of someone who has not signed in yet (see [below](#add-someone-who-has-not-signed-in-yet)).
 4. Choose the **Role**. The default is `ws_viewer`.
 5. Press **Add member**. A toast says *Member added*.
 
@@ -42,7 +42,18 @@ Prefer adding groups: when someone joins the group in your identity provider, th
 
 ### The roles you can choose
 
-The role picker lists every workspace role defined on the platform: `ws_admin`, `ws_editor`, `ws_viewer`, `data_api_invoker` and any custom role (such as `finance_reporter`). See [Roles & permissions](./roles-and-permissions.md) for what each grants and [Roles](../control-plane/access-control/roles.md) to create a custom one.
+The role picker lists the workspace's roles, the same list as [Roles & permissions](./roles-and-permissions.md): `ws_admin`, `ws_editor`, `ws_viewer` and any custom role (such as `finance_reporter`). `data_api_invoker` is not offered: it is granted on one Data API endpoint to a service account, never as a membership. See [Roles](../control-plane/access-control/roles.md) to create a custom role.
+
+### Add someone who has not signed in yet
+
+Egret learns about an SSO user at their first sign-in. With single sign-on on, you can still add that person beforehand:
+
+1. Press **Add member**, keep **User**, and type the full email address. The dialog says *Someone who has not signed in yet can be added by email. They join when they first sign in with SSO.*
+2. Choose a workspace role and press **Add member**. The toast says *\<email\> will join as \<role\> at their first sign-in*.
+
+The email is listed under **Waiting for first sign-in** below the member table, with its role, when it was added and by whom. When that person first signs in with SSO, the entry becomes a normal membership and leaves the list. It binds only when the identity provider says the email is verified (`email_verified: true` in the ID token); otherwise the person lands on **No workspaces yet** and the entry stays. Only a workspace role can be given this way, never a platform role. If the person is already a member by then, their current role is kept.
+
+**Withdraw** on an entry asks *Withdraw the invitation?* (*\<email\> will not join \<workspace\> when they first sign in.*) and removes it. Without single sign-on, an email that matches no account is refused (`unknown user: <email>`).
 
 ## Change a role
 
@@ -85,6 +96,7 @@ People who are not yet members can ask to join (see [Access requests](./access-r
 
 - A workspace can have no admin when it is created in the Control Plane. Add a member with `ws_admin` first.
 - Platform admins have access to every workspace without being members.
+- A direct `POST /api/ws/{workspace}/members` call still accepts `data_api_invoker`, which the role picker no longer offers (KI-261).
 
 ## Further reading
 

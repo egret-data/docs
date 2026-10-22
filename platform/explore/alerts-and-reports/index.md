@@ -22,12 +22,12 @@ Open **Explore → Alerts & Reports**. The page has two tabs, **Alerts** (which 
 |---|---|
 | **Name** | The name, a star to bookmark it, and its description. |
 | **Active** | A switch. Turn it off to pause the schedule without deleting it; a paused item shows **Paused** and keeps its history. |
-| **Last run** | The result of the last *scheduled* run: **Success**, **Working**, **Error**, **Not triggered** or **On grace**. **Never run** until the scheduler has run it. See [Run history](./alerts-and-reports/run-history). |
+| **Last run** | The result of the last run, scheduled or **Run now**: **Success**, **Working**, **Error**, **Not triggered** or **On grace**. A run whose message did not reach every destination is **Error**. **Never run** until it has run once. See [Run history](./alerts-and-reports/run-history). |
 | **Schedule** | A plain-language form of the cron schedule, with the timezone, for example `Every day at 08:00 Asia/Ho_Chi_Minh`. Hover for the raw cron expression. An hourly schedule (`0 * * * *`) and a custom expression such as `30 8 * * 1-5` are shown as the raw cron (KI-038). |
 | **Next run** | When the scheduler will run it next, for example `in 9 hours`. |
 | **Owners** | The people whose permissions the query runs with. |
 
-Above the table: **Search** by name, description or owner; **Last run** filters by state (including **Never run**); the counters show how many are total, **active** and **paused**, and a **failing** shortcut appears when at least one item's last scheduled run was **Error** (for example "6 reports · 5 active · 1 paused · 1 failing"). The toolbar buttons are **Bookmarks**, **Bulk select**, **Trash** and **New folder**. Folders group items on the page.
+Above the table: **Search** by name, description or owner; **Last run** filters by state (including **Never run**); the counters show how many are total, **active** and **paused**, and a **failing** shortcut appears when at least one item's last run was **Error** (for example "6 reports · 5 active · 1 paused · 1 failing"). The toolbar buttons are **Bookmarks**, **Bulk select**, **Trash** and **New folder**. Folders group items on the page.
 
 ### Row actions
 
@@ -61,13 +61,12 @@ An alert **runs as its owner**. The query is executed with the owner's permissio
 | [Data API alerts](./alerts-and-reports/data-api-alerts) | Watching endpoint traffic. |
 
 :::note
-Egret needs somewhere to send the message. Email needs workspace SMTP and Slack needs a workspace Slack app, both set under [Workspace settings → Notifications](../workspace-settings/notifications). Without them the alert still runs and records its result, but it tells nobody; the run log shows `smtp is not configured for this workspace` or `no slack bot token is configured for this destination`. On the Docker demo stack SMTP points at Mailpit, so every email lands in the inbox at `http://localhost:8025`.
+Egret needs somewhere to send the message. Email needs workspace SMTP and Slack needs a workspace Slack app, both set under [Workspace settings → Notifications](../workspace-settings/notifications). Without them the alert still runs, but it tells nobody and the run is an **Error**; the run log shows `email: smtp is not configured for this workspace` or `slack #channel: no slack bot token is configured for this destination`. On the Docker demo stack SMTP points at Mailpit, so every email lands in the inbox at `http://localhost:8025`.
 :::
 
 ## Limits and known issues
 
-- **Last run** and the header badge on an item show the last *scheduled* run. A **Run now** result appears in the run log only, so a freshly created item you have only run manually still reads **Never run** (KI-032).
-- PNG and PDF reports need the rendering service, and a multi-object PDF must render within 30 seconds; see [Reports](./alerts-and-reports/reports#png-and-pdf-need-the-renderer).
+- PNG and PDF reports need the rendering service, and each object of a report must render within its time limit (30 seconds per object, plus 30); see [Reports](./alerts-and-reports/reports#png-and-pdf-need-the-renderer).
 
 ## Further reading
 

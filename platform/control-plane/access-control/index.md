@@ -39,7 +39,7 @@ Findings about the way access is set up. Each has a title, a sentence and a **Re
 
 ### Recent changes
 
-The latest audit entries with the action (for example `perm_grant:create`), the resource type, the actor and the time. The actor is shown as a short user id (`by 8a66d837`), not a name. **View audit log** opens the full [Audit log](../audit-log.md).
+The latest audit entries with the action (for example `perm_grant:create`), the resource type, the actor and the time. The actor is shown by email (`by admin@egret.local`), or by a short user id when the account no longer exists. **View audit log** opens the full [Audit log](../audit-log.md).
 
 ### How access works
 

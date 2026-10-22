@@ -74,9 +74,9 @@ Two limiters, both in memory per replica. The window and the lockout are in seco
 
 | Key | Environment variable | Default | Meaning |
 |---|---|---|---|
-| `login_max_attempts` | `EGRET_RATE_LIMIT__LOGIN_MAX_ATTEMPTS` | `5` | Local sign-in attempts allowed per window, per address and per email. Successful and failed attempts both count. |
+| `login_max_attempts` | `EGRET_RATE_LIMIT__LOGIN_MAX_ATTEMPTS` | `5` | Failed local sign-in attempts allowed per window, per address and email. Successful attempts do not count, and a success clears the failures. |
 | `login_window_secs` | `EGRET_RATE_LIMIT__LOGIN_WINDOW_SECS` | `300` | Length of the sign-in window. |
-| `login_lockout_secs` | `EGRET_RATE_LIMIT__LOGIN_LOCKOUT_SECS` | `300` | How long a key stays blocked (HTTP 429) once it exceeds the limit. |
+| `login_lockout_secs` | `EGRET_RATE_LIMIT__LOGIN_LOCKOUT_SECS` | `300` | How long a key stays blocked (HTTP 429 with `Retry-After`) once it reaches the limit. |
 | `token_max_attempts` | `EGRET_RATE_LIMIT__TOKEN_MAX_ATTEMPTS` | `60` | Requests to the machine identity provider's `POST /oauth/token` (client credentials) and to the token exchange per window, keyed on address and client id. Requests that repeat an already verified secret are not counted. |
 | `token_window_secs` | `EGRET_RATE_LIMIT__TOKEN_WINDOW_SECS` | `60` | Length of the token window. |
 | `token_lockout_secs` | `EGRET_RATE_LIMIT__TOKEN_LOCKOUT_SECS` | `60` | How long a key stays blocked after exceeding the token limit. |
@@ -148,7 +148,8 @@ The S3-compatible object store used for the catalog warehouse, query results, wo
 | Key | Environment variable | Default | Meaning |
 |---|---|---|---|
 | `enabled` | `EGRET_RANGER__ENABLED` | `false` | Serve the Ranger-compatible policy service that engine plugins poll, and turn on policy administration. See [Engines and Ranger setup](../deploy-operate/engines-and-ranger). |
-| `auth_token` | `EGRET_RANGER__AUTH_TOKEN` | empty | Token the Ranger plugins present to the policy service. |
+| `auth_mode` | `EGRET_RANGER__AUTH_MODE` | `required` | `required`: every request under `/ranger` needs an engine credential or the operator token. `anonymous`: requests without a credential are served, for a throwaway local stack only. |
+| `auth_token` | `EGRET_RANGER__AUTH_TOKEN` | empty | The operator's bearer token for the policy service. Empty accepts no bearer. Engines do not use it: each presents its own credential. |
 
 ## engine
 

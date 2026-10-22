@@ -38,8 +38,8 @@ The installation files are on the engine's **Plugin config** tab in the Control 
 | Field | Meaning |
 |---|---|
 | **Ranger service name** | The profile name the plugin asks for, for example `docs-legacy-trino`. |
-| **Policy download URL** | `<public url>/service/plugins/policies/download/<profile>`. |
-| **Authentication** | Whether egret requires a bearer token on the download, for example *The policy download is anonymous: no token is needed.* Egret does not show or issue a token. |
+| **Policy download URL** | `<public url>/ranger/service/plugins/policies/download/<profile>`. |
+| **Authentication** | *The policy download needs this engine's Ranger credential. Its password was shown once, at registration or rotation; the files below carry a placeholder in its place.* When egret runs the policy service anonymously: *The policy download is anonymous: no credential is needed.* |
 | **Declared plugin version** | The Ranger plugin version recorded for the engine. |
 
 ### Warnings
@@ -47,16 +47,17 @@ The installation files are on the engine's **Plugin config** tab in the Control 
 The tab raises warnings when something will stop the download:
 
 - The download URL is a loopback, unspecified or in-cluster address, so an engine elsewhere cannot reach it. The URL comes from the `[catalog] public_url` setting. On the demo stack it is `http://egret:8080`: *The download URL (http://egret:8080) is an in-cluster address: an engine outside the cluster cannot reach it.*
-- The download is anonymous: *anyone who can reach this URL can download every profile's policies. Restrict it at the network level.*
-- Egret requires a bearer token on `/service`, and a stock Ranger plugin cannot send it, so the download is refused (401) unless something in front of egret adds the token or exempts the engine.
+- The policy service runs anonymously: *egret runs the Ranger surface in anonymous mode: anyone who can reach the URL can download every profile's policies. Restrict it at the network level.*
+- Ranger is off on this egret, so `/ranger` is not served.
+- The declared plugin version is not one egret's evaluator models, so migrations into the profile are refused.
 
 ### You must supply
 
-*egret renders no credential and invents none.* You provide:
+You provide:
 
 - A network path from the engine to the download URL.
-- The files shown, installed by you. Egret never connects to the engine.
-- A way to present egret's bearer token on the download, for example a proxy that adds it.
+- The files below, installed by you: egret never connects to this engine.
+- The engine's Ranger credential (shown once, at registration or rotation) in the security XML, in place of the placeholder password. An engine registered before credentials existed has none: get one with **Rotate credential**.
 
 ### What egret assumes
 
