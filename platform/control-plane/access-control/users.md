@@ -53,7 +53,7 @@ Prefer SSO for people. A local account has its own password and does not follow 
 
 Select a user to open their page. The header shows the avatar, name, status, provider and email, with **Disable** (or **Enable**) and **Delete**. A local account also has **Reset password**: *Set a new password for this local account. Their existing sessions are signed out immediately.*
 
-![The page of Farid Haddad: details, two platform roles and one group](/img/platform/admin/cp-user-detail.png)
+![The page of Farid Haddad: details, his directly granted platform role and one group](/img/platform/admin/cp-user-detail.png)
 
 ### Details
 

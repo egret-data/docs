@@ -2,7 +2,8 @@
 // Run scripts/seed-dashboards.mjs and then `scripts/seed-alerts.mjs --run` first, so the lists, run logs
 // and the Mailpit inbox have content. Mail shots read Mailpit (MAILPIT, default http://localhost:8025):
 // the demo stack delivers every mail there.
-const ws = '/explore/default';
+// DOCS_WS picks the workspace the Explore objects live in (default: `default`).
+const ws = `/explore/${process.env.DOCS_WS ?? 'default'}`;
 // The alert whose run log alerts/run-log shows (RUN_LOG_ALERT overrides it).
 const RUN_LOG_ALERT = process.env.RUN_LOG_ALERT ?? 'Pending orders above 100';
 const MAILPIT = process.env.MAILPIT ?? 'http://localhost:8025';

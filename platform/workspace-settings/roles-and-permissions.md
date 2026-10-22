@@ -6,9 +6,9 @@ sidebar_position: 3
 
 **Workspace settings → Access → Roles & permissions** shows what each workspace role can do in this workspace. It is a read-only view: roles are defined once for the whole platform and apply to every workspace.
 
-![The workspace Roles and permissions page with three built-in roles and two custom roles](/img/platform/admin/ws-roles.png)
+![The workspace Roles and permissions page with the three built-in roles and the custom roles, each with its permission count](/img/platform/admin/ws-roles.png)
 
-*Roles are defined platform-wide in Control Plane → Access control and apply to every workspace. This is a read-only view.*
+*Roles are defined platform-wide in Control Plane → Access control and apply to every workspace. This is a read-only view. The Control Plane also lists `data_api_invoker`: it is granted on one Data API endpoint, never as a workspace role, so it is not shown here.*
 
 ## The summary
 

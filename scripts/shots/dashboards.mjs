@@ -1,6 +1,7 @@
 // Screenshots for the Dashboards docs (platform/explore/dashboards/*). Run scripts/seed-dashboards.mjs first.
 // Every prepare() starts from the Dashboards list, opens a dashboard by name and drives the UI from there.
-const ws = '/explore/default';
+// DOCS_WS picks the workspace the Explore objects live in (default: `default`).
+const ws = `/explore/${process.env.DOCS_WS ?? 'default'}`;
 const link = (page, name) => page.getByRole('link', {name, exact: true}).first();
 const open = (name) => async (page) => {
   // The auto-apply switch is a per-dashboard browser preference; start every shot from the default (on).
