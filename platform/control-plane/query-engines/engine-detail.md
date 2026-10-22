@@ -69,7 +69,7 @@ How Egret signs in to the coordinator depends on the engine:
 | Password users or impersonation | The engine's `egret-monitor` account | The queries that account may see. |
 | No authentication | `egret-monitor` | Every query. |
 
-The node list comes from Trino's `GET /v1/node` where the coordinator serves it. Trino 483 does not by default, and then Egret reads `system.runtime.nodes` instead. If that is refused too, **nodes** shows `—`: the count is unknown, not zero, and the query counts are still shown.
+The node list comes from Trino's `GET /v1/node` where the coordinator serves it. Trino 483 does not by default, and then Egret reads `system.runtime.nodes` instead. That query runs as the same sign-in, so on a JWT engine it appears in the **Queries** table under your name (on the demo stack: `SELECT http_uri FROM system.runtime.nodes`, user `admin`, **FINISHED**). If it is refused too, **nodes** shows `—`: the count is unknown, not zero, and the query counts are still shown.
 
 ### Restart
 

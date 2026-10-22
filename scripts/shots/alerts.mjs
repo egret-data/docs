@@ -3,6 +3,8 @@
 // and the Mailpit inbox have content. Mail shots read Mailpit (MAILPIT, default http://localhost:8025):
 // the demo stack delivers every mail there.
 const ws = '/explore/default';
+// The alert whose run log alerts/run-log shows (RUN_LOG_ALERT overrides it).
+const RUN_LOG_ALERT = process.env.RUN_LOG_ALERT ?? 'Pending orders above 100';
 const MAILPIT = process.env.MAILPIT ?? 'http://localhost:8025';
 // Every shot sets its own height, so a tall shot never leaks its viewport into the next one.
 const vp = (page, h = 900) => page.setViewportSize({width: 1440, height: h});
@@ -58,7 +60,7 @@ export const shots = [
     path: `${ws}/alerts`,
     prepare: async (page) => {
       await vp(page);
-      await page.getByRole('button', {name: 'Run log for Pending orders above 100'}).click();
+      await page.getByRole('button', {name: `Run log for ${RUN_LOG_ALERT}`}).click();
       await page.waitForTimeout(1500);
     },
     settle: 500,

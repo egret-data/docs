@@ -24,6 +24,8 @@ const seq = (...fns) => async (page) => {
 };
 // Open an engine of the Control Plane list by name (the list links each name).
 const engine = (name) => seq(link(name), async (page) => page.waitForTimeout(1500));
+// The provisioned engine the cp-engine-* shots open (DOCS_ENGINE overrides it for a pass that adds its own).
+const DOCS_ENGINE = process.env.DOCS_ENGINE ?? 'docs-trino';
 
 export const shots = [
   // ---- Governance
@@ -295,17 +297,17 @@ export const shots = [
       await page.getByText('Ingress exposure', {exact: true}).scrollIntoViewIfNeeded();
     },
   },
-  {id: 'admin/cp-engine-overview', path: `${cp}/engines`, settle: 2000, prepare: engine('docs-trino')},
-  {id: 'admin/cp-engine-catalogs', path: `${cp}/engines`, settle: 2000, prepare: seq(engine('docs-trino'), tab('Catalogs'))},
-  {id: 'admin/cp-engine-workspaces', path: `${cp}/engines`, settle: 2000, prepare: seq(engine('docs-trino'), tab('Workspaces'))},
-  {id: 'admin/cp-engine-settings', path: `${cp}/engines`, settle: 2000, prepare: seq(engine('docs-trino'), tab('Settings'))},
-  {id: 'admin/cp-engine-monitor', path: `${cp}/engines`, settle: 4000, prepare: seq(engine('docs-trino'), tab('Monitor'))},
+  {id: 'admin/cp-engine-overview', path: `${cp}/engines`, settle: 2000, prepare: engine(DOCS_ENGINE)},
+  {id: 'admin/cp-engine-catalogs', path: `${cp}/engines`, settle: 2000, prepare: seq(engine(DOCS_ENGINE), tab('Catalogs'))},
+  {id: 'admin/cp-engine-workspaces', path: `${cp}/engines`, settle: 2000, prepare: seq(engine(DOCS_ENGINE), tab('Workspaces'))},
+  {id: 'admin/cp-engine-settings', path: `${cp}/engines`, settle: 2000, prepare: seq(engine(DOCS_ENGINE), tab('Settings'))},
+  {id: 'admin/cp-engine-monitor', path: `${cp}/engines`, settle: 4000, prepare: seq(engine(DOCS_ENGINE), tab('Monitor'))},
   {
     id: 'admin/cp-engine-logs',
     path: `${cp}/engines`,
     settle: 2500,
     prepare: async (page) => {
-      await engine('docs-trino')(page);
+      await engine(DOCS_ENGINE)(page);
       await page.getByRole('button', {name: 'Logs'}).first().click();
     },
   },
@@ -314,7 +316,7 @@ export const shots = [
     path: `${cp}/engines`,
     settle: 800,
     prepare: async (page) => {
-      await engine('docs-trino')(page);
+      await engine(DOCS_ENGINE)(page);
       await page.getByRole('button', {name: 'More engine actions'}).click();
       await page.getByRole('menuitem', {name: 'Delete engine'}).click();
     },
