@@ -47,21 +47,26 @@ A list that says what kind of thing the column holds. The default is **—** (no
 
 Only these values are accepted. The server refuses anything else with a *bad request* error that lists them.
 
-:::note Dimension and Filter are stored but not used yet
-The **Dimension** and **Filter** switches below are saved with the dataset, but the chart editor does not read them. A column with **Dimension** off still appears in the X-axis and series pickers, and a column with **Filter** off can still be filtered on. They are kept so that charts can start honouring them; do not rely on them to hide a column.
-:::
-
 ### Dimension
 
-A switch. On means the column is meant to be used to group a chart by (a category such as *country* or *product*). It is on for every new column.
+A switch. On means the column can be used to group a chart by (a category such as *country* or *product*). It is on for every new column.
+
+With **Dimension** off, the chart editor's field pickers (X-axis, series, the columns of a grouped table, and so on) no longer offer the column. Two exceptions keep existing work running:
+
+- A chart that already uses the column keeps it: the chart still runs and its picker still shows the column.
+- A view that lists records rather than groups keeps every column: a [table chart](../charts/table) with no metric, and [Object detail](../charts/object-detail).
+
+The switch is read by the chart editor only. The server does not refuse a chart that groups by such a column.
 
 ### Filter
 
-A switch. On means viewers are meant to be able to filter charts by this column. It is on for every new column.
+A switch. On means dashboard filters can be connected to this column. It is on for every new column.
+
+With **Filter** off, a dashboard filter's card mapping no longer offers the column for cards built on this dataset. A filter that is already connected to the column keeps its connection. See [Dashboard filters](../dashboards/filters).
 
 ### Time
 
-A switch that marks the column as a date or a time. Turn it on to use the column on a time axis and to get time grains (day, week, month, and so on) in the chart editor. New columns get it on automatically when the engine reports a date or timestamp type. **Refresh** resets this switch to what the engine type says, so a manual change on a physical or virtual column does not survive a refresh.
+A switch that marks the column as a date or a time. Turn it on to use the column on a time axis and to get time grains (day, week, month, and so on) in the chart editor. New columns get it on automatically when the engine reports a date or timestamp type. **Refresh** keeps a manual choice as long as the column's engine type does not change; when the type changes, the switch is set again from the new type.
 
 ### Format
 
@@ -96,7 +101,7 @@ A format set here is a **default**. Charts and tables built on the dataset use i
 
 ### Display name
 
-A friendly label, for example *Order total* for `totalprice`. The chart editor shows it instead of the raw column name in its field lists. Column headers of a table chart and of the dataset's **Preview** still show the column name. Leave it empty to show the column name. A name made only of spaces is treated as empty.
+A friendly label, for example *Order total* for `totalprice`. The chart editor shows it instead of the raw column name in its field lists, and it is the default **Column title** of the column on the chart page and in the dataset's **Preview**, so a table chart's header reads *Order total*. A chart that sets its own **Column title** for the column keeps it. The display name is applied when the chart is drawn and is not saved into the chart, so changing it later changes every chart that did not set its own title. Dashboard cards still show the column name in table headers. Leave it empty to show the column name. A name made only of spaces is treated as empty.
 
 ### Description
 
@@ -104,7 +109,7 @@ A short note about what the column contains, for people who maintain the dataset
 
 ### Calculated columns: Edit and Delete
 
-Rows of calculated columns have two extra buttons at the right: **Edit** opens a dialog to change the formula, and **Delete** removes the column at once, without a confirmation. See [Calculated columns](./calculated-columns).
+Rows of calculated columns have two extra buttons at the right: **Edit** opens a dialog to change the formula, and **Delete** asks for confirmation before it removes the column. See [Calculated columns](./calculated-columns#delete-a-calculated-column).
 
 ## Example: prepare the Orders with customers dataset
 
@@ -116,7 +121,8 @@ Rows of calculated columns have two extra buttons at the right: **Edit** opens a
 
 ## Limits and known issues
 
-- **Dimension** and **Filter** do not affect the chart editor yet; **Category** and **Country** roles are not read anywhere.
+- **Dimension** and **Filter** are applied in the chart editor and in the dashboard filter mapping only, not by the server. **Category** and **Country** roles are not read anywhere.
+- Dashboard cards show column names, not display names, in table headers.
 - A format is stored as a small JSON text (for example `{"currency":"USD","decimals":2,"number_style":"currency"}`) that the API returns in the column's `format` field.
 - Column names cannot be renamed or hidden. Hide a column by leaving it out of the SQL of a virtual dataset.
 

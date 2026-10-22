@@ -19,6 +19,8 @@ After a successful run, the panel shows:
 
 Numeric columns (the integer, decimal and floating-point types of Trino and StarRocks) are right-aligned; other columns are left-aligned. `NULL` shows as grey italic *NULL*. Long values are cut off with an ellipsis; see **Expand a value** below.
 
+Floating-point cells (`double`, `real` and `float`) are shown rounded to 15 significant digits, which hides binary representation noise: `63339475.32000001` shows as `63339475.32`, and `0.1E0 + 0.2E0` as `0.3`. Only the display is rounded. **Copy**, the exports, **Download CSV** and the expanded cell keep the exact value. Integer and `decimal` columns are shown as the engine returned them.
+
 ### Sort
 
 Click a column name to sort the rows by it: the first click sorts ascending, the second descending, the third removes the sort. Numeric columns sort by number and the rest by text. `NULL` values always go last. Sorting happens in your browser on the rows that are loaded; it does not change the query.
@@ -73,15 +75,13 @@ Three different numbers decide how many rows you can work with.
 |---|---|---|
 | **Limit** in the toolbar | 1,000 | How many rows the engine returns for the run. Up to 100,000 (the server setting `engine.max_rows`). See [Row limit](./editor#row-limit). |
 | Rows loaded in the grid | 1,000 | How many of those rows your browser loads for sorting, filtering, charting, **Copy** and **Download JSON**. |
-| Query time out | 60 seconds | The server setting `engine.query_timeout_secs`. A longer query fails with `timeout`. |
+| Query time out | 60 seconds | The server setting `engine.query_timeout_secs`. A longer query fails with a message that names the limit and the setting (see [Run and cancel](./editor#run-and-cancel)). |
 
 When a run returns more than 1,000 rows, a grey note next to the counter says *interactive over first 1,000 rows*: the row count shows the real total, but sort, filter, chart, copy and JSON apply to the first 1,000. Use **Download CSV** for everything.
 
-When Egret itself stopped reading at the limit (this happens for statements that are not a single `SELECT` or `WITH`, such as `SHOW` or `TABLE`), an amber chip reads *Results were limited to 1,000 rows.*
+When the run had more rows than the limit, an amber chip reads *Results were limited to 1,000 rows.* This holds for every kind of statement: a `SELECT`, a `SHOW`, a `TABLE` or a query with its own larger `LIMIT`.
 
 ![A result that Egret stopped at the limit](/img/platform/sql-datasets/sqllab-truncated.png)
-
-A single `SELECT` is limited inside the engine instead, and then there is no chip: a result that has exactly as many rows as the limit may have been cut.
 
 ## Who can see a result
 
@@ -89,10 +89,8 @@ A result belongs to the user who ran the query. Another workspace member cannot 
 
 ## Limits and known issues
 
-- The status chip for a cancelled run is missing; a cancelled query leaves the panel in its empty state.
 - A zero-row result is reported with the filter message *No rows match “”.*
 - The chart groups with a sum, so a repeated X value adds its Y values together; it is not a replacement for a dataset chart.
-- The row order of a single `SELECT` with `ORDER BY` but no `LIMIT` is not guaranteed on Trino; sort in the grid or add a `LIMIT` (see [Row limit](./editor#row-limit)).
 - Counters read *1 rows* for a one-row result.
 
 ## Further reading

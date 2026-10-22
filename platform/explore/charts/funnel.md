@@ -53,7 +53,7 @@ One row for the dimension and one for the metric. See [Column formatting and num
 
 ![The same data as a Bar funnel, one column per stage](/img/platform/charts/funnel-bar.png)
 
-With **Bar — a column per step**, each stage is a column on a bar chart with its own legend entry, which is easier to read when stages are many or the values very different.
+With **Bar — a column per step**, each stage is a column on a bar chart with its own legend entry, which is easier to read when stages are many or the values very different. The stage names under the columns follow the same fit rule as a bar chart's X axis: all of them are drawn, upright or rotated, or none when they cannot all fit.
 
 ## Settings at a glance
 
@@ -72,6 +72,7 @@ There is no **Axes** tab.
 - The percentage under each stage is relative to the **first stage in the displayed order**, not to the previous stage.
 - Stage names cannot be renamed here; rename or alias them in the dataset or the query.
 - Clicking a stage opens the drill menu for that stage.
+- **.png** export is offered only with **Bar — a column per step**. The default funnel is not drawn as one image, so it offers **.csv**, **.xlsx** and **.json** only.
 
 ## Further reading
 

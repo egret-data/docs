@@ -24,7 +24,6 @@ A progress bar shows one value against a goal as a filled bar. Use it for target
 | **Dataset** | The dataset to read. |
 | **Metric** | The value shown as the filled part of the bar. Required. |
 | **Goal** | A target number, with the placeholder **Target value**. Accepts decimals. |
-| **Row limit** | Present but ignored; the query returns one row. |
 
 ## Display
 
@@ -49,21 +48,17 @@ The bar fills to the metric's share of the goal. A small triangle above the bar 
 | **Goal met** | The value equals the goal. |
 | **Goal exceeded** | The value is greater than the goal. The bar is full and its track turns darker. |
 | **No value data** | The query returned no value. |
+| **No goal set** | There is a value but no goal: **Goal** is empty and no **Goal from a metric** is chosen, or the goal metric has no value. The bar stays empty and the scale under it is not drawn. |
 | **No data available** | There is neither a value nor a goal. |
 
 When the value is below the goal there is no message.
-
-:::warning
-An empty **Goal** is treated as `0`, not as "no goal". A progress bar with a metric but no goal reads **Goal 0** and **Goal exceeded**. Always set a **Goal** or a **Goal from a metric**.
-:::
 
 ## Settings at a glance
 
 | Setting | Where | Default |
 |---|---|---|
 | **Metric** | Data | Required |
-| **Goal** | Data | Empty, read as `0` |
-| **Row limit** | Data | Ignored |
+| **Goal** | Data | Empty (no goal) |
 | **Colour** | Display | The palette's second color (green) |
 | **Goal from a metric** | Display | **None — use the fixed goal** |
 | **Formatting** (one row for the metric) | Display | Dataset's format |
@@ -76,6 +71,7 @@ With **Metric** = **Orders** (15,000 orders in the sample) and **Goal** = `20000
 
 - The panel uses the spelling **Colour** here, **Color** on most other types.
 - Clicking the bar opens the drill menu with only **See these records**.
+- There is no **Row limit**: the query always returns one row.
 
 ## Further reading
 

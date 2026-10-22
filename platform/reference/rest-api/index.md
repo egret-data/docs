@@ -118,7 +118,7 @@ described by their auth line here.
 | Explore (BI) | [Databases](rest-api/databases) | 9 |
 | Explore (BI) | [Queries](rest-api/queries) | 6 |
 | Explore (BI) | [SQL Lab](rest-api/sqllab) | 15 |
-| Explore (BI) | [Datasets](rest-api/datasets) | 21 |
+| Explore (BI) | [Datasets](rest-api/datasets) | 22 |
 | Explore (BI) | [Charts](rest-api/charts) | 14 |
 | Explore (BI) | [Dashboards](rest-api/dashboards) | 15 |
 | Explore (BI) | [Folders](rest-api/folders) | 4 |

@@ -92,8 +92,8 @@ Press **Run**, or **⌘ Enter** (macOS) or **Ctrl Enter** (Windows and Linux) wh
 - **Run selection.** When you select text, the button changes to **Run selection** and only the selected text is sent. Selecting one statement out of several is the way to run them one at a time. Selected text that is only whitespace is ignored and the whole editor text runs.
 - **Explain.** **Explain query** in the **…** menu (and in the command palette) runs `EXPLAIN` in front of the selection or, with no selection, the whole text, and shows the plan in the grid as one wide cell. Click the cell to read the whole plan in a dialog.
 - **Only one run at a time per tab.** **Run** is disabled while a query is running.
-- **Cancel.** Press **Cancel** to stop the query. The engine is asked to stop and the run is recorded in History with the status *cancelled*. The status badge disappears and the Results panel goes back to *No results yet.*; nothing tells you that the run was cancelled.
-- **Time out.** A query that runs longer than the server's `engine.query_timeout_secs` (60 seconds by default) is stopped and fails with the error `timeout`.
+- **Cancel.** Press **Cancel** to stop the query. The engine is asked to stop and the run is recorded in History with the status *cancelled*. The Results panel shows **Query cancelled** (*The run was stopped before it returned rows. Run it again to see results.*), and the status badge and the footer read *Cancelled after* and the time, for example *Cancelled after 4.2 s*.
+- **Time out.** A query that runs longer than the server's `engine.query_timeout_secs` (60 seconds by default) is stopped and fails with *timeout: the query ran longer than the 60 s limit for SQL Lab queries and was stopped. The limit is the server setting `engine.query_timeout_secs`.* When Trino stops the query itself at the same limit, its own message (*exceeded maximum time limit*) is followed by the same hint.
 
 ![The plan of an EXPLAIN in the results grid](/img/platform/sql-datasets/sqllab-explain.png)
 
@@ -107,16 +107,16 @@ Press **Run**, or **⌘ Enter** (macOS) or **Ctrl Enter** (Windows and Linux) wh
 
 How the limit is applied depends on the statement:
 
-- A single `SELECT` or `WITH` statement is wrapped as `SELECT * FROM (<your query>) AS _egret_lim LIMIT n`, so the engine itself stops at `n` rows. Your own `LIMIT` still applies inside.
-- Anything else (for example `SHOW`, `DESCRIBE`, `EXPLAIN`, or several statements in one text) is sent unchanged and Egret stops reading after `n` rows. The Results panel then shows the amber chip *Results were limited to n rows.*
+- A single query (`SELECT`, `WITH`, a `UNION` or `VALUES`) without its own `LIMIT`, `OFFSET` or `FETCH` gets `LIMIT n + 1` added on a new line after your text. Your `ORDER BY` stays the outermost ordering, so the rows come back in the order you asked for, and the error positions the engine reports match the lines in the editor. A trailing semicolon or comment is fine.
+- A query with its own `LIMIT`, `OFFSET` or `FETCH` is sent unchanged.
+- Anything else (for example `SHOW`, `DESCRIBE`, `EXPLAIN`, or several statements in one text) is sent unchanged.
+- SQL that Egret cannot read (an engine-specific construct, a `/*!` hint or a nested `/*` comment) but that starts with `SELECT` or `WITH` is still wrapped as `SELECT * FROM (<your query>) AS _egret_lim LIMIT n + 1`. For that SQL an `ORDER BY` without its own `LIMIT` is not guaranteed to be kept on Trino.
 
-For the first kind there is no chip, so a result that has exactly as many rows as your limit may have been cut. If the row count equals the limit, raise the limit or add a `WHERE` clause. See [Query results](./results#limits) for how many of those rows the grid loads.
-
-**`ORDER BY` without `LIMIT` is not kept on Trino.** Because of that wrapping, Trino treats your `ORDER BY` as the order of a subquery, which it is free to ignore. A query such as `SELECT orderstatus, sum(totalprice) AS revenue FROM tpch.tiny.orders GROUP BY 1 ORDER BY 2 DESC` came back in a different row order on almost every run on the demo stack. Add your own `LIMIT` after the `ORDER BY` (for example `ORDER BY 2 DESC LIMIT 1000`), which Trino keeps, or click a column header to sort the loaded rows in the grid.
+In every case Egret stops reading after `n` rows. When there were more, the Results panel shows the amber chip *Results were limited to n rows.*, so a cut result is always marked. See [Query results](./results#limits) for how many of those rows the grid loads.
 
 ## The command palette
 
-Press **⌘ K** (macOS) or **Ctrl K** to open the palette, or press the **⌘K** button in the toolbar. It is a search box over a flat list of actions; type to narrow the list by name, move with **↑** and **↓**, run the highlighted action with **Enter** and close it with **Escape**. Pressing the shortcut again closes it.
+Press **⌘ K** (macOS) or **Ctrl K** to open the palette, or press the **⌘K** button in the toolbar. The shortcut works with the cursor in the editor too. It is a search box over a flat list of actions; type to narrow the list by name, move with **↑** and **↓**, run the highlighted action with **Enter** and close it with **Escape**. Pressing the shortcut again closes it.
 
 ![The command palette](/img/platform/sql-datasets/sqllab-palette.png)
 
@@ -133,7 +133,7 @@ Press **⌘ K** (macOS) or **Ctrl K** to open the palette, or press the **⌘K**
 | **Download results as CSV** | Only listed after a successful run. |
 
 :::note ⌘K inside the editor
-While the text cursor is inside the editor, Monaco handles **⌘ K** itself (it starts a chord) and the palette does not open. Click outside the editor, in the results area for example, then press the shortcut, or use the **⌘K** button.
+SQL Lab takes **⌘ K** / **Ctrl K** before the editor sees it, so the editor's own shortcuts that start with **⌘ K** are not available in SQL Lab.
 :::
 
 ## Keyboard shortcuts
@@ -155,9 +155,9 @@ The **Run** shortcut belongs to the editor it was pressed in, so it never runs a
 ## Limits and known issues
 
 - Switching tabs discards the visible result (see the note above).
-- Cancelling shows no confirmation in the page.
 - Autocomplete does not resolve aliases and only knows expanded Explorer nodes.
-- On Trino, `ORDER BY` without `LIMIT` in a single `SELECT` is not guaranteed to be kept (see [Row limit](#row-limit)).
+- On Trino, `ORDER BY` without `LIMIT` is not guaranteed to be kept for SQL that Egret cannot read and therefore wraps (see [Row limit](#row-limit)).
+- Editor chords that start with **⌘ K** are not available (see [The command palette](#the-command-palette)).
 
 ## Further reading
 

@@ -43,7 +43,8 @@ The checks on every dataset action use the dataset itself, so a share, a folder 
 |---|---|
 | Open the Datasets list, a dataset page, **Usage**, **Preview** | `dataset:read` |
 | Bookmark a dataset | `dataset:read` |
-| **Create**, **Duplicate** | `dataset:manage` on the workspace, a granted database |
+| **Create** | `dataset:manage` on the workspace, a granted database |
+| **Duplicate** | `dataset:read` on the source dataset, plus `dataset:manage` on the workspace and a granted database |
 | **Edit** (name, description, SQL) | `dataset:manage` on the dataset |
 | **Refresh**, column settings, **+ Calculated column**, **+ Metric**, metric edit and delete | `dataset:manage` on the dataset |
 | **Move to Trash**, **Restore**, **Delete permanently**, header **Delete** | `dataset:manage` on the dataset |

@@ -13,7 +13,7 @@ You can refresh from two places:
 - On the dataset page, press the **Refresh columns** button (circular arrows) in the header. The icon spins while Egret works.
 - In the Datasets list, open the **…** menu of the row and choose **Refresh**. The item reads **Refreshing…** while it runs.
 
-A toast says *Refreshed* when it is done. Refresh needs the `dataset:manage` permission; see [Permissions](./permissions).
+When it is done, a toast says what changed in the column list: *Refreshed: no columns added or removed*, or for example *Refreshed: 2 new columns (discount_band, region); 1 column removed (comment)*. More than three names are shortened to the first three and *and N more*. Refresh needs the `dataset:manage` permission; see [Permissions](./permissions).
 
 ### What a refresh does
 
@@ -22,7 +22,7 @@ Egret asks the engine for the source's current columns (for a physical dataset, 
 | Situation | Result |
 |---|---|
 | A column is new in the source | It is added, with **Dimension** and **Filter** on and everything else empty. |
-| A column still exists | Its type is updated. Your **Display name**, **Description**, **Role**, **Format**, **Dimension** and **Filter** settings stay. Its **Time** switch is set again from the engine's type, so a manual choice on this switch is lost. |
+| A column still exists | Its type is updated. Your **Display name**, **Description**, **Role**, **Format**, **Dimension** and **Filter** settings stay. Its **Time** switch stays as you set it when the engine type is the same; when the type changed, the switch is set again from the new type. |
 | A column no longer exists in the source | It is removed, together with its settings. |
 | A calculated column | Never touched. It stays even if its formula refers to a column that no longer exists. |
 | A metric | Never touched, on the same terms. |
@@ -71,7 +71,7 @@ Renaming the dataset does not affect charts. They follow the dataset by its iden
 ## Limits and known issues
 
 - The snapshot can drift from the source silently.
-- **Time** manual changes are reset by **Refresh**.
+- A manual **Time** choice is reset by **Refresh** when the column's engine type changes.
 - Removing a source column removes its settings for good; adding it back creates a fresh column with default settings.
 
 ## Further reading

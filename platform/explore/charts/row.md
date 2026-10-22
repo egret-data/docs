@@ -14,15 +14,12 @@ Row charts use the same settings as [bar charts](./bar) and the rest of the fami
 
 1. Go to **Explore → Charts**, press **+ Chart** and pick **Row**.
 2. Choose a **Dataset**, set **X-axis** to the dimension to rank (for example `clerk`) and add a metric under **Y-axis** (for example **Revenue**).
-3. Under **Sort**, press **Add a sort…**, choose **revenue** and switch the direction to descending.
-4. Set **Row limit** to `10`.
-5. Press **Save**.
+3. Set **Row limit** to `10`.
+4. Press **Save**.
 
 The dimension is still called **X-axis** on the **Data** tab even though it is drawn vertically. The settings follow the drawing, not the field names: on the **Axes** tab the vertical category axis is labelled **Y-axis**.
 
-:::note
-Despite the gallery description ("sorted by value"), a row chart is not sorted by value on its own. Categories appear in alphabetical order until you add a **Sort**. Sort by the metric, descending, to get a ranking.
-:::
+A row chart is sorted by value on its own, as the gallery says: with no **Sort**, it orders by its first metric, largest first, with the category as the tie-breaker. Rows are drawn top to bottom in that order, so the largest bar is at the top. A **Sort** you add replaces the default.
 
 ## Data
 
@@ -53,11 +50,10 @@ There is no **Horizontal** switch. The first group is the category axis, labelle
 
 ## Ranking categories
 
-To rank: set **Sort** to the metric, descending, and **Row limit** to the number of rows you want. In the screenshot the ten largest clerks are listed, but the largest bar is drawn at the bottom, because a row chart draws the first row at the bottom. If you want the largest at the top, sort ascending and accept that **Row limit** then keeps the *smallest* rows, or limit the rows another way (a dataset that already holds only the rows you want to rank).
+To rank, leave **Sort** empty and set **Row limit** to the number of rows you want: the default order is the first metric, descending, so a limit of 10 keeps the ten largest, drawn with the largest at the top. To list the categories alphabetically instead, add a **Sort** on the category, ascending. A row chart saved before this default existed may carry that alphabetical sort already; it shows in the **Sort** control, and removing it brings back the ranking.
 
 ## Limits and known issues
 
-- Gallery text says rows are "sorted by value". They are only sorted when you add a **Sort**.
 - The **Data** tab labels the category field **X-axis** although it is drawn vertically.
 
 ## Further reading

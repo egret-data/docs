@@ -86,7 +86,7 @@ A trial runs as the service account, not as you. It uses the endpoint-wide rate-
 
 ## Limits and known issues
 
-- **Try it** runs the published version. Draft edits, saved or not, are not part of it.
+- **Try it** runs the published version at its live URL. Draft edits, saved or not, are not part of it, including a new method or path.
 - A result too large to display shows *This result is too large to display here. The call still ran for real*; check Activity.
 - **Try it** needs at least one service account. With none, it says *This workspace has no service accounts yet* and links to **Create one in Clients**.
 

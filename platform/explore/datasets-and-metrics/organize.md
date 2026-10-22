@@ -44,10 +44,14 @@ A folder heading's **…** menu has:
 
 ## Trash
 
-**Move to Trash** (row menu, or **Move n to Trash** after bulk select) hides a dataset from the main list without deleting it. Press the **Trash** button in the toolbar to open the **Trash** view, where each row shows the same columns as the main list and a **…** menu with:
+**Move to Trash** (row menu, or **Move n to Trash** after bulk select) hides a dataset from the main list without deleting it.
+
+From the row menu, a dialog asks *Move “name” to Trash?* first. It lists the charts built on the dataset and says *N charts use this dataset and will keep working until the dataset is deleted. You can restore it from the Trash.* (or *No charts use this dataset. You can restore it from the Trash.*). Press **Move to Trash** to confirm; the toast says *Moved to Trash*. **Move n to Trash** after bulk select trashes the selected datasets without this dialog.
+
+Press the **Trash** button in the toolbar to open the **Trash** view, where each row shows the same columns as the main list and a **…** menu with:
 
 - **Restore**, which returns the dataset to the list.
-- **Delete permanently**, which asks *Permanently delete "name"? This cannot be undone.* and then deletes it for good.
+- **Delete permanently**, which deletes it for good after a confirmation (see [Delete a dataset](#delete-a-dataset)).
 
 ![The Trash view with one trashed dataset and its Restore and Delete permanently menu](/img/platform/sql-datasets/datasets-trash.png)
 
@@ -56,20 +60,31 @@ Press the **Trash** button again to leave the view. An empty trash says *Trash i
 What trashing does, as tested on the demo:
 
 - The dataset disappears from the main list and can be restored with all its settings.
-- Charts built on it **keep working** and keep running queries; they are not trashed with it.
+- Charts built on it **keep working** and keep running queries; they are not trashed with it. Each of them shows a notice in the chart editor: *This chart's dataset “name” is in the Trash. The chart keeps working until the dataset is deleted; restore the dataset from the Trash to keep it.* The chart editor's **Dataset** picker lists live datasets only, so it is empty for such a chart.
 - Nothing is purged automatically. A trashed dataset stays until someone restores it or deletes it permanently.
 
 ### Delete a dataset
 
-**Delete permanently** in the Trash, and the trash-can button in a dataset's header, both remove the dataset for good. The header button opens *Delete dataset “name”?* with the text *This removes the dataset and its column snapshot. The underlying table or query is not affected. This cannot be undone.* After you confirm, the toast says *Deleted* and the Datasets list opens.
+**Delete permanently** in the Trash, and the trash-can button in a dataset's header, both remove the dataset for good. Both open the same dialog, *Delete dataset “name”?*, and what it asks depends on whether charts are built on the dataset, counting charts in the Trash:
+
+| Charts on the dataset | What the dialog says | To confirm |
+|---|---|---|
+| None | *This removes the dataset and its column snapshot. The underlying table or query is not affected. This cannot be undone.* | Type `delete`, press **Delete**. |
+| One or more | *N charts are built on this dataset and will be deleted with it. The underlying table or query is not affected. This cannot be undone.*, followed by the list of those charts (type icon, link, *in Trash* tag) | Type the dataset's exact name (case matters), press **Delete dataset and N charts**. |
+
+The confirm button stays off until the chart list has loaded. If the list cannot be read, the dialog says *Could not check which charts use this dataset, so it cannot be deleted right now.* and offers no delete.
+
+After the delete, the toast says *Deleted* (or *Deleted the dataset and N charts*); from the header button the Datasets list opens instead.
 
 :::warning Charts are deleted too
-A permanent delete also deletes every chart built on the dataset; the dialog does not say so. Use **Move to Trash** if you only want to hide a dataset, and check the [Usage](./usage-and-preview#usage) tab before deleting.
+A permanent delete also deletes every chart built on the dataset, live or in the Trash. Use **Move to Trash** if you only want to hide a dataset.
 :::
+
+Through the REST API, `DELETE /api/ws/{workspace}/datasets/{id}` on a dataset that charts are built on answers `409` with `code: "in_use"`, the list of charts and the message *N charts built on this dataset would be deleted with it; confirm with the dataset name to delete them all*. Send `?confirm=<dataset name>` to delete the dataset and its charts.
 
 ## Duplicate
 
-For virtual datasets, **Duplicate** in the row menu opens a **Save as dataset** dialog with the SQL filled in and the name *copy of …*. See [Creating a dataset](./creating-a-dataset#duplicate-a-virtual-dataset).
+**Duplicate** in the row menu copies a dataset of either kind, with its column settings, calculated columns and metrics. See [Creating a dataset](./creating-a-dataset#duplicate-a-dataset).
 
 ## Tags
 
@@ -95,7 +110,8 @@ The roles map to the dataset permissions: **Viewer** can read the dataset and it
 
 - Folders are one level deep.
 - Bookmarks are personal and cannot be shared.
-- **Delete permanently** removes the charts built on the dataset without warning.
+- **Delete permanently** removes the charts built on the dataset, after you type the dataset's name.
+- **Move n to Trash** (bulk select) does not show which charts use the datasets.
 
 ## Further reading
 

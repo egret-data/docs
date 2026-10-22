@@ -51,7 +51,9 @@ See [Engine 406 and 502 errors](./engine-406-502).
 
 ## The query times out
 
-The per-query timeout is `engine.query_timeout_secs` (default 60 seconds). Data Apps have their own limit
+The per-query timeout is `engine.query_timeout_secs` (default 60 seconds). In SQL Lab a query that runs longer fails with
+*timeout: the query ran longer than the 60 s limit for SQL Lab queries and was stopped. The limit is the server setting
+`engine.query_timeout_secs`.* (or with Trino's *exceeded maximum time limit* and the same hint). Data Apps have their own limit
 (`apps.timeout_secs`, 60). Raise the key if long queries are legitimate, or make the query cheaper. The key must stay at
 least 1.
 
@@ -65,7 +67,8 @@ least 1.
 | Row limit on a chart | The chart's Data tab | 1,000 (up to 10,000) |
 | `apps.max_rows` | Data Apps gateway | 10,000 |
 
-A result that hit a cap is marked as truncated in the query's status (`"truncated": true`).
+A result that hit a cap is marked as truncated in the query's status (`"truncated": true`), and SQL Lab shows the chip
+*Results were limited to n rows.*
 
 ## *Missing query:run permission* (403)
 

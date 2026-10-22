@@ -19,7 +19,7 @@ Which columns are listed depends on the chart: the ones it plots (for a bar char
 
 ### Column title
 
-Replaces the column's name in headers, legends and tooltips. The placeholder is the original name. Clearing the box goes back to the original.
+Replaces the column's name in headers, legends and tooltips. The placeholder is the original name. Clearing the box goes back to the original. When the dataset gives the column or metric a **Display name**, that name is used as the title in the chart editor and the dataset's Preview unless you set a title here; see [Columns](../datasets-and-metrics/columns#display-name). Dashboard cards do not apply the dataset's display names.
 
 ## Number columns
 

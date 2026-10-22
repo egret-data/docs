@@ -42,7 +42,7 @@ Bar, row, line, area and combo charts. Empty by default (**Keep every category**
 
 ### Sort and Row limit
 
-The same query controls every chart has. See [Sort](./the-chart-editor#sort) and [Row limit](./the-chart-editor#row-limit). The chart is always ordered by the X-axis, ascending, after any sort you add.
+The same query controls every chart has. See [Sort](./the-chart-editor#sort) and [Row limit](./the-chart-editor#row-limit). The chart is always ordered by the X-axis, ascending, after any sort you add. A row chart with no sort is the exception: it orders by its first metric, descending, then by the X-axis (see [Row chart](./row)).
 
 ## Display tab
 

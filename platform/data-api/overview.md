@@ -50,7 +50,7 @@ A client gives a service account the ability to *get a token*. Two separate thin
 
 ## Endpoint lifecycle
 
-An endpoint is never edited in place for its consumers. You edit the **draft**; consumers only ever see a **version**, which is a frozen copy of the draft taken when you press **Publish**.
+An endpoint is never edited in place for its consumers. You edit the **draft**; consumers only ever see a **version**, which is a frozen copy of the draft taken when you press **Publish**. That includes the URL: a new method or path on the draft is served only from the next publish.
 
 | State | Meaning | Serves calls |
 |---|---|---|

@@ -57,10 +57,7 @@ errors](../deploy-operate/troubleshooting/engine-406-502).
    ORDER BY 3 DESC
    ```
 
-3. Press **Run**. The results appear under **Results**, with the run time and row count in the toolbar.
-
-   The rows may not come back in the order of the `ORDER BY`: SQL Lab wraps the query in `SELECT * FROM (…) LIMIT 1000` to
-   apply the **Limit**, and Trino drops the ordering of a subquery. Sort a column by its header if the order matters.
+3. Press **Run**. The results appear under **Results**, sorted by revenue, with the run time and row count in the toolbar.
 
 ![SQL Lab with the query results](/img/platform/ops/get-started/sql-lab-run.png)
 
