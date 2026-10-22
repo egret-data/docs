@@ -19,7 +19,7 @@ You can take a dashboard's data out of Egret in three ways: download the data of
 | **.csv** | A comma-separated file with a header row. Values that contain commas, quotes or line breaks are quoted. |
 | **.xlsx** | An Excel workbook. Numbers and dates keep their types. |
 | **.json** | A list with one object per row, keyed by the column headers. |
-| **.png** | A picture of the chart as it is drawn on the card. Offered only for cards that draw a chart, not for tables. |
+| **.png** | A picture of the chart as it is drawn on the card. Offered only for cards drawn as one chart image: not for a table, pivot table, Big number, Progress, Trend, Object detail or the default funnel. See [Export](../charts/the-chart-editor#export) for the full list. |
 
 **Keep the data formatted** is on by default. On, the file has the values as the card shows them, for example "September 6, 2026" and "$187.50". Off, it has the raw values, for example `2026-09-06` and `187.50`. The hint under the checkbox changes with the choice. The checkbox does not apply to PNG.
 
@@ -29,9 +29,7 @@ The file is named after the card title, with the characters `\ / : * ? " < > |` 
 
 The download is built in your browser from the result already shown on the card, so it reflects the dashboard filters you have applied and any rename or format set in the card's visualization settings. Nothing is queried again.
 
-:::note
-The popover says "The maximum download size is 1 million rows." The result a card holds is limited by the chart's row limit, which Egret caps at 10,000 rows, so a file never has more rows than the card loaded.
-:::
+For the table formats the popover says "The maximum download size is 10,000 rows." The result a card holds is limited by the chart's row limit, which Egret caps at 10,000 rows, so a file never has more rows than the card loaded.
 
 The download button is not shown while the card is loading, has an error, is blocked by a required filter, or returned no columns. It is not shown in edit mode.
 

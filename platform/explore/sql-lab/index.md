@@ -46,8 +46,6 @@ The page is one resizable workspace. Drag the grey bars between the panels to ch
 4. Leave **Limit** at **1,000 rows** or choose another value.
 5. Press **Run** (or **⌘ Enter** on macOS, **Ctrl Enter** elsewhere).
 
-Keep the `LIMIT` after an `ORDER BY`: without it, Trino may return the rows in another order (see [Row limit](./editor.md#row-limit)).
-
 While the query runs, a *Running…* badge shows in the toolbar and the **Cancel** button is enabled. When it ends the badge reads, for example, *Done in 397 ms · 3 rows* (or *Failed in 125 ms*), and the rows appear in **Results**.
 
 :::tip Name tables completely
@@ -94,8 +92,6 @@ Because tabs live in the browser, clearing site data or switching browsers gives
 
 - SQL Lab needs at least one database connection granted to the workspace. Without one the database picker is empty, the Explorer says *No connection is granted to this workspace. Ask a workspace admin.*, and **Run** reports *Pick a database*.
 - The row limit, the 60-second query timeout and the 100,000-row ceiling are server settings; see [Query results](./results.md#limits).
-- Cancelling a query leaves the Results panel empty without saying the query was cancelled. See the [editor page](./editor.md#run-and-cancel).
-- On Trino, an `ORDER BY` without a `LIMIT` can be lost, because Egret wraps the query to apply the row limit. See [Row limit](./editor.md#row-limit).
 
 ## Further reading
 

@@ -102,7 +102,7 @@ With the value `TRUE` the result is `true`.
 
 | You see | Cause |
 |---|---|
-| A toast `Error: {"error":"invalid input: parameter 'min_total' is not a number: abc"}` | A **num** parameter holds text that is not a number. The toast appears in the bottom-right corner and the query is not run. |
+| **Query not started** with `invalid input: parameter 'min_total' is not a number: abc` | A **num** parameter holds text that is not a number. The message appears in the **Results** panel and the query is not run. |
 | *invalid input: missing value for parameter: name* | The request named a placeholder that no parameter supplies. The editor always sends every placeholder it finds, so you meet this only if you call the [REST API](../../reference/rest-api) yourself. |
 | `unterminated '{{' in query template` | A `{{` has no closing `}}`. |
 | An engine error about `{` | The placeholder was not replaced, for example because it was typed with unsupported characters. |

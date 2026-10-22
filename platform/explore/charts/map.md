@@ -27,7 +27,7 @@ A region value can be the map's **code** or its **name**, in any letter case:
 | **World countries** (175 countries) | Two-letter country codes, for example `US`, `VN` | Country names as the map spells them, for example `United States of America`, `W. Sahara` |
 | **Vietnam provinces** (34 provinces) | The province name | The province name as the map spells it, for example `Hà Nội`, `TP. Hồ Chí Minh`, `Huế` |
 
-Rows whose value matches no region are dropped from the map. Regions with no row are drawn in the palest shade. The legend on the left of the map shows the range of the metric from low to high.
+Rows whose value matches no region are not drawn, and they do not count in the legend. A note under the map says how many rows were left out and names up to three of their values, as stored, so you can find the spelling to fix. For example: *Showing 1 of 2 rows: 1 matches no region on the Vietnam provinces map ("Thành phố Hồ Chí Minh").* Regions with no row are drawn in the palest shade. The legend on the left of the map shows the range of the metric, from low to high, over the rows that are drawn.
 
 ![The Vietnam provinces base map with revenue per province](/img/platform/charts/map-vietnam.png)
 
@@ -79,7 +79,7 @@ For a region map, one row for the metric (see [Column formatting and number form
 
 - There are three base maps. Others (for example a US county or a custom shape) are not available.
 - There is no grid or heat map of points; for density over an area use a region map.
-- A pin map says why rows are missing: a note under the map reports how many rows are outside the chosen map, have a latitude or longitude out of range, or have none. When none can be drawn, the card explains the cause, including a hint to check whether latitude and longitude are swapped.
+- A region map names the values that match no region in a note under the map (see above). A pin map says why rows are missing: a note under the map reports how many rows are outside the chosen map, have a latitude or longitude out of range, or have none. When none can be drawn, the card explains the cause, including a hint to check whether latitude and longitude are swapped.
 - The first load of a base map downloads its shapes (the Vietnam map is the largest); the card shows **Loading map…** meanwhile.
 
 ## Further reading

@@ -38,7 +38,7 @@ The **Display** tab has two sections, **Bars** and **Format**.
 | **Increase color** | The color of rises. Default green. |
 | **Decrease color** | The color of falls. Default red. |
 | **Show total** | A switch, on by default. Adds a final bar named **Total** with the running sum. |
-| **Total color** | The total bar's color. Shown while **Show total** is on. |
+| **Total color** | The total bar's color. Shown while **Show total** is on. By default the bar uses the text color (dark in the light theme, light in the dark theme), and the swatch shows that color. |
 
 Each color is a swatch that opens the palette or **Custom…**.
 

@@ -23,9 +23,8 @@ The chart runs a single-row query: the metric is aggregated over the whole datas
 |---|---|
 | **Dataset** | The dataset to read. |
 | **Metric** | The metric to show. Required. |
-| **Row limit** | Present, as on every chart, but ignored: the query always returns one row. |
 
-There is no **Sort**, because there is nothing to order.
+There is no **Sort** and no **Row limit**, because there is only one row.
 
 ## Display
 

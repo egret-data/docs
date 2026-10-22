@@ -16,7 +16,7 @@ There are two kinds, shown in the **Kind** column of the list and as a tag in th
 |---|---|---|
 | **Defined by** | A table (or view) in one of the workspace's databases: *catalog, schema, table* | A SQL query that you write |
 | **Source** column in the list | The table name, for example `tpch.tiny.lineitem` | `SQL` |
-| **Created from** | **Create** on the Datasets page | **Save as dataset** in [SQL Lab](../sql-lab/save-as-dataset.md), or **Duplicate** on an existing virtual dataset |
+| **Created from** | **Create** on the Datasets page, or **Duplicate** on an existing physical dataset | **Save as dataset** in [SQL Lab](../sql-lab/save-as-dataset.md), or **Duplicate** on an existing virtual dataset |
 | **SQL is editable** | No. The source is the table. | Yes, on the dataset page, followed by **Refresh** |
 | **Typical use** | A clean table that analysts can chart as it is | Joins, filters, renames and derived columns kept under one name |
 
@@ -56,7 +56,7 @@ Below the toolbar:
 
 The table columns are **Name**, **Kind**, **Database**, **Source**, **Columns** and **Updated**. Click **Name**, **Columns** or **Updated** to sort; the default order is the most recently updated first. In the **Name** cell, the star bookmarks the dataset, the name opens it, and a green check marks a certified dataset.
 
-The **…** menu at the end of a row offers **Edit**, **Refresh**, **Duplicate** (virtual datasets only), the folder commands, **Share…**, **Tags…** and **Move to Trash**.
+The **…** menu at the end of a row offers **Edit**, **Refresh**, **Duplicate**, the folder commands, **Share…**, **Tags…** and **Move to Trash**.
 
 ![The row menu of a dataset](/img/platform/sql-datasets/datasets-row-menu.png)
 
@@ -66,7 +66,7 @@ Click a dataset's name to open it. The page has a header and four tabs.
 
 ![A dataset page with its Columns tab](/img/platform/sql-datasets/ds-columns.png)
 
-- The **header** shows the name, the kind, a **Certified** badge when it applies, the description, counters (*10 columns*, *5 metrics*, *updated a minute ago*) and the source: the SQL for a virtual dataset, or `catalog.schema.table` for a physical one. On the right, the buttons are **Create chart**, **Certification** (only for people who may certify), **Edit**, **Refresh columns** and **Delete**.
+- The **header** shows the name, the kind, a **Certified** badge when it applies, the description, counters (*10 columns*, *5 metrics*, or *1 column*, *1 metric* in the singular, *updated a minute ago*) and the source: the SQL for a virtual dataset, or `catalog.schema.table` for a physical one. On the right, the buttons are **Create chart**, **Certification** (only for people who may certify), **Edit**, **Refresh columns** and **Delete**.
 - **Columns (n)**: every column and its settings. See [Columns](./columns.md).
 - **Metrics (n)**: the dataset's aggregations. See [Metrics](./metrics.md).
 - **Usage**: the charts built on this dataset, and **Preview**: the first 100 rows. See [Usage and preview](./usage-and-preview.md).

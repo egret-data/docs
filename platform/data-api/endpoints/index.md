@@ -15,7 +15,7 @@ Open **Explore → Data API → Endpoints**. The list shows every endpoint in th
 | Column | What it shows |
 |---|---|
 | **Name** | The endpoint's name, with a star to bookmark it. |
-| **Method & path** | The HTTP method and the path callers append to the workspace's base URL, for example `GET /orders/by-status`. |
+| **Method & path** | The HTTP method and the path callers append to the workspace's base URL, for example `GET /orders/by-status`. For a published endpoint this is the URL it is served on. When the draft has a new method or path, the line under it reads *Pending publish:* and the new one until you publish. |
 | **State** | **Live**, **Draft**, or **Disabled · was live** (see [lifecycle](./overview#endpoint-lifecycle)). |
 | **Engine** | The engine of the endpoint's database connection, for example Trino. |
 | **Last edited** | When the draft last changed. |
@@ -106,8 +106,8 @@ Opening an endpoint shows its editor. The header carries the name, a state badge
 
 The header badge reads **Draft · never published**, **Live · v2**, **Live · v1 · unpublished changes** (the saved draft differs from what is served, as on **Top customers** in the walk-through) or **Disabled · was live**. Pressing the badge opens **Versions**.
 
-:::caution Changing the path moves the live URL
-Saving a new **Path** in **Config** changes the URL that is served immediately, before you publish. A call to the old path returns `404 not_found` while the new path answers with the live version's data. Publishing then reports the change as breaking. Treat a path change as a breaking change to make deliberately. See [Publishing](./endpoints/publishing#breaking-changes).
+:::note A new path goes live at publish
+Saving a new **Path** or **Method** in **Config** changes only the draft. Callers keep the live URL until you publish; then the new URL serves and the old one answers `404 not_found`, with no redirect. Publishing reports the change as breaking. See [Cache, limits and rate limits](./endpoints/config) and [Publishing](./endpoints/publishing#breaking-changes).
 :::
 
 ## Limits and known issues

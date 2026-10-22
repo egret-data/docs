@@ -10,21 +10,21 @@ The last two tabs of a dataset answer two practical questions: *who depends on t
 
 ## Usage
 
-Open the **Usage** tab to see every chart built on the dataset. The line at the top counts them, for example *23 charts built on this dataset* for the demo's `orders` dataset, and each row shows a chart's name (always with the bar-chart icon, whatever the chart type) and an open icon. Click a row to open the chart in the chart editor. Charts in the Trash are not listed.
+Open the **Usage** tab to see every chart built on the dataset. The line at the top counts them, for example *23 charts built on this dataset* for the demo's `orders` dataset, and each row shows a chart's name with the icon of its chart type, and an open icon. Click a row to open the chart in the chart editor. Charts in the Trash are not listed here; the delete dialog lists them too, because a delete takes them with it.
 
 A dataset with no charts shows *No charts use this dataset yet.* with a **Create a chart** button that opens the chart editor with this dataset already chosen. Press **Create chart** in the dataset header for the same effect.
 
 Use this tab before you:
 
-- change or delete a [metric](./metrics#edit-a-metric) or a [calculated column](./calculated-columns#delete-a-calculated-column);
-- rename a metric;
-- change the SQL of a virtual dataset;
-- [delete the dataset](./organize#delete-a-dataset).
+- delete a [calculated column](./calculated-columns#delete-a-calculated-column), whose delete dialog does not list the charts;
+- change the SQL of a virtual dataset, or refresh after a column was dropped from the source.
+
+Deleting a [metric](./metrics#delete-a-metric) or [the dataset](./organize#delete-a-dataset) lists the affected charts in its own dialog.
 
 The list shows charts only. Dashboards that contain those charts are not listed, so open a chart's page or the [Dashboards](../dashboards) list to find where it is used. Reading the list needs read access to the dataset, not manage access.
 
 :::warning Deleting a dataset deletes its charts
-Deleting a dataset permanently also deletes every chart built on it. The confirmation dialog says only that the table or query is not affected. Check **Usage** first.
+Deleting a dataset permanently also deletes every chart built on it, including charts in the Trash. The delete dialog lists them and asks for the dataset's name.
 :::
 
 ## Preview
@@ -33,10 +33,11 @@ The **Preview** tab shows the first 100 rows of the dataset with the dataset's c
 
 ![The Preview tab with currency and date formats applied](/img/platform/sql-datasets/ds-preview.png)
 
-The tab opens with the line *Preview — first 100 rows* and a **Refresh** button that reads the rows again (the button reads **Loading…** while it works). The grid below is a plain table with the column names as headers.
+The tab opens with the line *Preview — first 100 rows* and a **Refresh** button that reads the rows again (the button reads **Loading…** while it works). The grid below is a plain table. Each header shows the column's **Display name**, or the column name when it has none.
 
 What Preview applies from the **Columns** tab:
 
+- Each column's **Display name**, as the header.
 - Each column's **Format**: currency, percent, decimals, prefix or suffix for numbers; the date pattern for dates; link, email or image display for text.
 - The **Role** as a default when there is no explicit format: **Currency** shows money, **Email**, **URL** and **Image** show links and images.
 
@@ -44,7 +45,6 @@ What Preview does not show:
 
 - **Calculated columns.** Preview runs `SELECT *` on the dataset's own source, which has none of them. To check a calculated column, build a chart or a table chart on it.
 - **Metrics.** They are aggregations and need a chart.
-- **Display names.** The header shows the source column name.
 
 Preview is bounded: it always reads at most 100 rows through a fixed query and cannot be given SQL. A reader who only has access to this dataset can still see Preview, because it runs on the dataset's own definition and not on free-form SQL.
 
@@ -70,7 +70,7 @@ curl -s -X POST "$BASE/api/ws/default/datasets/$DATASET_ID/data" -b "$COOKIES" \
   -d '{"limit": 100}'
 ```
 
-The usage call returns a list of `{id, name}` objects, one per chart. The data call returns `columns` (name and type) and `rows`. The optional `limit` is clamped to the range 100 to 1,000 (200 when you send none); the page asks for 100. The endpoint accepts no SQL, by design.
+The usage call returns a list of `{id, name, viz_type, trashed}` objects, one per chart, live charts first. Add `?include_trashed=true` to list the charts in the Trash as well. The data call returns `columns` (name and type) and `rows`. The optional `limit` is clamped to the range 100 to 1,000 (200 when you send none); the page asks for 100. The endpoint accepts no SQL, by design.
 
 ## Tips
 

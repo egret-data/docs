@@ -20,8 +20,10 @@ The tab is a table with **Setting**, **Details** and **Value** columns, grouped 
 | **Path** | Appended to the workspace's Data API base URL to form the URL callers call. Same rules as at creation: see [Endpoints](../endpoints#path-rules). | The path you gave it |
 
 :::caution
-Method and path are part of the contract. Publishing a change to either is reported as a breaking change, and saving a new path moves the live URL at once; see [Publishing](./publishing#breaking-changes).
+Method and path are part of the contract. Publishing a change to either is reported as a breaking change; see [Publishing](./publishing#breaking-changes).
 :::
+
+A new method or path on a live endpoint is saved on the draft only. Callers keep using the live URL until you publish; the field then says *The new path goes live when you publish. Callers still use GET /orders/by-status.* (or *The new method goes live…* for a method change), and the Endpoints list shows *Pending publish: GET /orders/lookup* under the live URL. When you publish, the new URL starts serving and the old one answers `404 not_found`; there is no redirect.
 
 ## Cache
 

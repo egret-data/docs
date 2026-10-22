@@ -18,7 +18,7 @@ There are two kinds, depending on when the problem is found.
 - In **Results**, a red banner **Query failed** with a **Copy** button, then the message in a monospaced box. **Copy** puts the whole message on the clipboard and a toast says *Error copied*.
 - A *Failed* entry in [History](./history-saved-snippets#history).
 
-**The query was refused before it started.** Examples are a missing database, a bad [parameter](./parameters#errors), or a permission problem. An error toast appears in the corner of the page, the run is not recorded as a failed query, and the previous result stays where it was. The toast shows the server's reply as it came, so it can look like `Error: {"error":"invalid input: …"}`.
+**The query was refused before it started.** Examples are a bad [parameter](./parameters#errors) or a permission problem. The **Results** panel shows a red banner **Query not started** with a **Copy** button and the server's message, for example `invalid input: parameter 'n' is not a number: abc`. The run is not recorded in History. A tab with no database chosen is the exception: it shows the toast *Pick a database*.
 
 ## How the message is built
 
@@ -28,33 +28,31 @@ A failed query's message starts with a short prefix that tells you who said it.
 |---|---|---|
 | `engine: …` | The database engine | The engine received the query and rejected it: a syntax error, an unknown table or column, an unsupported statement, a type mismatch. The rest of the text is the engine's own message. |
 | `connect: …` | Egret | Egret could not reach the engine (host unreachable, port closed, TLS failure). Check the connection under [Databases](../../workspace-settings/databases). |
-| `timeout` | Egret | The query ran longer than the server's `engine.query_timeout_secs` (60 seconds by default). |
+| `timeout: the query ran longer than the 60 s limit for SQL Lab queries and was stopped. …` | Egret | The query ran longer than the server's `engine.query_timeout_secs` (60 seconds by default). The message names the setting. When Trino stops the query itself at that limit, the message is Trino's *exceeded maximum time limit* followed by the same hint. |
 | `engine authentication failed` | Egret | The engine refused the identity Egret presented. With per-user delegation this usually means your engine token could not be verified. |
 | `forbidden` | Egret or the engine | You are not allowed to run this. On a delegated connection, a user without an SSO session gets it. |
 
-(The `connect:`, `timeout` and authentication texts come from the server code. Only the `engine:` family was reproduced on the demo stack: its one Trino connection is healthy and not delegated, and every `tpch.tiny` query ends well inside the 60-second timeout.)
+(The `connect:` and authentication texts come from the server code. They were not reproduced on the demo stack: its one Trino connection is healthy and not delegated.)
 
 ## Read the position in the message
 
-Trino reports where the problem is as `line L:C`. In SQL Lab the numbers can differ from your editor:
+Trino reports where the problem is as `line L:C` (StarRocks as `at line L, column C`). The numbers match the lines of your editor: the row limit is added on a line after your text, and when Egret has to wrap a query it cannot read (see [Row limit](./editor#row-limit)), it maps the line back to yours.
 
-- Egret wraps a single `SELECT` or `WITH` statement in `SELECT * FROM ( … ) AS _egret_lim LIMIT n`, which pushes everything one line down. A typo on line 1 of the editor is reported on **line 2**. The column is correct.
-- With **Run selection**, the numbers count from the first character of the selected text, not from the top of the editor.
-- A statement that is not wrapped (for example `SHOW TABLES`) keeps its own line numbers.
+With **Run selection**, the numbers count from the first character of the selected text, not from the top of the editor.
 
 ## Common errors
 
-These were produced on the demo Trino with the `tpch` catalog.
+These were produced on the demo Trino with the `tpch` catalog, each from a one-line query.
 
 | Message | Cause and fix |
 |---|---|
-| `engine: line 2:35: Table 'tpch.tiny.ordres' does not exist` | A misspelt table. Open the table in the [Explorer](./schema-browser) or use autocomplete to insert the name. |
-| `engine: line 2:8: Column 'x' cannot be resolved` | The column is not in the tables in `FROM`. Expand the table in the Explorer to see its columns. |
+| `engine: line 1:35: Table 'tpch.tiny.ordres' does not exist` | A misspelt table. Open the table in the [Explorer](./schema-browser) or use autocomplete to insert the name. |
+| `engine: line 1:8: Column 'x' cannot be resolved` | The column is not in the tables in `FROM`. Expand the table in the Explorer to see its columns. |
 | `engine: line 1:9: mismatched input ';'. Expecting: …` | Two statements in one run. Select one statement and use **Run selection**. |
 | `engine: Division by zero` | A runtime error in a row. Guard the divisor, for example with `NULLIF(x, 0)`. |
 | `engine: Cannot cast 'abc' to INT` | A value cannot be converted. Use `TRY_CAST` on Trino to get `NULL` instead of an error. |
-| `engine: line 2:8: Function 'nosuchfn' not registered` | The function name is wrong or belongs to another engine. Trino and StarRocks have different functions. |
-| `engine: line 2:15: Catalog 'nosuchcatalog' not found` | A catalog that does not exist on this connection. Check the first level of the [Explorer](./schema-browser). |
+| `engine: line 1:8: Function 'nosuchfn' not registered` | The function name is wrong or belongs to another engine. Trino and StarRocks have different functions. |
+| `engine: line 1:15: Catalog 'nosuchcatalog' not found` | A catalog that does not exist on this connection. Check the first level of the [Explorer](./schema-browser). |
 | `engine: This connector does not support dropping tables` | The statement reached the engine and the connector refused it. SQL Lab does not block statements; the engine and its access policies decide. |
 
 ## When a query fails
@@ -73,13 +71,11 @@ These were produced on the demo Trino with the `tpch` catalog.
 | The page *403 — Forbidden* | The **SQL Lab** module is switched off for this workspace. See [Permissions and availability](./permissions). |
 | The toast *Pick a database* | The tab has no database chosen. Choose one in the Explorer. |
 | *Couldn’t load — no access or engine error.* in the Explorer | The browse request failed; see [The schema browser](./schema-browser#states-you-can-meet). |
-| A toast containing `forbidden` after pressing **Run** | Your role does not include `query:run`. |
+| **Query not started** with `forbidden` after pressing **Run** | Your role does not include `query:run`. |
 
 ## Limits and known issues
 
-- Parameter and permission errors appear as toasts with raw JSON text.
-- Line numbers in engine errors are shifted by one line for wrapped queries.
-- The *engine:* prefix is sometimes doubled (`engine: engine: …`), for example when a dataset is created from a query the engine rejects.
+- With **Run selection**, line numbers count from the start of the selection.
 
 ## Further reading
 

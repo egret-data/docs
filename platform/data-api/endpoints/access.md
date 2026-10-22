@@ -35,12 +35,9 @@ The status under **Invoke** is one of:
 | **Not granted** | The account cannot call this endpoint. |
 | **No grant on this endpoint** | Egret could not check whether the account inherits invoke, usually because the endpoint is not live yet. |
 
-Two notes appear on a row when they matter:
+A granted row can carry the note **Revoking will not remove access** (*This account also reaches invoke through the workspace, so revoking here removes the grant but not the access.*, with a link to **Workspace membership**). It appears only when the account's workspace role gives it invoke on every endpoint in the workspace. Egret asks this at workspace scope, where the grant on this endpoint does not count, so a granted account with no such role carries no note and loses access when you revoke it. The answer comes with the grant list, so it is given on a draft or disabled endpoint too.
 
-- **Revoking will not remove access**, meant for a granted account that also reaches invoke through the workspace: revoking removes the grant but not the access. On the demo stack this note is shown on **every** granted service account, including ones with no workspace role, and is wrong for them: revoking `finance-dashboard` on **Orders by status** made its next call answer `403 not_granted`. Trust the result of **Try it** after a revoke, not the note.
-- **Revoking may not remove access**, shown when Egret cannot check the inherited access, for example while the endpoint is not live.
-
-The check for inherited access runs the account's own OpenAPI document and looks for this endpoint in it, so it only works on a live endpoint. A draft or disabled endpoint says so above the table: *This endpoint is not live, so nothing is being served yet and egret cannot check workspace-inherited invoke rights against it. Grants recorded here are real and take effect when it is published.*
+For an account with no grant here, Egret checks whether it inherits invoke by running the account's own OpenAPI document and looking for this endpoint in it. That only works on a live endpoint, so a draft or disabled endpoint says so above the table: *This endpoint is not live, so nothing is being served yet and egret cannot check workspace-inherited invoke rights against it. Grants recorded here are real and take effect when it is published.* While the check runs the row reads *Checking workspace-inherited invoke…*; if it fails, *egret could not check whether this account inherits invoke from the workspace.*
 
 ### The Try it action
 

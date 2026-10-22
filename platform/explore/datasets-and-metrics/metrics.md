@@ -33,7 +33,7 @@ A dataset with no metrics shows *No metrics yet.*
 
 ![The Add metric dialog](/img/platform/sql-datasets/ds-metric-dialog.png)
 
-Egret checks the expression the same way as for a [calculated column](./calculated-columns#what-egret-checks): the engine runs it against the dataset's source and returns its type. If the engine rejects it, an error toast shows the message, for example `engine: line 2:12: Column 'nonexistent' cannot be resolved`, and nothing is saved. A name that already exists is refused with *metric name already exists*. An empty name or expression shows *Name and expression required*.
+Egret checks the expression in two steps. First, the same way as for a [calculated column](./calculated-columns#what-egret-checks): the engine runs it against the dataset's source and returns its type. If the engine rejects it, an error toast shows the message, for example `engine: line 1:12: Column 'nonexistent' cannot be resolved`, and nothing is saved. Second, the engine runs it next to `count(*)` with no grouping, the way a chart uses a metric. An expression that is not an aggregate fails this step and is refused with *metric expression must be an aggregate, such as SUM(column) or COUNT(\*):* followed by the engine's message. A name that already exists is refused with *metric name already exists*. An empty name or expression shows *Name and expression required*.
 
 ### Write the expression
 
@@ -46,7 +46,7 @@ The expression is a single SQL expression in the database's dialect. It may use:
 
 It cannot use [calculated columns](./calculated-columns), because the check runs against the source columns only; repeat the calculated column's formula inside the metric instead. A semicolon outside quotes is refused.
 
-Egret does not check that the expression is an aggregate. A plain column such as `totalprice` is accepted by the Metrics tab and then fails when a chart uses it, with the engine's message `'totalprice' must be an aggregate expression or appear in GROUP BY clause`, so test every new metric in a chart.
+A plain column such as `totalprice` is therefore refused when you save, with the engine's message `'totalprice' must be an aggregate expression or appear in GROUP BY clause` after the sentence above. Wrap it in an aggregate such as `SUM(totalprice)`.
 
 Metrics that work on the demo data:
 
@@ -65,15 +65,17 @@ Metrics that work on the demo data:
 
 Press **Edit** on a row. The **Edit metric** dialog has the same fields as **Add metric**, including the name. Press **Save**; the expression is validated again.
 
-:::warning Renaming breaks charts
-Charts store a metric by its name. If you rename a metric that charts use, those charts fail with *unknown metric: old_name* until you pick the metric again. Change the **Display name** instead when you only want a different label.
-:::
+Charts store a metric by its name. When you rename a metric, Egret rewrites every chart on the dataset that uses the old name (its metrics, its sort and its settings) and the dashboard cards' overrides of those charts, in the same save, so the charts keep running under the new name.
+
+A rename of a metric that charts use is refused when the old or the new name is also the name of a column of the dataset, because Egret could not tell the metric from the column in the charts. The error says *cannot rename a metric that charts use while a column is also named "name": the charts could not be rewritten unambiguously*. Pick another name, or change the **Display name** when you only want a different label.
 
 The **Format** column on the table is a shortcut: changing it saves the metric straight away, resending the current name, expression and other fields, and so repeats the engine check.
 
 ## Delete a metric
 
-Press **Delete** on the row. The metric is removed at once, with no confirmation, even when charts use it. Check the [Usage](./usage-and-preview#usage) tab first.
+Press **Delete** on the row. A dialog asks *Delete metric “name”?* with the text *This cannot be undone.* Type `delete` and press **Delete metric**. The toast says *Deleted metric name*.
+
+If charts use the metric, Egret refuses this first delete, and the dialog changes: it lists those charts (with their type icon, a link, and an *in Trash* tag for a trashed chart), says *N charts use this metric and will stop running until it is removed from them. This cannot be undone.*, and asks you to type the metric's exact name (case matters) instead of `delete`. Press **Delete metric** again to delete it. The charts are not changed; they fail when they run until you pick another metric in them.
 
 ## Use metrics in a chart
 
@@ -84,8 +86,8 @@ Press **Create chart** on the dataset page, choose a chart type, and the metrics
 ## Limits and known issues
 
 - Metric names are not validated beyond being unique and non-empty; keep to letters, digits and underscores so that charts and the REST API can refer to them without quoting.
-- Egret does not warn before renaming or deleting a metric that charts use.
-- A non-aggregate expression is accepted; the failure shows up in the chart.
+- A metric that charts use cannot be renamed to, or from, a name that is also a column name.
+- Deleting a metric that charts use leaves those charts broken until they are edited.
 
 ## Further reading
 

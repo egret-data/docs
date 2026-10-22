@@ -4,7 +4,7 @@ sidebar_position: 2
 
 # Creating a dataset
 
-You can create a dataset in three ways: from a table in one of your databases (a physical dataset), from a SQL query in [SQL Lab](../sql-lab) (a virtual dataset), or by duplicating a virtual dataset that already exists. All three end on the new dataset's page, with its columns already detected.
+You can create a dataset in three ways: from a table in one of your databases (a physical dataset), from a SQL query in [SQL Lab](../sql-lab) (a virtual dataset), or by duplicating a dataset that already exists. All three end on the new dataset's page, with its columns already detected.
 
 ![The New dataset dialog filled in for the tpch customer table](/img/platform/sql-datasets/datasets-create.png)
 
@@ -39,9 +39,17 @@ The dialog links to **Need a custom query? Use SQL Lab**. A physical dataset is 
 
 The steps and the rules the SQL must follow are on [Save a query as a dataset](../sql-lab/save-as-dataset). Virtual datasets cannot be created from the Datasets page itself.
 
-## Duplicate a virtual dataset
+## Duplicate a dataset
 
-In the datasets list, open the **…** menu of a virtual dataset and choose **Duplicate**. The **Save as dataset** dialog opens with the dataset's SQL filled in (read only) and the name *copy of …*. Change the name and press **Create dataset**. The copy is a new dataset with the same SQL; its column settings, calculated columns and metrics start empty again, because the copy is created from the SQL like any new dataset. **Duplicate** is not offered for physical datasets.
+In the datasets list, open the **…** menu of a dataset, physical or virtual, and choose **Duplicate**.
+
+1. The **Duplicate dataset** dialog says *The copy keeps the source, the column settings and the metrics of “name”.* and proposes the **Name** *copy of name*.
+2. Change the name if you like and press **Duplicate** (or **Enter**). The button reads **Duplicating…** while it works.
+3. The copy's page opens.
+
+The copy has the same database and source (the same table, or the same SQL) and every column setting: display names, roles, formats, descriptions, the **Dimension**, **Filter** and **Time** switches, and calculated columns. It also gets every metric. Certification, shares and tags are not copied, and no chart moves to the copy.
+
+If the name is taken, the dialog keeps it and shows *a dataset with this name already exists* under the field. Duplicating needs read access to the source dataset and the same rights as creating a dataset (`dataset:manage` and a granted database). The API call is `POST /api/ws/{workspace}/datasets/{id}/duplicate` with `{"name": "..."}`.
 
 ## What a new dataset contains
 
@@ -95,13 +103,13 @@ For a virtual dataset use `"source": {"kind": "virtual", "sql": "SELECT ..."}`. 
 | *Pick a database* | No database chosen. |
 | *Name required* | The name is empty. |
 | *a dataset with this name already exists* | Names are unique per workspace. |
+| ``the query returns more than one column named `x`; give each column its own name with AS`` | A virtual dataset's query returns two columns with the same name. Alias one of them. |
 | *engine: … Table '…' does not exist* | The table was dropped or renamed after you opened the dialog. |
 | An engine syntax error | For a virtual dataset, the SQL is not a single query. See [Save a query as a dataset](../sql-lab/save-as-dataset). |
 
 ## Limits and known issues
 
 - The dialog's lists load from the engine with the same identity as SQL Lab's Explorer, so a table you cannot see there cannot be chosen here.
-- Two columns with the same name in a virtual dataset's query make creation fail with *internal error*; alias them.
 - A virtual dataset's columns are read when it is created or refreshed; see [Refresh and schema sync](./refresh-and-sync).
 
 ## Further reading

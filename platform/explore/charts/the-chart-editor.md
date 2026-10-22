@@ -18,7 +18,7 @@ The editor is where you build and change a chart. Settings are on the left, a li
 The left panel is 400 px wide and scrolls on its own. From top to bottom it has:
 
 1. **← Charts**: back to the list.
-2. The current chart type with a **Change** button. **Change** opens **Change visualization**, the same gallery you see when you create a chart. Changing the type keeps the dataset but clears the fields and the sort, so pick the type first.
+2. The current chart type with a **Change** button. **Change** opens **Change visualization**, the same gallery you see when you create a chart. Between bar, row, line, area, combo and scatter, which share one set of settings, the change keeps the fields, the display settings and the sort. A change to any other type keeps the dataset but clears the fields and the sort, so pick the type first.
 3. The tabs. **Data** and **Display** are always there. **Axes** appears for the types that have axis settings (bar, row, line, area, scatter, combo, waterfall and box plot). **Conditional formatting** appears for [Table](./table) and [Pivot Table](./pivot-table) only. If you switch to a type that does not have the open tab, the editor falls back to **Display**.
 
 ![The Change visualization dialog](/img/platform/charts/editor-change-viz.png)
@@ -60,6 +60,8 @@ Egret picks fields from the dataset's **dimensions** (columns) and **metrics** (
 
 Field names show the dataset's *Display name* when one is set (**Orders** above its metric name `order_count`). Hover a name to see the underlying column or metric name.
 
+The pickers offer only the dataset columns whose **Dimension** switch is on, plus any column the chart already uses. A table with no metric and Object detail list every column. See [Columns](../datasets-and-metrics/columns#dimension).
+
 ### Time grouping
 
 When a field you pick is a time column, a second select appears under it, labelled **Group *column* by**. Egret groups time columns by **Month** until you change it. The menu has two groups:
@@ -88,6 +90,8 @@ For the bar, line, area, row, combo and scatter charts the editor always sorts a
 The maximum number of rows the query returns. Default **1000**. The hint under the box reads **Up to 10,000 rows.** If you type more, it changes to **Over the maximum — only 10,000 rows will be returned.** and the server clamps the value to 10,000 (minimum 1).
 
 The row limit applies to the grouped result, not to the underlying table. A bar chart grouped by status with a limit of 1000 still aggregates the whole table.
+
+**Row limit** is not shown for [Big number](./number), [Progress](./progress) and [Gauge](./gauge): their query always returns one row.
 
 ## The Display and Axes tabs
 
@@ -123,17 +127,13 @@ Dashboard cards have the same click menu. The menu names columns by their databa
 
 The download icon opens **Download data**:
 
-1. Choose a format: **.csv**, **.xlsx** or **.json**. **.png** is also offered for the charts that are drawn as a vector image: bar, row, line, area, scatter, combo, pie, gauge, funnel, waterfall, box plot, Sankey and map. It is not offered for Big number, Progress, Trend, Table or Pivot Table.
+1. Choose a format: **.csv**, **.xlsx** or **.json**. **.png** is also offered for the charts that are drawn as one chart image: bar, row, line, area, scatter, combo, pie, gauge, waterfall, box plot, Sankey, map, and a funnel with **Funnel type** = **Bar — a column per step**. It is not offered for Big number, Progress, Trend, Table, Pivot Table, Object detail or the default funnel.
 2. For the table formats, tick or clear **Keep the data formatted**. When ticked (the default), values are exported the way they appear on screen, for example **September 6, 2026** or **$187.50**. When cleared, they are exported as stored, for example **2026-09-06** or **187.50**.
 3. Press **Download**. The file is named after the chart.
 
 ![The Download data popover](/img/platform/charts/editor-export.png)
 
-The popover says **The maximum download size is 1 million rows.** The export contains the rows the chart fetched, and a chart fetches at most 10,000.
-
-:::note
-[Object detail](./object-detail) also lists **.png**, but the file it produces is a tiny image of an arrow icon, not the record. Use **.csv**, **.xlsx** or **.json** for it.
-:::
+For the table formats the popover says **The maximum download size is 10,000 rows.** The export contains the rows the chart fetched, and a chart fetches at most 10,000.
 
 ## Related tasks
 

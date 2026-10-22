@@ -153,7 +153,7 @@ The overlay explains cards that cannot be connected:
 | "The selected filter is on another tab." | A filter placed on a card of another tab. |
 
 :::note
-The list of columns is the chart's own dimensions and plain columns, not every column of its dataset, and it is not narrowed by the filter's type. Add the column to the chart if you need to filter on it, and choose a column of a matching kind: a date filter connected to a text column produces a condition that fails when the query runs. Metric-only charts, such as a single-number card, therefore cannot be connected in the editor.
+The list of columns is the chart's own dimensions and plain columns, not every column of its dataset, and it is not narrowed by the filter's type. Columns whose **Filter** switch is off in the card's dataset are left out, except the column the filter is already connected to ([Columns](../datasets-and-metrics/columns#filter)). Add the column to the chart if you need to filter on it, and choose a column of a matching kind: a date filter connected to a text column produces a condition that fails when the query runs. Metric-only charts, such as a single-number card, therefore cannot be connected in the editor.
 :::
 
 A card can be connected to several filters, and a filter to several cards. Connections are stored on the card (`paramMappings`), so replacing a card's chart clears them.
