@@ -128,6 +128,8 @@ Operation id: `list_engines`. Auth: Session cookie. Forbidden (403): Missing eng
 | `rangerPluginVersionNote` | string, nullable | no | Why the engine is not modelled, and how to fix it (for a provisioned engine: pin its image). Absent when modelled. |
 | `rangerCredentialPending` | boolean | yes | Whether a PREVIOUS Ranger plugin credential is still valid beside the current one (spec 2026-10-20-ranger-surface-auth A10/A11): a rotation is pending. Provisioned: until the rollout of the current credential is observed complete, when... |
 | `rangerCredentialId` | string (uuid), nullable | no | The id of the engine's CURRENT Ranger plugin credential: the `credentialId` registration or the last rotation returned with it. An opaque id that grants nothing (never the password); an external engine's operator sends it as `installed` to... |
+| `endpoint` | string | yes | `host:port` clients reach the engine on, as a workspace connection to it dials it (`Engine::client_endpoint`). External: the declared address. |
+| `runtime` | EngineRuntime | no |  |
 
 | Status | Meaning |
 |---|---|
@@ -178,6 +180,8 @@ Operation id: `create_engine`. Auth: Session cookie and `X-Egret-CSRF` header. F
 | `rangerPluginVersionNote` | string, nullable | no | Why the engine is not modelled, and how to fix it (for a provisioned engine: pin its image). Absent when modelled. |
 | `rangerCredentialPending` | boolean | yes | Whether a PREVIOUS Ranger plugin credential is still valid beside the current one (spec 2026-10-20-ranger-surface-auth A10/A11): a rotation is pending. Provisioned: until the rollout of the current credential is observed complete, when... |
 | `rangerCredentialId` | string (uuid), nullable | no | The id of the engine's CURRENT Ranger plugin credential: the `credentialId` registration or the last rotation returned with it. An opaque id that grants nothing (never the password); an external engine's operator sends it as `installed` to... |
+| `endpoint` | string | yes | `host:port` clients reach the engine on, as a workspace connection to it dials it (`Engine::client_endpoint`). External: the declared address. |
+| `runtime` | EngineRuntime | no |  |
 | `catalogAttachErrors` | CatalogAttachErrorDto[] | yes | Catalogs from the body's `catalogs` that could not be attached. Empty on success. The engine EXISTS and is provisioned; these catalogs simply are not on it, and each can be retried with `POST /api/control-plane/engines/\{id\}/catalogs/\{cid\}`.... |
 
 | Status | Meaning |
@@ -224,6 +228,8 @@ Operation id: `register_external_engine`. Auth: Session cookie and `X-Egret-CSRF
 | `rangerPluginVersionNote` | string, nullable | no | Why the engine is not modelled, and how to fix it (for a provisioned engine: pin its image). Absent when modelled. |
 | `rangerCredentialPending` | boolean | yes | Whether a PREVIOUS Ranger plugin credential is still valid beside the current one (spec 2026-10-20-ranger-surface-auth A10/A11): a rotation is pending. Provisioned: until the rollout of the current credential is observed complete, when... |
 | `rangerCredentialId` | string (uuid), nullable | no | The id of the engine's CURRENT Ranger plugin credential: the `credentialId` registration or the last rotation returned with it. An opaque id that grants nothing (never the password); an external engine's operator sends it as `installed` to... |
+| `endpoint` | string | yes | `host:port` clients reach the engine on, as a workspace connection to it dials it (`Engine::client_endpoint`). External: the declared address. |
+| `runtime` | EngineRuntime | no |  |
 | `rangerCredential` | RangerCredentialDto | yes | The credential the engine's Ranger plugin presents to egret's `/ranger` surface (HTTP Basic). **Shown once**: egret never returns this password again; a lost one is replaced with `POST... |
 
 | Status | Meaning |
@@ -280,6 +286,8 @@ Operation id: `get_engine`. Auth: Session cookie. Forbidden (403): Missing engin
 | `rangerPluginVersionNote` | string, nullable | no | Why the engine is not modelled, and how to fix it (for a provisioned engine: pin its image). Absent when modelled. |
 | `rangerCredentialPending` | boolean | yes | Whether a PREVIOUS Ranger plugin credential is still valid beside the current one (spec 2026-10-20-ranger-surface-auth A10/A11): a rotation is pending. Provisioned: until the rollout of the current credential is observed complete, when... |
 | `rangerCredentialId` | string (uuid), nullable | no | The id of the engine's CURRENT Ranger plugin credential: the `credentialId` registration or the last rotation returned with it. An opaque id that grants nothing (never the password); an external engine's operator sends it as `installed` to... |
+| `endpoint` | string | yes | `host:port` clients reach the engine on, as a workspace connection to it dials it (`Engine::client_endpoint`). External: the declared address. |
+| `runtime` | EngineRuntime | no |  |
 
 | Status | Meaning |
 |---|---|
@@ -335,6 +343,8 @@ Operation id: `update_engine`. Auth: Session cookie and `X-Egret-CSRF` header. F
 | `rangerPluginVersionNote` | string, nullable | no | Why the engine is not modelled, and how to fix it (for a provisioned engine: pin its image). Absent when modelled. |
 | `rangerCredentialPending` | boolean | yes | Whether a PREVIOUS Ranger plugin credential is still valid beside the current one (spec 2026-10-20-ranger-surface-auth A10/A11): a rotation is pending. Provisioned: until the rollout of the current credential is observed complete, when... |
 | `rangerCredentialId` | string (uuid), nullable | no | The id of the engine's CURRENT Ranger plugin credential: the `credentialId` registration or the last rotation returned with it. An opaque id that grants nothing (never the password); an external engine's operator sends it as `installed` to... |
+| `endpoint` | string | yes | `host:port` clients reach the engine on, as a workspace connection to it dials it (`Engine::client_endpoint`). External: the declared address. |
+| `runtime` | EngineRuntime | no |  |
 
 | Status | Meaning |
 |---|---|
@@ -411,7 +421,7 @@ Operation id: `get_cluster`. Auth: Session cookie. Forbidden (403): Missing engi
 | `running` | integer (int32) | yes |  |
 | `queued` | integer (int32) | yes |  |
 | `blocked` | integer (int32) | yes |  |
-| `nodes` | NodeDto[] | yes |  |
+| `nodes` | NodeDto[], nullable | no | `None` when the coordinator would not list its nodes: the count is unknown, not zero ([`cluster_nodes`]). |
 
 | Status | Meaning |
 |---|---|
@@ -461,6 +471,8 @@ Operation id: `update_external_engine`. Auth: Session cookie and `X-Egret-CSRF` 
 | `rangerPluginVersionNote` | string, nullable | no | Why the engine is not modelled, and how to fix it (for a provisioned engine: pin its image). Absent when modelled. |
 | `rangerCredentialPending` | boolean | yes | Whether a PREVIOUS Ranger plugin credential is still valid beside the current one (spec 2026-10-20-ranger-surface-auth A10/A11): a rotation is pending. Provisioned: until the rollout of the current credential is observed complete, when... |
 | `rangerCredentialId` | string (uuid), nullable | no | The id of the engine's CURRENT Ranger plugin credential: the `credentialId` registration or the last rotation returned with it. An opaque id that grants nothing (never the password); an external engine's operator sends it as `installed` to... |
+| `endpoint` | string | yes | `host:port` clients reach the engine on, as a workspace connection to it dials it (`Engine::client_endpoint`). External: the declared address. |
+| `runtime` | EngineRuntime | no |  |
 
 | Status | Meaning |
 |---|---|
@@ -674,13 +686,14 @@ Operation id: `restart_engine`. Auth: Session cookie and `X-Egret-CSRF` header. 
 
 | Status | Meaning |
 |---|---|
-| 200 | Coordinator + worker pods rolled (rollout restart) |
+| 200 | Coordinator + worker pods (or containers) rolled; a Trino engine that ran before and now has none (removed outside egret) is created again from its stored spec |
 | 400 | Kubernetes not configured or restart failed |
 | 401 | Not authenticated |
 | 403 | Missing engine:provision permission |
 | 404 | No such engine |
-| 409 | The engine is external (`code` = `engine_is_external`): egret does not restart it |
+| 409 | The engine is external (`code` = `engine_is_external`): egret does not restart it; or, when it is created again, the engine changed concurrently (retry) |
 | 500 | Internal error |
+| 502 | Creating the engine again was refused by the cluster |
 
 ## POST `/api/control-plane/engines/{id}/retire-previous-ranger-credential`
 
