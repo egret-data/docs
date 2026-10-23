@@ -28,7 +28,7 @@ If the engine cannot start the page shows *The engine failed to start.* with the
 
 To attach another, choose it in **Catalog to attach** and press **Attach**. With nothing left the form says *Every catalog egret can show you is already on this engine.*
 
-*Apply is this catalog's state on this engine, not a check that it still works*: a catalog that reached the engine before the engine broke is still recorded as **applied**.
+*Apply is this catalog's state on this engine, not a check that it still works*: a catalog that reached the engine before the engine broke is still recorded as **Applied**.
 
 ### Workspaces
 
@@ -51,7 +51,7 @@ The engine then appears in that workspace's SQL Lab as a database named after th
 2. Press **Save changes**. The **Review changes** dialog lists only what changes, for example *1 field will change.* with the old and new value, and says *Saving re-provisions (rolls) the engine pods; running queries are interrupted.* (on Docker: *Saving recreates the engine's containers; running queries are interrupted.*).
 3. Press **Save changes** in the dialog to apply, or **Cancel** to save nothing.
 
-On the demo stack the save recreated the coordinator container within a minute while the header kept showing **running**, and the new value was in effect: `SHOW SESSION LIKE 'query_max_run_time'` reported the default `2.00h`.
+On the demo stack the save recreated the coordinator container within a minute while the header kept showing **Running**, and the new value was in effect: `SHOW SESSION LIKE 'query_max_run_time'` reported the default `2.00h`.
 
 With **Expose via ingress** on and no **Host**, the field says *Enter the host the ingress serves, or turn off Expose via ingress.* and **Save changes** stays disabled. The Docker provisioner refuses an ingress whatever the host (see [Provision an engine](./provision.md#kubernetes-and-docker)), although the section is still offered there (KI-264).
 
@@ -73,9 +73,9 @@ The node list comes from Trino's `GET /v1/node` where the coordinator serves it.
 
 ### Restart
 
-**Restart** asks *Restart engine?* (*This rolls the coordinator and worker pods; running queries are interrupted.* On the Docker provisioner: *This restarts the coordinator and worker containers; running queries are interrupted.*). For a Trino engine it adds *If the pods (containers) are gone, they are created again.* On the demo stack the status went to **provisioning** and back to **running** in 38 seconds, and the container was recreated.
+**Restart** asks *Restart engine?* (*This rolls the coordinator and worker pods; running queries are interrupted.* On the Docker provisioner: *This restarts the coordinator and worker containers; running queries are interrupted.*). For a Trino engine it adds *If the pods (containers) are gone, they are created again.* On the demo stack the status went to **Provisioning** and back to **Running** in 38 seconds, and the container was recreated.
 
-A Trino engine that has run before and now has no pod or container at all, for example after `just demo-down` and `just demo-up` on the demo stack, is created again from its stored settings when you press **Restart**. An engine that is still being created (status **provisioning**) is left to finish.
+A Trino engine that has run before and now has no pod or container at all, for example after `just demo-down` and `just demo-up` on the demo stack, is created again from its stored settings when you press **Restart**. An engine that is still being created (status **Provisioning**) is left to finish.
 
 ### Delete
 
@@ -164,7 +164,7 @@ A Trino apply rebuilds the engine's entire catalog configuration. When one catal
 ## Limits and known issues
 
 - An external engine's page has no health status or restart. Egret cannot see the cluster.
-- On the Docker provisioner, a save interrupted by the browser disconnecting (a closed tab, a dropped connection) can stop the old containers without creating new ones; the engine shows **failed** until the next save (KI-263).
+- On the Docker provisioner, a save interrupted by the browser disconnecting (a closed tab, a dropped connection) can stop the old containers without creating new ones; the engine shows **Failed** until the next save (KI-263).
 - The Ingress section is offered on Docker engines, which refuse any ingress (KI-264).
 - On an engine with impersonation and a Ranger policy, the monitor's `egret-monitor` account probably sees only its own queries (KI-265, not verified).
 - Delete is permanent. After a delete the Engines list can keep the row until you reload.

@@ -21,7 +21,7 @@ The result has two sections:
 | Section | What it lists |
 |---|---|
 | **Workspaces** | Each workspace the principal belongs to, with the workspace role and where it comes from. |
-| **Shared objects** | Each object shared with the principal: the kind (**dashboard**, **folder**, and so on), the name, the workspace, the role, the **allow** or deny effect and the source. |
+| **Shared objects** | Each object shared with the principal: the kind (**dashboard**, **folder**, and so on), the name, the workspace, the role, the **Allow** or **Deny** effect and the source. |
 
 The source reads **direct** for access given to the person, or **via \<group\>** when it comes through a group. For example, alice.nguyen@egret.local holds `ws_admin` on *Docs sandbox* and *Finance analytics* directly, `ws_editor` on *Finance analytics* and `finance_reporter` on *Docs sandbox* via `finance-analysts`, and sees an app shared with that group.
 
@@ -39,7 +39,7 @@ The result lists every principal that can reach the object. The header shows the
 |---|---|
 | **Principal** | A **User** or **Group**. |
 | **Access** | The role: `platform_admin`, `ws_editor`, `ws_viewer`. |
-| **Effect** | **allow** (or deny for a blocked principal). |
+| **Effect** | **Allow** (or **Deny** for a blocked principal). |
 | **Source** | **platform admin**, **direct grant**, or **via workspace \<slug\>**. |
 
 The same person can appear several times when they reach the object by more than one route, for example a group that has both a direct grant and a workspace role.

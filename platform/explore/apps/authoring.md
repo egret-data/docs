@@ -16,7 +16,7 @@ The page has an Egret header and the marimo notebook in an iframe below it.
 
 | Header element | What it shows or does |
 |---|---|
-| Back arrow | Returns to the Apps list. |
+| **Apps** (back link, with an arrow) | Returns to the Apps list. |
 | App name and badge | **Draft only** until the first publish, then **Published vN**. |
 | **Draft revision N** | The draft's revision number. It increases every time the draft is saved. The header re-reads it every 5 seconds. |
 | *Save in the editor (Ctrl/⌘+S) before publishing.* | A reminder: publishing freezes the **saved** draft. |

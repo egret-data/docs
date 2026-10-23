@@ -19,7 +19,7 @@ A summary strip counts **engines**, how many are **running** and **not running**
 | **Name** | The engine name. It links to the engine page. |
 | **Type** | `trino` or `starrocks`. |
 | **Endpoint** | The `host:port` a workspace connection to the engine dials: for example `docs-trino-trino.egret-engines.svc:8443` for a provisioned Trino engine with JWT delegation, the host and port you entered (for example `trino-demo:8080`) for an external one. |
-| **Status** | The lifecycle status of a provisioned engine (**provisioning**, **running**, **failed**). **External** for a registered one: egret does not monitor it. |
+| **Status** | The lifecycle status of a provisioned engine (**Provisioning**, **Running**, **Failed**). **External** for a registered one: egret does not monitor it. |
 | Actions | **Details** opens the engine. |
 
 ## Add an engine
