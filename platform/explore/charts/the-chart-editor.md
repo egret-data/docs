@@ -17,7 +17,7 @@ The editor is where you build and change a chart. Settings are on the left, a li
 
 The left panel is 400 px wide and scrolls on its own. From top to bottom it has:
 
-1. **← Charts**: back to the list.
+1. **Charts**, with an arrow: the back link to the list.
 2. The current chart type with a **Change** button. **Change** opens **Change visualization**, the same gallery you see when you create a chart. Between bar, row, line, area, combo and scatter, which share one set of settings, the change keeps the fields, the display settings and the sort. A change to any other type keeps the dataset but clears the fields and the sort, so pick the type first.
 3. The tabs. **Data** and **Display** are always there. **Axes** appears for the types that have axis settings (bar, row, line, area, scatter, combo, waterfall and box plot). **Conditional formatting** appears for [Table](./table) and [Pivot Table](./pivot-table) only. If you switch to a type that does not have the open tab, the editor falls back to **Display**.
 

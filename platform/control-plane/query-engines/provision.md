@@ -18,7 +18,7 @@ You need **engine:create** and **engine:provision**. Egret runs the engine where
 4. Under **Configuration**, adjust what you need. Leave a field blank to use the default.
 5. Press **Create engine**.
 
-The engine page opens with the status **provisioning**. It turns **running** when the coordinator answers. Measured on the demo stack: 72 seconds for the first engine on a Docker host that already had the image, and 38 seconds for a restart.
+The engine page opens with the status **Provisioning**. It turns **Running** when the coordinator answers. Measured on the demo stack: 72 seconds for the first engine on a Docker host that already had the image, and 38 seconds for a restart.
 
 :::tip Single-node engine
 For a small engine, open **Worker** and set **Replicas** to `0`: the coordinator then schedules the work itself, and the Overview strip shows *Worker 0*. Left blank, the engine gets one worker: on the demo stack a blank value started one worker container next to the coordinator.
@@ -70,7 +70,7 @@ A StarRocks engine has its own configuration screen with sections such as **Repl
 ## What happens next
 
 1. Egret starts the cluster, creates a **policy profile** with the engine's name (for example `docs-trino`, with the tag service `docs-trino_tag`) and binds it.
-2. The attached catalogs are applied to the engine (state **applied** on the **Catalogs** tab).
+2. The attached catalogs are applied to the engine (state **Applied** on the **Catalogs** tab).
 3. Assign the engine to a workspace on its **Workspaces** tab. It then appears in the workspace's SQL Lab as a database with the engine's name, and in **Workspace settings → Engines** under **Provisioned by egret**.
 4. The Governance area lists the engine under **Engine & policy**, and grants on its catalogs reach it.
 

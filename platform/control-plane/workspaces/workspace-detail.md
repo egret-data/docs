@@ -63,7 +63,7 @@ Pending requests to join this workspace, with the same **Approve** and **Deny** 
 
 ## Activity
 
-The audit entries recorded for this workspace: **Time**, **Action**, **Resource**, **Actor** and **Decision**. It is the workspace-scoped slice of the [Audit log](../audit-log.md), newest first. Most rows are authorization decisions such as `workspace:manage_members` (**allow** or **deny**), `query:run` or `dashboard:read`; changes such as `member:add` show a dash. A member who opens a page they may not use shows up as a **deny**. Actions done while a platform admin impersonated someone are listed under the impersonated person.
+The audit entries recorded for this workspace: **Time**, **Action**, **Resource**, **Actor** and **Decision**. It is the workspace-scoped slice of the [Audit log](../audit-log.md), newest first. Most rows are authorization decisions such as `workspace:manage_members` (**Allow** or **Deny**), `query:run` or `dashboard:read`; changes such as `member:add` show a dash. A member who opens a page they may not use shows up as a **Deny**. Actions done while a platform admin impersonated someone are listed under the impersonated person.
 
 ## Limits and known issues
 

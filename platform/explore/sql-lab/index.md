@@ -20,7 +20,7 @@ The page is one resizable workspace. Drag the grey bars between the panels to ch
 
 | Area | What it does | Details |
 |---|---|---|
-| **Tab strip** (top) | One editor per tab, plus the **+** button and the **⌘ K for commands** hint. | [The query editor](./editor.md) |
+| **Tab strip** (top) | The page title **SQL Lab**, then one editor per tab, plus the **+** button and the **⌘ K for commands** hint. | [The query editor](./editor.md) |
 | **Explorer** (left) | Database picker, a search box and a tree of catalogs, schemas, tables and columns. | [The schema browser](./schema-browser.md) |
 | **Toolbar** (above the editor) | **Run**, **Cancel**, **Format**, **Limit**, the database badge, a status badge, **Save**, **Save as dataset**, the command palette button and a **…** menu. | [The query editor](./editor.md) |
 | **Editor** | The SQL text, with syntax colouring and autocomplete. A **Parameters** bar appears when the SQL contains `{{name}}`. | [Query parameters](./parameters.md) |

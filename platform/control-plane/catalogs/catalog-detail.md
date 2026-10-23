@@ -31,7 +31,7 @@ For an egret warehouse the tab says *egret manages this catalog's configuration 
 2. Optionally press **Test** to check the catalog first. For a catalog with a host, egret only checks that it can open a TCP connection, for example *Reachability check — egret could not open a TCP connection to finance-db.internal:5432. Even a connection that had succeeded would not verify credentials, TLS or permissions.* Once the catalog is attached to a provisioned Trino engine, **Test** runs a query there instead.
 3. Press **Attach**.
 
-The table lists the engine with its status badge, its type, whether it is **Primary**, and the **Apply** and **Applied** states, with **Retry** and **Detach**. An external engine shows the state *declared*: egret recorded that the engine serves the catalog and applied nothing. A provisioned engine shows whether the apply succeeded (*applied*).
+The table lists the engine with its status badge, its type, whether it is **Primary**, and the **Apply** and **Applied** states, with **Retry** and **Detach**. An external engine shows the state *declared*: egret recorded that the engine serves the catalog and applied nothing. A provisioned engine shows whether the apply succeeded (*Applied*).
 
 :::note
 **Apply** is this catalog's state on that engine, not the engine's own health. An engine that has since failed still reads applied here, because the catalog did apply before it broke.

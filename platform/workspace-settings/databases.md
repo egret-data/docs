@@ -21,7 +21,7 @@ A summary strip counts the **connections**, how many are **ok** and how many are
 | **Name** | The connection name, for example `trino-sandbox`. |
 | **Engine** | `trino` or `starrocks`. |
 | **Host:Port** | Where it listens. |
-| **Status** | The last known state: **Unknown** for a new connection, then **ok** or an error after a test. |
+| **Status** | The last known state: **Unknown** for a new connection, then **Healthy** or **Error** after a test. |
 | **Secret** | **Configured** when a password is stored, **Not set** otherwise. |
 | **Actions** | **Test**, **Edit** and **Delete** (each icon is labelled with the connection name). |
 

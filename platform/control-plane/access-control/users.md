@@ -23,7 +23,7 @@ A summary strip counts **users**, **active** and **disabled**. Two filters narro
 |---|---|
 | **User** | Avatar, display name and email. |
 | **Provider** | `local` for accounts created in egret, `oidc` for people who sign in through SSO. |
-| **Status** | **active** or **disabled**. A disabled user cannot sign in. |
+| **Status** | **Active** or **Disabled**. A disabled user cannot sign in. |
 | **Roles** | Platform roles granted to the user directly, or a dash. A role the user holds through a group is not shown (KI-260). |
 | **Groups** | How many groups the user belongs to. |
 
@@ -51,7 +51,7 @@ Prefer SSO for people. A local account has its own password and does not follow 
 
 ## The user page
 
-Select a user to open their page. The header shows the avatar, name, status, provider and email, with **Disable** (or **Enable**) and **Delete**. A local account also has **Reset password**: *Set a new password for this local account. Their existing sessions are signed out immediately.*
+Select a user to open their page. The header shows the name, status, provider and email, with **Disable** (or **Enable**) and **Delete**. A local account also has **Reset password**: *Set a new password for this local account. Their existing sessions are signed out immediately.*
 
 ![The page of Farid Haddad: details, his directly granted platform role and one group](/img/platform/admin/cp-user-detail.png)
 
@@ -75,7 +75,7 @@ The table lists **Role** and **Scope** with a remove button. With none it reads 
 
 ## Disable and delete
 
-**Disable** blocks sign-in without removing anything and signs the user out. It asks first: *Disable \<email\>?* (*They are signed out at once and cannot sign in until the account is enabled again. Their memberships and role grants are kept.*), with **Cancel** and **Disable user**. The status becomes **disabled**. **Enable** reverses it at once, without a confirmation. **Delete** asks *Delete "\<email\>"?* (*This user, their sessions, group memberships, and role grants will be permanently removed. This cannot be undone.*) and needs you to type `delete`. Prefer disabling: grants and shares that name a deleted user become unmatched names (see [People & groups](../../data-governance/people-and-groups/index.md)).
+**Disable** blocks sign-in without removing anything and signs the user out. It asks first: *Disable \<email\>?* (*They are signed out at once and cannot sign in until the account is enabled again. Their memberships and role grants are kept.*), with **Cancel** and **Disable user**. The status becomes **Disabled**. **Enable** reverses it at once, without a confirmation. **Delete** asks *Delete "\<email\>"?* (*This user, their sessions, group memberships, and role grants will be permanently removed. This cannot be undone.*) and needs you to type `delete`. Prefer disabling: grants and shares that name a deleted user become unmatched names (see [People & groups](../../data-governance/people-and-groups/index.md)).
 
 ## Limits and known issues
 

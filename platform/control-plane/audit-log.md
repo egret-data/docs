@@ -20,7 +20,7 @@ The page shows a table with six columns:
 | **Actor** | The user's email, or a short id for an actor that is not a user who still exists (for example a deleted account or a service account). |
 | **Action** | What was attempted, in the form `thing:action`, for example `secret:read`, `member:add`, `perm_rule:create`. |
 | **Resource** | What it was about: the resource type and id, for example `workspace (e76a8865-…)` or `platform`. |
-| **Decision** | **allow** or **deny** for an authorization decision, a dash for a recorded change. |
+| **Decision** | **Allow** or **Deny** for an authorization decision, a dash for a recorded change. |
 | **Detail** | The reason, or the JSON detail of a change, for example the grants that allowed a decision (`grant-0`) or the fields of an update. |
 
 Every page loads 100 rows. **Load more** fetches the next 100 using a keyset cursor. Changing any filter starts again from the newest row.
@@ -29,7 +29,7 @@ Every page loads 100 rows. **Load more** fetches the next 100 using a keyset cur
 
 | Kind | What it records | Decision | Example |
 |---|---|---|---|
-| **Decision** | An authorization check: the actor asked to do something and the policy engine answered. | **allow** or **deny**, with the grants that decided. | `secret:read` on `platform`, **allow**, `grant-0` |
+| **Decision** | An authorization check: the actor asked to do something and the policy engine answered. | **Allow** or **Deny**, with the grants that decided. | `secret:read` on `platform`, **Allow**, `grant-0` |
 | **Mutation** | A change that was made. | A dash. | `member:add`, `object_grant:put`, `perm_rule:create`, `tag:assign` |
 
 Decisions are recorded for the platform's role-based checks. Impersonation is recorded as the mutations `impersonation.start` (with the reason) and `impersonation.end`, with the admin as the actor; the decisions made while impersonating are recorded under the impersonated user, with nothing that names the admin. Governance changes also appear on the Governance overview's **Recent changes**; the audit log keeps the raw entries. A workspace pre-registration is recorded as `member:invite` and `member:uninvite`, and its redemption at the person's first sign-in as `member:add` with the inviting admin as the actor and `"via": "pre-registration"` in the detail.
