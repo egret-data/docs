@@ -103,7 +103,8 @@ export const shots = [
     prepare: async (page) => {
       await open(SP)(page);
       await page.getByRole('button', {name: 'Time grouping', exact: true}).click();
-      await page.getByLabel('Time grouping value').selectOption('quarter');
+      await page.getByRole('combobox', {name: 'Time grouping value'}).click();
+      await page.getByRole('option', {name: 'Quarter', exact: true}).click();
       await settle(page, 2500);
     },
   },
