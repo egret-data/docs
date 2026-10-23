@@ -21,6 +21,8 @@ Access overview needs the **user:read** permission, which platform admins hold.
 
 ## The Access overview page
 
+Under the counts, **Needs attention** and, below it, **How access works** take the left two thirds of the page, and **Recent changes** runs down the right third. Each card is as tall as its content. A reader who is not a platform admin gets no **Recent changes**, and the two other panels take the full width.
+
 ### The counts
 
 | Tile | Meaning |

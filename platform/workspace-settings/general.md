@@ -20,7 +20,11 @@ sidebar_position: 1
 | **CONNECTIONS** | [Engines](./databases.md) |
 | **WORKSPACE** | [Notifications](./notifications.md), **General** |
 
-The page header reads *Manage members, access, and configuration for \<workspace name\>.* Which pages you see depends on your workspace role and permissions; a person who cannot manage members does not get the Members page.
+The page header reads *Manage members, access, and configuration for \<workspace name\>.* The settings menu has no **Collapse** of its own: the app sidebar's **Collapse** is the only one on the page. Below 1024 px wide the menu becomes one row of tabs, without the group headings, that scrolls sideways with a shade on the clipped edge.
+
+Which pages you see depends on your permissions in the workspace. Every page except **General** needs `workspace:manage_members`, which workspace admins hold; a reader without it sees **General** only. **Workspace settings** (the address `/settings`) opens the first page you can open: **Members** for a workspace admin, **General** for anyone else. Opening a hidden page by its address shows *403 — Forbidden* and *You don't have access to this section.* with the reason, for example *Only a workspace admin can manage members.*, in place of the page. The server checks the permission on every request either way.
+
+![Workspace settings as a workspace viewer: the settings menu lists General only, and the app sidebar has no Data API or Workflows items](/img/platform/admin/ws-settings-viewer.png)
 
 ## What General shows
 

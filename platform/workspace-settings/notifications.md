@@ -8,7 +8,7 @@ sidebar_position: 7
 
 ![The Notifications page with SMTP settings for the demo mail catcher and the Slack section](/img/platform/admin/ws-notifications.png)
 
-*Alerts and reports in this workspace send mail through this relay, as this from-address.* Changing the settings needs the workspace permission to manage SMTP (the API checks it on every save). The destinations themselves (an email recipient list, a Slack channel) are chosen on each alert or report in [Alerts & Reports](../explore/alerts-and-reports).
+*Alerts and reports in this workspace send mail through this relay, as this from-address.* Reading and changing the settings needs `workspace:manage_members` in the workspace, which workspace admins hold (the API checks it on every request); the page is not listed for anyone else. The destinations themselves (an email recipient list, a Slack channel) are chosen on each alert or report in [Alerts & Reports](../explore/alerts-and-reports).
 
 ## Email (SMTP)
 

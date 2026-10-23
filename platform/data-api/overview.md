@@ -12,7 +12,7 @@ Use it when a consumer that is not a person (a nightly job, a partner's backend,
 
 ## The pieces
 
-Everything lives under **Data API** in the Explore sidebar. Each workspace has its own endpoints, service accounts and activity.
+Everything lives under **Data API** in the Explore sidebar. Each workspace has its own endpoints, service accounts and activity. The sidebar lists **Endpoints** and **Activity** only for readers who hold `data_api_endpoint:read` in the workspace, and **Clients** only for those who hold `service_account:read`. Opened by its address without that permission, the page shows *You don't have access to this page.* with the permission it needs, and none of its buttons.
 
 | Piece | What it is | Page |
 |---|---|---|

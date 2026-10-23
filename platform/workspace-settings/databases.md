@@ -101,7 +101,7 @@ On the Docker demo stack, the workspace `default` connects to the demo Trino as 
 ## Limits and known issues
 
 - Egret validates reachability on save, but a new connection shows **Unknown** until you press **Test**.
-- When the workspace has no connection at all, a non-admin sees the same *No engines connected yet.* empty state as an admin, and its **Add connection** button then answers 403 (KI-243).
+- **Engines** is hidden from a non-admin's settings menu, and a non-admin who opens it by its address gets *You don't have access to this section.* with *Only a workspace admin can manage engine connections.* When the workspace has no connection at all, though, that reader sees the same *No engines connected yet.* empty state as an admin, and its **Add connection** button then answers 403 (KI-243).
 - Only Trino and StarRocks connections can be added here. External engines for Governance are registered in the Control Plane (see [Register an external engine](../control-plane/query-engines/register-external.md)).
 
 ## Further reading

@@ -25,7 +25,7 @@ Filters created through the API can set their own slug.
 
 ## Filter settings
 
-The panel is titled **Filter settings**. It shows only the controls that make sense for the type you selected.
+The panel is titled **Filter settings** and is built like the card settings panel: each field has its label above a full-width picker or box, a choice between a few options is a set of radio buttons, and an on/off setting is a switch. It shows only the controls that make sense for the type you selected, in this order: **Name**, **Type**, **Operator**, **How should people filter on this?**, **Where do values come from?**, **People can pick**, **Default value**, **Required**, **Limit this filter's choices**, **Where this filter appears** and **Delete filter**.
 
 ### Name
 
@@ -109,24 +109,24 @@ The value the filter has when a viewer opens the dashboard without a value in th
 
 A viewer can clear a filter that has a default with the **✕** on its chip; the filter then stays empty after a reload and in a shared link. A **required** filter cannot be emptied: its **✕** returns it to the default. **Reset all filters** puts every filter back to its default ([Use filters and URL parameters](./using-filters#reset-all-filters)).
 
+### Required
+
+When switched on, a viewer must set a value before any card loads. Until then every card shows "Set the required filters to load this card" and the filter bar names the missing filters ("Set the required filter(s): …"). A required filter's chip carries an asterisk. Give a required filter a default value so the dashboard is not blank on first load.
+
 ### Limit this filter's choices
 
 Shown at all times, with one of four texts:
 
-- With at least one other usable filter, a list of those filters with a checkbox each. If you tick a filter, the choices in **this** filter's dropdown are limited by the other filter's current value. Example: tick **Status** on **Priority**, and when a viewer picks status P the priority list shows only priorities that occur with status P.
+- With at least one other usable filter, a list of those filters with a switch each. If you switch a filter on, the choices in **this** filter's dropdown are limited by the other filter's current value. Example: switch on **Status** on **Priority**, and when a viewer picks status P the priority list shows only priorities that occur with status P.
 - "If you have another dashboard filter, you can limit the choices…": there is no other filter yet. `temporal_unit` filters are not offered as limits.
 - "If the filter has values that are from another question or model, or a custom list, then this filter can't be limited": the values source is **Custom list** or **From a card column**.
 - "This filter can't be limited by another dashboard filter because its widget type is an input box."
 
 The limit works through a card that the limited filter and the limiting filter are both connected to.
 
-### Required
-
-When ticked, a viewer must set a value before any card loads. Until then every card shows "Set the required filters to load this card" and the filter bar names the missing filters ("Set the required filter(s): …"). A required filter's chip carries an asterisk. Give a required filter a default value so the dashboard is not blank on first load.
-
 ### Where this filter appears
 
-Choose **Top of page** (default) or one of the heading and chart cards. A filter placed on a card is drawn in that card's header instead of the filter bar. See [Place a filter on a card](#place-a-filter-on-a-card).
+Choose **Top of page** (default) or one of the heading and chart cards. On a dashboard with tabs, the cards are grouped under their tab's name. A filter placed on a card is drawn in that card's header instead of the filter bar. See [Place a filter on a card](#place-a-filter-on-a-card).
 
 ### Delete filter
 
@@ -137,7 +137,7 @@ Removes the filter and, with it, its connections. The side panel goes back to **
 A filter does nothing until you connect it to a column on each card it should affect.
 
 1. Select the filter's chip. Every card shows an overlay.
-2. On each card that should react, open **Column to filter on** and choose a column. For a `temporal_unit` filter the select is headed **Connect to** and lists the card's time-grouped date columns. Leave **Select a column…** to leave the card unaffected.
+2. On each card that should react, open **Column to filter on** and choose a column. For a `temporal_unit` filter the select is headed **Connect to** and lists the card's time-grouped date columns. Leave **Select a column…** to leave the card unaffected. To disconnect a card, choose **No column**, which the list offers once a column is chosen.
 3. After you connect the first card, a toast offers "Auto-connect this filter to all questions containing “*column*”?" (with "in the current tab" when the dashboard has several tabs). Press **Auto-connect** to connect every other card on the tab that has a column with the same name and no connection yet. A second toast confirms and offers **Undo**.
 4. Press **Save**.
 

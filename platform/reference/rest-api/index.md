@@ -127,7 +127,7 @@ described by their auth line here.
 | Data API | [Data API management](rest-api/data-api) | 29 |
 | Data API | [Data API serving](rest-api/data-api-serving) | 3 |
 | Workflows | [Workflows](rest-api/workflow) | 53 |
-| Data governance | [Permission model](rest-api/perm) | 30 |
+| Data governance | [Permission model](rest-api/perm) | 33 |
 | Data governance | [Policy administration](rest-api/policy-admin) | 14 |
 | Data governance | [Ranger-compatible policy service](rest-api/ranger) | 6 |
 | Data governance | [Governance data browser](rest-api/control-plane-governance) | 11 |

@@ -53,6 +53,8 @@ The engine then appears in that workspace's SQL Lab as a database named after th
 
 On the demo stack the save recreated the coordinator container within a minute while the header kept showing **Running**, and the new value was in effect: `SHOW SESSION LIKE 'query_max_run_time'` reported the default `2.00h`.
 
+Once you confirm, the save finishes on the server even if the browser disconnects (a closed tab, a dropped connection): the old containers or pods are replaced and the engine comes back without a second save.
+
 With **Expose via ingress** on and no **Host**, the field says *Enter the host the ingress serves, or turn off Expose via ingress.* and **Save changes** stays disabled. The Docker provisioner refuses an ingress whatever the host (see [Provision an engine](./provision.md#kubernetes-and-docker)), although the section is still offered there (KI-264).
 
 ### Monitor
@@ -164,7 +166,8 @@ A Trino apply rebuilds the engine's entire catalog configuration. When one catal
 ## Limits and known issues
 
 - An external engine's page has no health status or restart. Egret cannot see the cluster.
-- On the Docker provisioner, a save interrupted by the browser disconnecting (a closed tab, a dropped connection) can stop the old containers without creating new ones; the engine shows **Failed** until the next save (KI-263).
+- On the Docker provisioner, the status can read **Failed** for a few seconds while the old containers stop during a save (KI-273).
+- In the save request, the steps after the engine is re-provisioned (updating the connections of the workspaces the engine is assigned to, or restoring the stored settings after a failed apply) still run only while the request is connected (KI-272).
 - The Ingress section is offered on Docker engines, which refuse any ingress (KI-264).
 - On an engine with impersonation and a Ranger policy, the monitor's `egret-monitor` account probably sees only its own queries (KI-265, not verified).
 - Delete is permanent. After a delete the Engines list can keep the row until you reload.

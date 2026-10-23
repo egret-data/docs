@@ -74,6 +74,22 @@ In egret's own bucket (the `[storage] bucket` of the server configuration), egre
 
 A platform admin sees and downloads them as before.
 
+### Table files only a platform admin can download
+
+A catalog's tables keep their data and metadata files (for example `…/data/*.parquet` and `…/metadata/*.metadata.json`) in object storage. Downloading such a file would skip the column masks and row filters on its table, so these files are listed but only a platform admin can download them. This covers every location where catalog tables keep their files:
+
+- the storage connection (bucket and **Key prefix**) of each egret warehouse;
+- the storage profile (bucket and key prefix) of each embedded catalog warehouse, which is what the engines write to; a later edit of the connection does not move it;
+- the storage connection of each registered catalog bound to one (Iceberg, Hive, Delta Lake, Hudi).
+
+A location without a prefix covers its whole bucket. As above, the match ignores case and also applies after percent-decoding the key.
+
+Browse lists these folders and files as usual. For anyone who is not a platform admin, downloading one answers 403 with the reason, for example *the warehouse «demo-warehouse» keeps its tables' data and metadata files here; downloading one would skip the column masks and row filters on those tables, so storage:read lists them but cannot download them. Only a platform admin can download them; query the table instead*. To read the data, query the table.
+
+:::note
+The Download icon still shows on these files. Clicking it fails without a message on the page: the browser cancels the download (KI-271).
+:::
+
 Keys that try to leave the folder are refused with 400 for everyone, platform admins included: a `.` or `..` segment, an empty segment (a leading `/`, a trailing `/` on a file, or `//`), a backslash or a control character, also once percent-decoded.
 
 ![The Browse tab listing the top-level folders of the warehouse bucket](/img/platform/admin/cp-storage-browse.png)

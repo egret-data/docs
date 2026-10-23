@@ -66,14 +66,16 @@ A change made by an administrator acting as another user is shown as "Admin as U
 
 ## The Governance sidebar
 
-| Section | Page | Use it to |
+The sidebar has one group, **Governance**, with six items. Each item shows only to a reader with the permission its page needs.
+
+| Item | Use it to | Needs |
 |---|---|---|
-| Governance overview | **Overview** | See posture and recent changes (this page). |
-| Data | **Data** | Browse catalogs and see who can read an object. See [Data](./data/index.md). |
-| People & groups | **People & groups** | See what reaches each person, group or role. See [People & groups](./people-and-groups/index.md). |
-| Classification | **Classifications** | Define tags and clearances. See [Classifications](./classifications/index.md). |
-| Lineage | **Data Lineage** | A placeholder. See [Lineage](./lineage.md). |
-| Engine & policy | **Engine & policy** | Bind policy profiles to engines and manage engine permissions. See [Engines and policy](./engines-and-policy/index.md). |
+| **Overview** | See posture and recent changes (this page). | `policy:read` or `tag:read` |
+| **Data** | Browse catalogs and see who can read an object. See [Data](./data/index.md). | `policy:read` or `tag:read` |
+| **People & groups** | See what reaches each person, group or role. See [People & groups](./people-and-groups/index.md). | `policy:read` |
+| **Classifications** | Define tags and clearances. See [Classifications](./classifications/index.md). | `tag:read` |
+| **Data Lineage** | A placeholder. See [Lineage](./lineage.md). | Platform admin |
+| **Engine & policy** | Bind policy profiles to engines and manage engine permissions. See [Engines and policy](./engines-and-policy/index.md). | `policy:read` |
 
 If you are new to the area, read [How permissions work](./concepts.md) first.
 

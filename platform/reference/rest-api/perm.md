@@ -8,10 +8,11 @@ description: REST endpoints in the perm group.
 
 Data permission model (grants, rules, explain).
 
-This page lists 30 endpoints (OpenAPI tag `perm`). It is generated from `openapi.json`; see the [REST API overview](../rest-api) for authentication, CSRF and error conventions.
+This page lists 33 endpoints (OpenAPI tag `perm`). It is generated from `openapi.json`; see the [REST API overview](../rest-api) for authentication, CSRF and error conventions.
 
 | Method | Path | Operation id | Notes |
 |---|---|---|---|
+| GET | `/api/control-plane/perm/clearances/{tag_id}/people` | `cleared_people` |  |
 | POST | `/api/control-plane/perm/compile/{service_id}` | `compile` | The manual/repair trigger. |
 | GET | `/api/control-plane/perm/engine-capabilities` | `list_engine_capabilities` |  |
 | GET | `/api/control-plane/perm/engine-grants` | `list_all_engine_grants` |  |
@@ -39,9 +40,37 @@ This page lists 30 endpoints (OpenAPI tag `perm`). It is generated from `openapi
 | POST | `/api/control-plane/perm/preview` | `preview` | **The dry run — SP4b D2. |
 | GET | `/api/control-plane/perm/rules` | `list_rules` |  |
 | POST | `/api/control-plane/perm/rules` | `create_rule` | Create a named mask or row-filter rule and recompile the profiles it affects, in one transaction. |
+| GET | `/api/control-plane/perm/rules/enforcement` | `rules_enforcement` | Whether each listed STORED rule is enforced — the `enforcedBy` / `notEnforced` / `catalogs` half of `GET /perm/rules/\{id\}/effect`, computed by the same funct... |
 | PATCH | `/api/control-plane/perm/rules/{id}` | `patch_rule` | Edit a rule in place, keeping the id — the rule half of SP4b D1. |
 | DELETE | `/api/control-plane/perm/rules/{id}` | `delete_rule` |  |
+| GET | `/api/control-plane/perm/rules/{id}/effect` | `rule_effect` | What a STORED rule does — the same [`crate::effect::RuleEffect`] a preview returns, from the same [`crate::effect::rule_effect`], so a surface showing a stor... |
 | GET | `/api/control-plane/perm/unresolved-principals` | `list_unresolved_principals` | Every stored grant principal and rule exemption whose ref matches nobody (J-F3 Task 2, design R5/R6). |
+
+## GET `/api/control-plane/perm/clearances/{tag_id}/people`
+
+Operation id: `cleared_people`. Auth: Session cookie. Forbidden (403): Missing policy:read permission.
+
+| Parameter | In | Type | Required | Description |
+|---|---|---|---|---|
+| `tag_id` | path | string (uuid) | yes | The classification's (tag's) id |
+
+**Response 200 (application/json)**: `ClearedPeople`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `count` | integer (int32) | yes | Every person listed by the rules above (not only the first 200). It is not everyone egret clears: platform admins are cleared and not listed (see the type doc). |
+| `people` | ClearedPerson[] | yes | The first [`CLEARED_PEOPLE_LIMIT`] (200) of them, sorted by label. |
+| `truncated` | boolean | yes | More people are listed than `people` carries. |
+| `enginesEnforce` | boolean | yes | Whether engines enforce the clearance at all: true when it names at least one required role. False means anyone with SQL access reads the data on engines. |
+| `onEnginesCount` | integer (int32) | yes | How many of `count` are `onEngines`, independent of the 200 cap. |
+
+| Status | Meaning |
+|---|---|
+| 200 | The people listed for the classification's clearance, each once with every way they are listed: direct holders of a required role (live, allow, any scope; the compiler's read), holders of a required role through a group they are a direct... |
+| 401 | Not authenticated |
+| 403 | Missing policy:read permission |
+| 404 | No classification has this id |
+| 500 | Internal error |
 
 ## POST `/api/control-plane/perm/compile/{service_id}`
 
@@ -759,11 +788,12 @@ Dry-run a grant or rule write: report the policy profiles it would recompile, an
 |---|---|---|---|
 | `affected` | AffectedProfile[] | yes |  |
 | `compile` | CompileResponse | yes | What a mutation's (or `compile`'s) recompile pass did, aggregated over every service it touched. |
+| `effect` | RuleEffect | no |  |
 
 | Status | Meaning |
 |---|---|
 | 200 | The profiles the write would touch, and what its recompile would do |
-| 400 | The same refusal the write itself would have returned |
+| 400 | The same refusal the write itself would have returned (including code `table_tag_mask_conflict` for a tag-addressed mask over a table-level attachment) |
 | 401 | Not authenticated |
 | 403 | Missing policy:update permission |
 | 404 | Previewing a patch of an id that does not exist |
@@ -815,6 +845,33 @@ Create a named mask or row-filter rule and recompile the profiles it affects, in
 | 401 | Not authenticated |
 | 403 | Missing policy:update permission |
 | 409 | A rule overlap: two mask (or two row-filter) rules would decide one request differently: this write would compile such a pair, or a profile it recompiles already holds one, which refuses every recompile of that profile until one rule is... |
+| 500 | Internal error |
+
+## GET `/api/control-plane/perm/rules/enforcement`
+
+Operation id: `rules_enforcement`. Auth: Session cookie. Forbidden (403): Missing policy:read permission.
+
+Whether each listed STORED rule is enforced — the `enforcedBy` / `notEnforced` / `catalogs` half of `GET /perm/rules/\{id\}/effect`, computed by the same functions, for surfaces that list rules. Bounded by [`crate::effect::RULE_ENFORCEMENT_CAP`] ids per request.
+
+| Parameter | In | Type | Required | Description |
+|---|---|---|---|---|
+| `ids` | query | string | no | Comma-separated rule ids, at most 100 distinct. |
+
+**Response 200 (application/json)**: array of `RuleEnforcement`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `ruleId` | string (uuid) | yes |  |
+| `enforcedBy` | integer (int32) | yes | Distinct engines, bound to a profile, attached to a catalog the rule reaches (as `enforcedBy` in the rule's effect). |
+| `notEnforced` | NotEnforced | no |  |
+| `catalogs` | EffectCatalog[] | yes | Each catalog the rule reaches and who enforces it THERE, as `catalogs` in the rule's effect: a page about one catalog reads its entry, since a rule enforced in one catalog may be enforced in no other. |
+
+| Status | Meaning |
+|---|---|
+| 200 | One entry per known id, in the order asked (a repeated id once, an unknown id left out): the number of engines bound to a policy profile that enforce the rule, and why none does (`no_assignment`, `no_engine`, `no_profile`, `no_tag_service`)... |
+| 400 | An id is not a UUID, or more than 100 distinct ids were asked for |
+| 401 | Not authenticated |
+| 403 | Missing policy:read permission |
 | 500 | Internal error |
 
 ## PATCH `/api/control-plane/perm/rules/{id}`
@@ -874,6 +931,39 @@ Operation id: `delete_rule`. Auth: Session cookie and `X-Egret-CSRF` header. For
 | 403 | Missing policy:update permission |
 | 404 | No such rule |
 | 409 | A rule overlap: two mask (or two row-filter) rules would decide one request differently: this write would compile such a pair, or a profile it recompiles already holds one, which refuses every recompile of that profile until one rule is... |
+| 500 | Internal error |
+
+## GET `/api/control-plane/perm/rules/{id}/effect`
+
+Operation id: `rule_effect`. Auth: Session cookie. Forbidden (403): Missing policy:read permission.
+
+What a STORED rule does — the same [`crate::effect::RuleEffect`] a preview returns, from the same [`crate::effect::rule_effect`], so a surface showing a stored rule can say "Not enforced yet" with the preview's reason.
+
+| Parameter | In | Type | Required | Description |
+|---|---|---|---|---|
+| `id` | path | string (uuid) | yes | Rule id |
+
+**Response 200 (application/json)**: `RuleEffect`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `kind` | EffectKind | yes | `mask` or `row_filter`. |
+| `catalogs` | EffectCatalog[] | yes | Every registry catalog the rule reaches, by name. |
+| `tableCount` | integer (int32), nullable | no | Distinct tables reached; `null` when a path level is a pattern (or absent). |
+| `columnCount` | integer (int32), nullable | no | Masks only; `null` for a pattern, for "every column" (a path mask without a column, or a tag on a whole table) and for row filters. |
+| `enforcedBy` | integer (int32) | yes | Distinct engines, bound to a profile, attached to a reached catalog. |
+| `notEnforced` | NotEnforced | no |  |
+| `exemptMembers` | integer (int32) | yes | Distinct users in `exempt.include`, groups, roles and workspaces expanded. |
+| `exemptEveryone` | boolean | yes | `exempt.include` names the `public` group: nobody is masked. |
+| `alreadyMasked` | ExistingMask[] | yes | Other mask rules that reach a column this rule reaches (at most 20). |
+| `truncated` | boolean | yes | `alreadyMasked` may be incomplete: a cap cut the columns examined (50), the classifications read (1000) or the entries listed (20). |
+
+| Status | Meaning |
+|---|---|
+| 200 | The stored rule's effect: reach, the engines that enforce it (or why none does), exemptions and the other masks on its columns. The same computation, and the same shape, as `effect` on `POST /perm/preview` |
+| 401 | Not authenticated |
+| 403 | Missing policy:read permission |
+| 404 | No such rule |
 | 500 | Internal error |
 
 ## GET `/api/control-plane/perm/unresolved-principals`

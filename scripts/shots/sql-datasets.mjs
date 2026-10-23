@@ -116,7 +116,8 @@ export const shots = [
     await typeSql(page, 'SELECT orderkey, orderstatus, totalprice FROM tpch.tiny.orders WHERE orderstatus = {{status}} AND totalprice > {{min_total}}');
     await page.getByRole('button', {name: 'Format'}).click();
     await page.getByLabel('Value of status').fill('F');
-    await page.getByLabel('Type of min_total').selectOption('number');
+    await page.getByRole('combobox', {name: 'Type of min_total'}).click();
+    await page.getByRole('option', {name: 'num', exact: true}).click();
     await page.getByLabel('Value of min_total').fill('300000');
     await run(page, 3500);
   }),

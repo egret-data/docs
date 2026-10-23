@@ -8,7 +8,7 @@ sidebar_position: 5
 
 ![The Shared objects page: five shares on a dashboard, a chart and a dataset, one of them denied](/img/platform/admin/ws-shares.png)
 
-Only workspace admins can view shares; others see *Only workspace admins can view shares.* Until something is shared the page shows *Nothing shared in this workspace yet.*
+Only workspace admins can view shares. The page is hidden from everyone else's settings menu; opened by its address it shows *You don't have access to this section.* with *Only a workspace admin can view the shared objects.* Until something is shared the page shows *Nothing shared in this workspace yet.*
 
 ## The roll-up
 

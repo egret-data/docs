@@ -43,7 +43,7 @@ The filter bar sits above the table.
 | **Kind** | **Changes and denials** (the default: mutations and denied decisions), **All**, **Decision**, **Mutation**. |
 | **Decision** | **All**, **Allow**, **Deny**. |
 | **Action** | An exact action, for example `secret:read`. A partial word such as `secret` matches nothing. |
-| **From** and **To** | A date and time range (your browser's local time). |
+| **From** and **To** | A date and time range, in your browser's local time. Each box reads `YYYY-MM-DD HH:mm`, or *Any time* when empty. Click it to pick a day on the month grid and type the **Time** as `HH:mm` (*Enter a time as HH:mm, from 00:00 to 23:59.* otherwise); **Clear** empties it. A day picked in **From** starts at 00:00, in **To** at 23:59. |
 
 The same filters work in the API: `GET /api/control-plane/audit` accepts `kind`, `decision`, `hideAllowed`, `action`, `actor`, `workspace`, `from`, `to`, `cursor` and `limit`. `hideAllowed=true` is what **Changes and denials** sends. Each entry carries `actorEmail` next to `actorUserId`.
 
