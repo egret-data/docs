@@ -119,10 +119,10 @@ Operation id: `create_tag`. Auth: Session cookie and `X-Egret-CSRF` header. Forb
 | Status | Meaning |
 |---|---|
 | 201 | Tag created |
-| 400 | Invalid tag key |
+| 400 | Invalid tag key: `code` is `tag_key_invalid` |
 | 401 | Not authenticated |
 | 403 | Missing tag:manage permission |
-| 409 | A tag with that key already exists |
+| 409 | `code` is `tag_key_taken` (the key exists) or `tag_name_taken` (another classification has that name, ignoring case); `existing` names the holder |
 | 500 | Internal error |
 
 ## PATCH `/api/control-plane/tags/{id}`
@@ -160,6 +160,7 @@ Operation id: `update_tag`. Auth: Session cookie and `X-Egret-CSRF` header. Forb
 | 401 | Not authenticated |
 | 403 | Missing tag:manage permission |
 | 404 | No such tag |
+| 409 | `code` is `tag_name_taken`: another classification has that name, ignoring case; `existing` names the holder |
 | 500 | Internal error |
 
 ## DELETE `/api/control-plane/tags/{id}`
@@ -175,6 +176,7 @@ Operation id: `delete_tag`. Auth: Session cookie and `X-Egret-CSRF` header. Forb
 | 204 | Tag deleted |
 | 401 | Not authenticated |
 | 403 | Missing tag:manage permission |
+| 409 | `code` is `tag_in_use`: `rules` lists the rules that still select this classification |
 | 500 | Internal error |
 
 ## PUT `/api/control-plane/tags/{id}/access-policy`

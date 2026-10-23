@@ -202,7 +202,7 @@ Operation id: `remove`. Auth: Session cookie and `X-Egret-CSRF` header. Forbidde
 
 ## GET `/api/control-plane/storage/{id}/download`
 
-Operation id: `download_object`. Auth: Session cookie. Forbidden (403): Missing storage:read permission, or the key is under a prefix egret writes for its users and the caller is not a platform admin.
+Operation id: `download_object`. Auth: Session cookie. Forbidden (403): Missing storage:read permission, or the caller is not a platform admin and the key is under a prefix egret writes for its users, or under the storage of a warehouse or lakehouse catalog (a table's data or metadata file, whose raw bytes would skip its column masks and row filters).
 
 Stream a single object from a storage connection's bucket as an attachment.
 
@@ -216,7 +216,7 @@ Stream a single object from a storage connection's bucket as an attachment.
 | 200 | Object bytes streamed as an attachment |
 | 400 | Invalid key (a `.`/`..` or empty segment, a backslash or a control character, also once percent-decoded), or the object could not be read |
 | 401 | Not authenticated |
-| 403 | Missing storage:read permission, or the key is under a prefix egret writes for its users and the caller is not a platform admin |
+| 403 | Missing storage:read permission, or the caller is not a platform admin and the key is under a prefix egret writes for its users, or under the storage of a warehouse or lakehouse catalog (a table's data or metadata file, whose raw bytes... |
 | 404 | No such storage connection |
 | 500 | Internal error |
 
