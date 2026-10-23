@@ -89,6 +89,8 @@ their **groups**, or to them directly. Someone with no workspace and no Control 
 workspaces yet** card with the email they signed in with, **Check again** and **Sign out**. Ask a workspace admin to add that
 email, then press **Check again**.
 
+Someone who belongs to a workspace but opens a page they have no access to gets *403 — Forbidden* and *You don't have access to this page.* inside the app, with the reason when the app knows it (for example *This workspace does not exist, or you are not a member of it.*), **Go back** and a link to a workspace they belong to.
+
 - Check the user under **Control Plane → Users** and the groups under **Control Plane → Groups**: is the group there, and does
   it have a platform role or a workspace membership? The Users list shows only roles granted to the user directly, so read
   the group's own page for a role it holds.

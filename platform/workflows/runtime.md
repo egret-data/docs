@@ -82,7 +82,7 @@ Script and plugin tasks also need a `container_runner`, and the image on the pla
 | `workflow:manage` | Create, edit, version, run and delete flows; resume, replay and kill executions; edit namespace files and KV; switch triggers and start backfills. Granted to workspace editors and admins. |
 | `workflow:use_secrets` | Save or publish a flow that calls `secret()`. Granted to workspace admins only. |
 
-`workflow:read` is not enough for any action. A person with only read access sees read-only editors and disabled buttons with the reason beside them.
+`workflow:read` is not enough for any action. A person with only read access sees read-only editors and disabled buttons with the reason beside them. A person without `workflow:read` does not see the Workflows items in the sidebar; opened by their address, Flows, Executions, Namespaces and Triggers show *You don't have access to this page.* with *Workflows need the workflow:read permission in this workspace.*
 
 ## Limits and known issues
 

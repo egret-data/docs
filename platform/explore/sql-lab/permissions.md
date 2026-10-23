@@ -13,7 +13,7 @@ Two separate things decide whether you can use SQL Lab: whether the module is sw
 The switch describes what the module is: *Write and run free-form SQL, browse engine schemas, and save queries.* When it is off:
 
 - The **SQL Lab** item disappears from the sidebar.
-- The page `/explore/<workspace>/sql-lab` shows **403 — Forbidden**.
+- The page `/explore/<workspace>/sql-lab` shows *403 — Forbidden* and *You don't have access to this page.* inside the app, with **Go back** and **Open \<workspace\>**. It does not say that the module is off.
 - The server refuses every `sqllab/…` request, and refuses `POST /queries`, the call that submits free-form SQL, with a 403 whose code is `feature_disabled`. This applies to every member including platform admins.
 - Reading a past run, cancelling it and listing history stay available, because the chart builder uses the same calls.
 

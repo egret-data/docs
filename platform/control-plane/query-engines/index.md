@@ -6,13 +6,13 @@ sidebar_position: 2
 
 **Control Plane → Infrastructure → Engines** is the registry of the query engines of the platform: the Trino and StarRocks clusters that run SQL for SQL Lab, charts and dashboards. An engine here is either **provisioned** by egret, or **external**: a cluster you run yourself and have registered so egret can manage its access policy.
 
-![The Engines list with the provisioned engine docs-trino (running) and the external engine trino-demo-ext](/img/platform/admin/cp-engines.png)
+![The Engines list with the Trino and StarRocks tabs and one external engine, docs-trino-ext](/img/platform/admin/cp-engines.png)
 
 You need **engine:read** to open the page. Registering and creating engines need **engine:create**.
 
 ## The engine list
 
-A summary strip counts **engines**, how many are **running** and **not running**, and how many are **external**. Tabs filter by engine type: **Trino**, **StarRocks** and **RisingWave** (RisingWave arrives in a later phase). **Search Trino engines…** filters the list by name.
+A summary strip counts **engines**, how many are **running** and **not running**, and how many are **external**. Tabs filter by engine type: **Trino** and **StarRocks**, the types egret provisions. Another type gets a tab only when the registry holds an engine of that type, so every engine is listed under a tab. **Search Trino engines…** filters the list by name.
 
 | Column | Meaning |
 |---|---|
@@ -60,7 +60,6 @@ Select the name or **Details** on a row. The page depends on the kind: see [Engi
 
 ## Limits and known issues
 
-- RisingWave is listed but not available yet.
 - Egret cannot see whether an external engine is up or whether it downloads its profile.
 - After a delete the list can keep showing the engine until you reload the page.
 
