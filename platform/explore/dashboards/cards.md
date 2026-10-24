@@ -28,6 +28,8 @@ On the card in view mode:
 
 If the chart has been deleted, the card shows "Chart not found". If the chart is not fully set up, for example a bar chart saved without an X-axis, the card says "This chart is not set up yet" and, under it, what the chart editor still asks for ("Add: X-axis"), in view and in edit mode; open the chart and complete it. If a required filter has no value, the card shows "Set the required filters to load this card".
 
+![A bar chart card saved without an X-axis: This chart is not set up yet, Add: X-axis](/img/platform/dashboards/card-not-set-up.png)
+
 ### Settings
 
 The settings appear in this order.

@@ -70,7 +70,7 @@ Default and minimum sizes, in columns by rows:
 | Any other chart type | 12 × 6 | 4 × 3 |
 
 :::warning
-When the canvas is narrower than 753 px, the grid switches to a one-column layout: every card is full width, stacked in reading order. You cannot move or resize cards in that layout, and Egret does not save it over your desktop layout. A side panel (card settings, filter settings, **Add cards**) is 340 px wide and sits beside the canvas. On a **fixed**-width dashboard the page widens by the panel, so the canvas keeps its 1048 px when the window has room for both. On a **full**-width dashboard the panel takes its width from the canvas, so below a window width of about 1280 px the canvas drops into the one-column layout while a panel is open (KI-282); the same happens to a fixed-width dashboard on a window too narrow for canvas and panel. Close the panel, or widen the window, to move cards.
+When the canvas is narrower than 753 px, the grid switches to a one-column layout: every card is full width, stacked in reading order. You cannot move or resize cards in that layout, and Egret does not save it over your desktop layout. A side panel (card settings, filter settings, **Add cards**) is 340 px wide and sits beside the canvas. On a **fixed**-width dashboard the page widens by the panel, so the canvas keeps its 1048 px when the window is wide enough (about 1710 px with the app sidebar open). On a narrower window the panel takes its width from the canvas, on a fixed-width and a full-width dashboard alike: with the app sidebar open, the canvas is 780 px at a 1440 px window, and below about 1410 px it drops into the one-column layout while a panel is open (KI-282). Close the panel, or widen the window, to move cards.
 :::
 
 ## Card toolbar

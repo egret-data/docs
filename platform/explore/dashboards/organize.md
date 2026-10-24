@@ -77,6 +77,9 @@ Trashing takes a dashboard out of the list but keeps it, so you can bring it bac
 
 1. Choose **Move to Trash** in the row menu, in the dashboard page's **⋯** menu (**Move to trash**), or with bulk select.
 2. The dialog *Move to Trash?* says the dashboard can be restored from the Trash. Press **Move to Trash** to confirm, or **Cancel**. A toast says "Moved to Trash"; from the dashboard page you land back on the list.
+
+   ![The Move to Trash? dialog for Sales performance](/img/platform/dashboards/confirm-trash.png)
+
 3. Press the **Trash** button in the toolbar to see trashed dashboards. The page title becomes **Trash**, rows are listed flat, the summary line counts only dashboards, there is no **+ Dashboard** button, and "Trash is empty." shows when there are none.
 4. In the trash, open **⋯** on a row and choose **Restore** to bring it back, or **Delete permanently**, which asks "Permanently delete "*name*"? This cannot be undone." and then removes it, with its cards, tabs and bookmarks.
 

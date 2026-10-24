@@ -38,6 +38,8 @@ Type in **Search history…** to keep only entries whose SQL or database name co
 2. The dialog *Clear your query history?* says *Your queries in this workspace leave the History list. Saved queries and other people's history are not affected.* Press **Clear history** to confirm, or **Cancel**.
 3. A toast says *History cleared* and the tab shows *No queries run yet.* until you run something again.
 
+![The Clear your query history? dialog over the History tab](/img/platform/sql-datasets/sqllab-history-clear.png)
+
 Clearing hides your entries from the list; it does not delete the runs. A result you can still reach by its id (for example a CSV download link) keeps working. Only your own entries are cleared, in this workspace only: there is no way to clear another member's history, and the history you have in other workspaces stays. The list still shows at most your 50 most recent runs; clearing makes room for new ones. The button is not shown while the list is empty.
 
 ## Saved queries
