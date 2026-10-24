@@ -30,7 +30,7 @@ Operation id: `tag_handwritten`. Auth: Session cookie. Forbidden (403): Lacks po
 
 Hand-written tag policies of a classification.
 
-Every hand-written (operator) policy of every usable tag service whose tag resource matches this classification's NAME through the tag service-def's matcher (wildcards yes, case folding no), with the Trino profiles and engines that download it; `sameName` lists other tags with this name, which those policies reach too. `no_tag_service` when no Trino profile has a tag service. Requires policy:read.
+Every hand-written (operator) policy of every usable tag service whose tag resource matches this classification's NAME through the tag service-def's matcher (wildcards yes, case folding no), with the Trino profiles and engines that download it. Classification names are unique ignoring case (migration 0207), so no other classification shares the name. `no_tag_service` when no Trino profile has a tag service. Requires policy:read.
 
 | Parameter | In | Type | Required | Description |
 |---|---|---|---|---|
@@ -43,7 +43,6 @@ Every hand-written (operator) policy of every usable tag service whose tag resou
 | `tag` | TagRef | yes |  |
 | `state` | TagPolicyState | yes |  |
 | `policies` | TagPolicyRow[] | yes |  |
-| `sameName` | SameNameTag[] | yes | Other tags with this name: engine tag policies on the name apply to them too (CL10). |
 | `unreadable` | UnreadablePolicy[] | yes | Hand-written tag policies whose body could not be read: they may name this tag, so the list above may be incomplete. |
 
 | Status | Meaning |
@@ -167,7 +166,7 @@ Operation id: `changes`. Auth: Session cookie. Forbidden (403): Holds neither po
 
 Recent governance changes, newest first.
 
-Governance events, newest first: grant, rule, hand-written policy, migration and compile changes and role assignments for a `policy:read` reader; clearance changes and catalog-column tags for a `tag:read` reader. Recorded from the version that introduced this feed on; role assignments and catalog tags are best-effort (recorded after commit).
+Governance events, newest first: grant, rule, hand-written policy, migration and compile changes and role assignments for a `policy:read` reader; clearance changes and catalog-column tags for a `tag:read` reader; user deletes for a reader who also holds `user:read`. Recorded from the version that introduced this feed on; role assignments and catalog tags are best-effort (recorded after commit).
 
 | Parameter | In | Type | Required | Description |
 |---|---|---|---|---|

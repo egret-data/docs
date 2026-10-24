@@ -109,6 +109,20 @@ appends Ranger's own `/service/...` paths itself:
 control-plane API. The old `/service/...` paths at the server root answer `404`. Egret serves no Ranger roles or user
 store: `/ranger/service/roles/secure/download/...` answers `404`, and the plugin carries on.
 
+### Platform admins on the engines
+
+When an engine is applied, Egret seeds `egret-admin - <resources>` policies into its profile (one per resource
+hierarchy). They give every **active** platform admin all access on the engine, by engine username. Egret keeps them in
+step with platform-admin membership: granting or removing `platform_admin` (to a user or to a group), adding or removing a
+member of a group that holds it, deleting a user, disabling or enabling a platform admin, and `egret init` rewrite the `egret-admin`
+policies of every engine in the same database transaction, and the policy version goes up. A disabled platform admin is
+not in them. At every start the server also repairs `egret-admin` policies written before this behaviour existed
+(one transaction per profile; a failure is logged and does not stop the start).
+
+A change reaches an engine at the plugin's next download. Engine tokens already issued to a disabled or deleted user stay
+valid until they expire (at most 15 minutes), but a disabled admin's tokens no longer carry all access once the new
+policies are downloaded.
+
 ### Authentication of the plugin
 
 Every request under `/ranger/service/` is authenticated. `ranger.auth_mode` (`EGRET_RANGER__AUTH_MODE`, Helm

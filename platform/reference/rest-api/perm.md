@@ -8,7 +8,7 @@ description: REST endpoints in the perm group.
 
 Data permission model (grants, rules, explain).
 
-This page lists 33 endpoints (OpenAPI tag `perm`). It is generated from `openapi.json`; see the [REST API overview](../rest-api) for authentication, CSRF and error conventions.
+This page lists 34 endpoints (OpenAPI tag `perm`). It is generated from `openapi.json`; see the [REST API overview](../rest-api) for authentication, CSRF and error conventions.
 
 | Method | Path | Operation id | Notes |
 |---|---|---|---|
@@ -45,6 +45,7 @@ This page lists 33 endpoints (OpenAPI tag `perm`). It is generated from `openapi
 | DELETE | `/api/control-plane/perm/rules/{id}` | `delete_rule` |  |
 | GET | `/api/control-plane/perm/rules/{id}/effect` | `rule_effect` | What a STORED rule does — the same [`crate::effect::RuleEffect`] a preview returns, from the same [`crate::effect::rule_effect`], so a surface showing a stor... |
 | GET | `/api/control-plane/perm/unresolved-principals` | `list_unresolved_principals` | Every stored grant principal and rule exemption whose ref matches nobody (J-F3 Task 2, design R5/R6). |
+| GET | `/api/control-plane/perm/username-reuse` | `username_reuse` | Evidence of past username takeovers (before migration 0209 a deleted user's username could be minted for the next person): user refs and policy bodies older ... |
 
 ## GET `/api/control-plane/perm/clearances/{tag_id}/people`
 
@@ -992,5 +993,26 @@ Every stored grant principal and rule exemption whose ref matches nobody (J-F3 T
 | 200 | Every stored grant principal and rule exemption whose ref matches nobody, ordered by source, id, position, kind and ref. `failsOpen` marks the ones where matching nobody makes the compiled policy allow more than the model states (a deny... |
 | 401 | Not authenticated |
 | 403 | Missing policy:read permission |
+| 500 | Internal error |
+
+## GET `/api/control-plane/perm/username-reuse`
+
+Operation id: `username_reuse`. Auth: Session cookie. Forbidden (403): Not a platform admin.
+
+Evidence of past username takeovers (before migration 0209 a deleted user's username could be minted for the next person): user refs and policy bodies older than the person who now holds the name, `egret-admin` bodies naming someone who is not an active platform admin, and refs nobody holds. Reported only; nothing is changed.
+
+**Response 200 (application/json)**: `UsernameReuseReport`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `generatedAt` | string (date-time) | yes |  |
+| `findings` | ReuseFinding[] | yes |  |
+| `baselineTakenAt` | string (date-time), nullable | no | When migration 0209 took the baseline; `null` when it kept no row. |
+
+| Status | Meaning |
+|---|---|
+| 200 | Every finding, ordered by username |
+| 401 | Not authenticated |
+| 403 | Not a platform admin |
 | 500 | Internal error |
 

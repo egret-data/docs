@@ -68,6 +68,40 @@ Use an external managed PostgreSQL in production.
    boot. An older binary refuses a newer database; see [Upgrades and migrations](./upgrade).
 5. Check the restore (below).
 
+### The username ledger
+
+The table `username_ledger` (migration 0209) records every engine username ever given out, so that none is given twice.
+It is data, not schema, and it must be restored with the rest: restore **schema and data together**, with a full
+`pg_restore` into an empty database as above. Do not rebuild it by hand; its triggers refuse updates and deletes.
+
+A data-only restore into a database that `egret migrate` already created goes wrong in two ways: the migration already
+inserted the two reserved rows (`egret-lineage` and `egret_delegator`), so the ledger's copy fails and the table stays
+empty; and the triggers on `users` fire for every restored user and record the names anew. If you cannot avoid a
+data-only restore:
+
+1. Connect as a PostgreSQL superuser to the freshly migrated database and remove the reserved rows. The ledger's
+   append-only guard refuses the delete unless triggers are switched off for the session:
+
+   ```sql
+   SET session_replication_role = replica;
+   DELETE FROM username_ledger WHERE source = 'reserved';
+   ```
+
+2. Restore the data as a superuser with triggers disabled, so the dump's copy of the ledger, including the reserved
+   rows, is restored as it was:
+
+   ```bash
+   pg_restore --data-only --disable-triggers --no-owner \
+     --dbname="postgres://postgres:...@db.internal:5432/egret_restored" egret.dump
+   ```
+
+3. Check that the ledger holds at least one row per user with a username:
+
+   ```bash
+   psql "$RESTORED_URL" -Atc "select count(*) from username_ledger"
+   psql "$RESTORED_URL" -Atc "select count(*) from users where username is not null"
+   ```
+
 ## Checking a restore
 
 This was done for these docs on a database created with `egret migrate` and `egret init`: dump, restore into a new database,

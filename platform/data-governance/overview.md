@@ -30,6 +30,7 @@ The checks the server runs are:
 | Check | What it looks for |
 |---|---|
 | Unresolved principal references | A grant or rule exemption names a user, group or role egret does not know, so it cannot match anyone (see [Unmatched names](./people-and-groups/index.md)). |
+| Engine usernames reused after a delete | A grant, rule, engine permission or policy names a username that was written for someone other than the person who holds it now, or an `egret-admin` policy still names someone who is no longer an active platform admin. **Critical** when a finding is definite, otherwise **Warning**. Platform admins only; **Open** goes to [Reused names](./people-and-groups/index.md#reused-names). |
 | Plugin silent, behind or quiet | An engine's Ranger plugin has not downloaded the policy profile, downloaded an older version of it, or has been quiet for longer than expected. |
 | Profile compile failed | The last compile of a policy profile failed. Engines keep the previous compile. |
 | Engine failed | A provisioned engine reports a failed status. |
@@ -46,9 +47,11 @@ On the demo stack, with the engine `docs-trino` serving `demo_warehouse`, the li
 - **Warning**: *egret could not compute the lineage of 1 view, so the tables it reads are not known.*, with the view and the engine's answer: `demo_warehouse.analytics.revenue_by_country — engine docs-trino: engine: Access Denied: Cannot access catalog demo_warehouse`. Egret reads view definitions through the engine as its lineage reader. That answer came from a Docker engine before platform #728, when the engine's plugin was not recognised and so did not receive the reader's access; see [Lineage](./lineage.md#how-egret-computes-lineage) for which engines do.
 - **Info**: *3 classifications have no clearance: they gate nothing.*, listing the tags.
 
+The reused-username finding states each verdict separately, for example *2 references or policies were written for a username before the person who holds it now existed. 1 more may have been. 1 egret-admin policy still gives engine ALL access to someone who is no longer an active platform admin.* Its examples name the username and the place, never an email. Names that match nobody (dead names on **Reused names**) do not raise it; such a name in a grant or rule exemption is reported as an unresolved principal reference when it widens access.
+
 Before an engine serves a catalog, the finding is that the catalog is attached to no engine. When everything is in order the list reads *Nothing needs attention.*
 
-A **Not checked here** line names what the page does not check: views that may expose classified data through `DEFINER`, and classification coverage. It appears for platform admins too. Those two are covered on the [View exposure](./classifications/view-exposure.md) page. When your permissions do not allow one of the checks above, it is added to that line.
+A **Not checked here** line names what the page does not check: views that may expose classified data through `DEFINER`, and classification coverage. It appears for platform admins too. Those two are covered on the [View exposure](./classifications/view-exposure.md) page. When your permissions do not allow one of the checks above, it is added to that line; for someone who is not a platform admin it names *engine usernames reused after a delete*.
 
 :::note
 Each check needs its own permissions: engine drift checks need **policy:read** and **engine:read**, the catalog attachment check needs **catalog_registry:read**, and so on. A check you cannot run is listed as not checked, not silently dropped.
@@ -57,6 +60,8 @@ Each check needs its own permissions: engine drift checks need **policy:read** a
 ## Recent changes
 
 **Recent changes** lists governance changes as they are recorded, newest first, with the columns **When**, **Who** and **What**, and a **View** link that opens the object concerned. The text describes each change in a sentence, for example *Administrator created a grant: allow read on demo_warehouse.finance to group finance-analysts, group data-team*, *Administrator set the clearance of classification Confidential: roles data_steward; groups none*, *Administrator created an engine grant: trino.set_system_session_property (query_max_run_time) on engine docs-trino to user member-sso* or *Administrator migrated legacy: analysts read finance_pg of profile docs-legacy-trino into egret grants and rules*. The link column reads **View**, or *(deleted)* when the object no longer exists.
+
+A reader who also holds **user:read** sees user deletes too, as *Administrator deleted user alice* (the username, or the email when the user had none), with no link. Without **user:read** these rows are left out, because they carry the deleted person's email.
 
 The list is paged: use the button at the bottom to load older changes. Under the list a note says *The oldest change you can see is from \<date\>*, and that changes older than 90 days are pruned. A second note warns that role assignments and catalog tags are recorded after they commit and can be missing if the audit writer was overloaded. Recording began when this version of egret was installed, so a fresh instance shows *No governance change has been recorded yet*.
 

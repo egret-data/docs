@@ -26,6 +26,7 @@ Terms used across the platform, in alphabetical order. Each links to the page th
 | **Dataset** | A table or SQL query registered in a workspace, with typed columns and metrics. See [Datasets and metrics](../explore/datasets-and-metrics). |
 | **Delegation (per-user)** | Running a query as the signed-in person, with a token the engine verifies, so engine-side policy applies to that person. A connection option; needs single sign-on. |
 | **Engine** | A query engine: Trino or StarRocks. A connection points a workspace at one. See [Query engines](../control-plane/query-engines). |
+| **Engine username** | The name the query engines know a person by (for example `alice`), given at their first query or when a grant naming them is compiled. Grants, rules and engine policies name people by it. A deleted user's username is retired and never given to anyone else. See [Users](../control-plane/access-control/users#what-a-retired-username-means). |
 | **Execution** | One run of a flow. See [Executions](../workflows/executions). |
 | **Flow** | A set of tasks in YAML that runs when started or triggered. See [Flows](../workflows/flows). |
 | **Governed data** | A connection option stating that the engine enforces row filters and column masks per user, so Data API endpoints on it must run queries as the caller. |
