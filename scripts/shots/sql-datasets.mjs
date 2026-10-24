@@ -29,6 +29,11 @@ const typeFormatted = async (page, sql) => {
   await typeSql(page, sql);
   await page.getByRole('button', {name: 'Format'}).click();
   await page.waitForTimeout(400);
+  // Typing one long line scrolls the editor sideways; go back to the start so the formatted text shows.
+  await page.locator('.monaco-editor').first().click();
+  await page.keyboard.press('ControlOrMeta+Home');
+  await page.keyboard.press('Home');
+  await page.waitForTimeout(200);
 };
 const expandOrders = async (page) => {
   await page.getByRole('button', {name: 'Expand tpch'}).click();
@@ -38,7 +43,12 @@ const expandOrders = async (page) => {
 };
 // Drag the bar between the editor and the lower panel up, so a list (History, Saved, Snippets) has room.
 const growLower = async (page) => {
-  await page.mouse.move(960, 517);
+  // The editor/results bar: the second horizontal separator on the page (the first is the Explorer's).
+  const bar = await page.locator('[role="separator"][aria-orientation="horizontal"], [data-separator]').evaluateAll((els) =>
+    els.map((e) => e.getBoundingClientRect()).filter((r) => r.width > r.height && r.width > 200).map((r) => ({x: r.x + r.width / 2, y: r.y + r.height / 2}))[0]);
+  const y0 = bar?.y ?? 400;
+  if (y0 <= 340) return;
+  await page.mouse.move(960, y0);
   await page.mouse.down();
   await page.mouse.move(960, 400, {steps: 5});
   await page.mouse.move(960, 330, {steps: 5});
@@ -119,6 +129,9 @@ export const shots = [
     await page.getByRole('combobox', {name: 'Type of min_total'}).click();
     await page.getByRole('option', {name: 'num', exact: true}).click();
     await page.getByLabel('Value of min_total').fill('300000');
+    await page.locator('.monaco-editor').first().click({position: {x: 5, y: 5}});
+    await page.keyboard.press('ControlOrMeta+Home');
+    await page.keyboard.press('Home');
     await run(page, 3500);
   }),
   sqlShot('sqllab-explain', async (page) => {
@@ -179,11 +192,19 @@ export const shots = [
     await growLower(page);
     await page.waitForTimeout(1200);
   }),
+  sqlShot('sqllab-history-clear', async (page) => {
+    await page.getByRole('tab', {name: 'History'}).click();
+    await page.waitForTimeout(800);
+    await page.getByRole('button', {name: 'Clear history'}).click();
+    await page.waitForTimeout(500);
+  }),
   sqlShot('sqllab-saved', async (page) => {
     await page.getByRole('tab', {name: 'Saved'}).click();
     await growLower(page);
     await page.waitForTimeout(800);
-    await page.getByText('Top customers by spend').first().hover();
+    // The seeded query when it exists (scripts/seed-sql-datasets.mjs), otherwise the first row.
+    const seeded = page.getByText('Top customers by spend').first();
+    await (await seeded.count() ? seeded : page.locator('[draggable="true"]').first()).hover();
   }),
   sqlShot('sqllab-snippets', async (page) => {
     await page.getByRole('tab', {name: 'Snippets'}).click();
