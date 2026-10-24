@@ -250,6 +250,24 @@ export const shots = [
     clip: {x: 0, y: 0, width: 1440, height: 330},
   },
   {
+    id: 'dashboards/confirm-trash', path: `${ws}/dashboards`,
+    prepare: async (page) => {
+      await page.getByRole('row', {name: /Sales performance/}).getByRole('button').last().click();
+      await page.getByRole('menuitem', {name: 'Move to Trash'}).click();
+      await settle(page, 600);
+    },
+  },
+  {
+    id: 'dashboards/card-not-set-up', path: `${ws}/dashboards`,
+    // A copy of Executive summary with a bar chart saved without an X-axis (u5-bar-no-x), left by platform #739.
+    prepare: async (page) => {
+      // Taller, so the card below the line chart is whole.
+      await page.setViewportSize({width: 1440, height: 1100});
+      await open('u5-executive-summary')(page);
+    },
+    settle: 2500,
+  },
+  {
     id: 'dashboards/view', path: `${ws}/dashboards`,
     prepare: async (page) => { await page.setViewportSize({width: 1440, height: 1000}); await open(SP)(page); },
     settle: 2500,

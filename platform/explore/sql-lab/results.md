@@ -12,10 +12,13 @@ The **Results** panel below the editor shows what the last run returned. You can
 
 After a successful run, the panel shows:
 
-- A toolbar with a **Filter rows…** box, the row count (*3 rows*), **Copy** and **Export**.
-- A **Table** / **Chart** switch and a status badge (*Done in 397 ms · 3 rows*) in the tab bar.
+- A toolbar with a **Filter rows…** box, the row count (*3 rows*, or *1 row*), **Copy** and **Export**.
+- A **Table** / **Chart** switch in the tab bar.
 - The grid itself, with a **#** column of row numbers, then one column per result column. Each header shows the column name and, in small type, the column's SQL type as the engine reported it (`varchar(1)`, `bigint`, `double`, `date`).
-- A footer line repeating the time, for example *Done in 397 ms*.
+
+The run status (*Done in 397 ms · 3 rows*) is shown once, in the editor toolbar next to **Run**; see [The query editor](./editor#the-toolbar).
+
+A query that returns no rows shows *The query returned no rows.* in the grid.
 
 Numeric columns (the integer, decimal and floating-point types of Trino and StarRocks) are right-aligned; other columns are left-aligned. `NULL` shows as grey italic *NULL*. Long values are cut off with an ellipsis; see **Expand a value** below.
 
@@ -27,7 +30,7 @@ Click a column name to sort the rows by it: the first click sorts ascending, the
 
 ### Filter rows
 
-Type in **Filter rows…** to keep only rows in which any cell contains the text, ignoring case. The counter changes to *2 of 25* while a filter is active. When no row matches, the grid says *No rows match “text”.*
+Type in **Filter rows…** to keep only rows in which any cell contains the text, ignoring case. The counter changes to *2 of 25* while a filter is active. When no loaded row matches, the grid says *No rows match “text”.*
 
 ![Rows filtered by "an" and sorted by name](/img/platform/sql-datasets/sqllab-filter-rows.png)
 
@@ -53,7 +56,7 @@ Press **Chart** in the switch above the grid to see the result as a simple chart
 
 ![A bar chart of orders per order status](/img/platform/sql-datasets/sqllab-chart.png)
 
-The chart groups the loaded rows by the **X** value and adds up the **Y** values that share an X. It shows one series and no legend, stops collecting after roughly 50 distinct X values (a note, *showing first 50 categories*, appears when it reaches that), and uses the first 1,000 rows. A result without a numeric column shows *No numeric column to chart.* This chart is a quick look and cannot be saved. To build charts that you keep, share and put on dashboards, [save the query as a dataset](./save-as-dataset) and use [Charts](../charts).
+The chart groups the loaded rows by the **X** value and adds up the **Y** values that share an X. It shows one series and no legend, stops collecting after roughly 50 distinct X values (a note, *showing first 50 categories*, appears when it reaches that), and uses the first 1,000 rows. The Y axis is marked in round steps (1, 2 or 5 × 10ⁿ, for example *0, 2,000, 4,000*), and only in whole numbers when every Y value is a whole number, such as a count. X labels are written upright and are turned at an angle only when they do not fit under their bar. A result without a numeric column shows *No numeric column to chart.* This chart is a quick look and cannot be saved. To build charts that you keep, share and put on dashboards, [save the query as a dataset](./save-as-dataset) and use [Charts](../charts).
 
 ## Copy and export
 
@@ -62,6 +65,14 @@ The chart groups the loaded rows by the **X** value and adds up the **Y** values
 | **Copy** (toolbar button) and **Export → Copy as TSV** | Tab-separated text on the clipboard: a header line of column names, then the rows. `NULL` becomes an empty cell. A toast says *Copied to clipboard*. | The rows currently shown (loaded rows that match the filter, in the current sort order). |
 | **Export → Download JSON** | A file `results.json`: an array of objects keyed by column name, with `null` for `NULL`. | The rows currently shown, as above. |
 | **Export → Download CSV** | A file named `query-<id>.csv` in RFC 4180 format: a header line, then the rows. Values with a comma, a quote or a line break are quoted; `NULL` becomes an empty field. | The **full result** of the run, not only the rows loaded in the grid. |
+
+Each item of the **Export** menu says on its right which rows it carries, and so does the **Copy** button's tooltip:
+
+| Label | When |
+|---|---|
+| *all 5,000 rows* | **Download CSV**, always: the whole result. **Download JSON** and **Copy as TSV** too, when every row is loaded and no filter is set (*all 3 rows*). |
+| *1,000 loaded rows* | **Download JSON** and **Copy as TSV** when the result has more rows than the grid loaded. |
+| *20 filtered rows* | **Download JSON** and **Copy as TSV** while **Filter rows…** holds text. |
 
 ![The Export menu](/img/platform/sql-datasets/sqllab-export-menu.png)
 
@@ -89,9 +100,7 @@ A result belongs to the user who ran the query. Another workspace member cannot 
 
 ## Limits and known issues
 
-- A zero-row result is reported with the filter message *No rows match “”.*
 - The chart groups with a sum, so a repeated X value adds its Y values together; it is not a replacement for a dataset chart.
-- Counters read *1 rows* for a one-row result.
 
 ## Further reading
 

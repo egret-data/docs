@@ -40,7 +40,7 @@ The **⋯** menu next to a folder heading offers:
 |---|---|
 | **Share…** | Opens the sharing dialog for the folder. Grants on a folder apply to every dashboard in it ([Share a dashboard](./sharing#access-inherited-from-a-folder)). |
 | **Rename** | Opens **Rename folder**. |
-| **Delete** | Deletes the folder immediately, without asking. The toast says "Folder deleted". The dashboards inside are not deleted; they move to **Uncategorized**. |
+| **Delete** | Asks *Delete folder?* first. The dialog names the folder and says how many dashboards move to **Uncategorized** ("The 3 dashboards in it move to Uncategorized; none is deleted.") or that it is empty. Press **Delete folder** to confirm. The toast says "Folder deleted". |
 
 These items, and moving and dragging, appear only if you can manage dashboards.
 
@@ -67,7 +67,7 @@ The copy is named "*name* (copy)", is created by you, and has the same descripti
 2. Tick the dashboards.
 3. Use **Move *n* to folder…** (pick a folder, **Uncategorized** or **New folder…**) or **Move *n* to Trash**.
 
-Only the rows you can see are selected: dashboards in a collapsed folder are not. A toast confirms, for example "Moved 2 dashboards" or "Moved to Trash".
+Only the rows you can see are selected: dashboards in a collapsed folder are not. **Move *n* to Trash** asks first (*Move to Trash?*, "2 dashboards move to the Trash. You can restore them from there."). A toast confirms, for example "Moved 2 dashboards" or "Moved to Trash".
 
 ![Bulk select with one dashboard ticked and the Move to folder and Move to Trash buttons](/img/platform/dashboards/bulk-select.png)
 
@@ -75,9 +75,13 @@ Only the rows you can see are selected: dashboards in a collapsed folder are not
 
 Trashing takes a dashboard out of the list but keeps it, so you can bring it back.
 
-1. Choose **Move to Trash** in the row menu, in the dashboard page's **⋯** menu (**Move to trash**), or with bulk select. There is no confirmation. A toast says "Moved to Trash".
-2. Press the **Trash** button in the toolbar to see trashed dashboards. The page title becomes **Trash**, rows are listed flat, and "Trash is empty." shows when there are none.
-3. In the trash, open **⋯** on a row and choose **Restore** to bring it back, or **Delete permanently**, which asks "Permanently delete "*name*"? This cannot be undone." and then removes it, with its cards, tabs and bookmarks.
+1. Choose **Move to Trash** in the row menu, in the dashboard page's **⋯** menu (**Move to trash**), or with bulk select.
+2. The dialog *Move to Trash?* says the dashboard can be restored from the Trash. Press **Move to Trash** to confirm, or **Cancel**. A toast says "Moved to Trash"; from the dashboard page you land back on the list.
+
+   ![The Move to Trash? dialog for Sales performance](/img/platform/dashboards/confirm-trash.png)
+
+3. Press the **Trash** button in the toolbar to see trashed dashboards. The page title becomes **Trash**, rows are listed flat, the summary line counts only dashboards, there is no **+ Dashboard** button, and "Trash is empty." shows when there are none.
+4. In the trash, open **⋯** on a row and choose **Restore** to bring it back, or **Delete permanently**, which asks "Permanently delete "*name*"? This cannot be undone." and then removes it, with its cards, tabs and bookmarks.
 
 ![The Trash view with one trashed dashboard](/img/platform/dashboards/trash.png)
 
@@ -88,8 +92,6 @@ Egret does not empty the trash by itself. A trashed dashboard stays there until 
 ## Limits and known issues
 
 - Folders do not nest, and a dashboard is in at most one folder.
-- Deleting a folder and trashing a dashboard do not ask for confirmation.
-- The trash view still shows the folder count and the **+ Dashboard** button, which are not meaningful there.
 - Bulk select applies only to the rows on screen; dashboards in a collapsed folder are not selected.
 
 ## Further reading

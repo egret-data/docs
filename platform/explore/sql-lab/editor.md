@@ -14,15 +14,13 @@ The strip above the editor holds one tab per query.
 
 - Press **+** to add a tab. A new tab is called **Query 2**, **Query 3** and so on, contains `SELECT 1` and uses a limit of 1,000 rows. It starts with no database chosen; if the workspace has only one database, the Explorer selects it for you.
 - Click a tab title to switch to it.
-- Double-click a title to rename the tab. Edit the name and press **Enter** to keep it, or **Escape** to cancel. An empty name keeps the old one.
+- Double-click a title to rename the tab. The old name is selected, so typing replaces it. Press **Enter** to keep the new name, or **Escape** to cancel. An empty name keeps the old one.
 - Hover over a tab and press **×** to close it. The last remaining tab cannot be closed.
-- Opening a saved query or a table preview (see [The schema browser](./schema-browser#preview-a-table)) always opens a new tab, so it never overwrites what you were writing.
+- Opening a saved query or a table preview (see [The schema browser](./schema-browser#preview-a-table)) always opens a new tab, so it never overwrites what you were writing. The new tab is named after the saved query or the table.
 
 Every tab keeps its own SQL, its own database choice and its own row limit. Tabs are stored in your browser, per workspace, so they survive a page reload but not a change of browser or cleared site data.
 
-:::note Results do not follow the tab
-The result of a run belongs to the tab you are looking at. If you switch to another tab and come back, the grid is empty again and shows *No results yet.* The query is still in your [History](./history-saved-snippets#history); use **Re-run** there or press **Run** again.
-:::
+While the page is open, a tab you leave also keeps its state: the result grid with its sort and filter, the run status, the [parameter](./parameters) values and the editor's undo history. A query that is still running goes on running in the background, and its result is there when you come back. A page reload clears results and parameter values; the SQL, database and limit come back from the browser.
 
 ## The toolbar
 
@@ -35,7 +33,7 @@ From left to right:
 | **Format** | Reformats the editor text. |
 | **Limit** | The maximum number of rows to return. |
 | Database badge | Shows the database and engine for this tab, for example *trino-demo · trino*. Read only. Change the database in the [Explorer](./schema-browser#choose-a-database). |
-| Status badge | *Running…*, *Done in 397 ms · 3 rows* or *Failed in 125 ms*. The time is measured in your browser from submit to the end of the run. |
+| Status badge | *Running…*, *Done in 397 ms · 3 rows* (*1 row* for one row) or *Failed in 125 ms*. The time is measured in your browser from submit to the end of the run. This is the only place the run status is shown; the Results panel does not repeat it. |
 | **Save** | Opens **Save query** (see [Saved queries](./history-saved-snippets#saved-queries)). |
 | **Save as dataset** | Opens **Save as dataset** (see [Save a query as a dataset](./save-as-dataset)). |
 | **⌘K** | Opens the [command palette](#the-command-palette). |
@@ -82,7 +80,7 @@ order by
 
 ### Insert names from the Explorer
 
-Clicking a table or column in the Explorer appends its name to the end of the editor text. Egret does not add a space or a comma, so add your own separator first (`SELECT ` then click) or fix the text afterwards.
+Clicking a table or column in the Explorer appends its name to the end of the editor text. Egret puts a space in front of it, unless the text is empty or already ends in a space, a line break, an opening parenthesis `(` or a dot `.`. So `SELECT * FROM` followed by a click on `orders` gives `SELECT * FROM tpch.tiny.orders`. Egret never adds a comma: between two column names, type the comma yourself.
 
 ## Run and cancel
 
@@ -92,7 +90,7 @@ Press **Run**, or **⌘ Enter** (macOS) or **Ctrl Enter** (Windows and Linux) wh
 - **Run selection.** When you select text, the button changes to **Run selection** and only the selected text is sent. Selecting one statement out of several is the way to run them one at a time. Selected text that is only whitespace is ignored and the whole editor text runs.
 - **Explain.** **Explain query** in the **…** menu (and in the command palette) runs `EXPLAIN` in front of the selection or, with no selection, the whole text, and shows the plan in the grid as one wide cell. Click the cell to read the whole plan in a dialog.
 - **Only one run at a time per tab.** **Run** is disabled while a query is running.
-- **Cancel.** Press **Cancel** to stop the query. The engine is asked to stop and the run is recorded in History with the status *cancelled*. The Results panel shows **Query cancelled** (*The run was stopped before it returned rows. Run it again to see results.*), and the status badge and the footer read *Cancelled after* and the time, for example *Cancelled after 4.2 s*.
+- **Cancel.** Press **Cancel** to stop the query. The engine is asked to stop and the run is recorded in History with the status *cancelled*. The Results panel shows **Query cancelled** (*The run was stopped before it returned rows. Run it again to see results.*), and the status badge reads *Cancelled after* and the time, for example *Cancelled after 4.2 s*.
 - **Time out.** A query that runs longer than the server's `engine.query_timeout_secs` (60 seconds by default) is stopped and fails with *timeout: the query ran longer than the 60 s limit for SQL Lab queries and was stopped. The limit is the server setting `engine.query_timeout_secs`.* When Trino stops the query itself at the same limit, its own message (*exceeded maximum time limit*) is followed by the same hint.
 
 ![The plan of an EXPLAIN in the results grid](/img/platform/sql-datasets/sqllab-explain.png)
@@ -154,7 +152,6 @@ The **Run** shortcut belongs to the editor it was pressed in, so it never runs a
 
 ## Limits and known issues
 
-- Switching tabs discards the visible result (see the note above).
 - Autocomplete does not resolve aliases and only knows expanded Explorer nodes.
 - On Trino, `ORDER BY` without `LIMIT` is not guaranteed to be kept for SQL that Egret cannot read and therefore wraps (see [Row limit](#row-limit)).
 - Editor chords that start with **⌘ K** are not available (see [The command palette](#the-command-palette)).

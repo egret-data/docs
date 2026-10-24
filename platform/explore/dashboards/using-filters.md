@@ -21,6 +21,7 @@ The widget depends on the filter's type.
 | Filter | Widget | Chip text |
 |---|---|---|
 | Category, location, id (with a value list) | **Search…** box and a scrolling list of values, checkboxes when several values are allowed, with **Clear** | The value, or "*n* selections" |
+| The same, set to **Search box** | A **Search the values…** box that lists nothing until you type (*Type to search the values*), then only the matching values; the values already picked stay listed | The value, or "*n* selections" |
 | Text, id (no list), or any list filter set to **Input box** | A text box | The text |
 | Number | A number box; with `between`, a minimum and a maximum | The number, or `min – max` |
 | Boolean | A select with **Any**, **True**, **False** | True or False |
@@ -60,7 +61,7 @@ Open **⋯** in the dashboard header and choose **Reset all filters**. It puts e
 
 ## URL parameters
 
-The values of the filters live in the address bar, so you can bookmark or share a dashboard with filters set. Each filter is one query parameter, named after its slug ([Name and slug](./filters#name-and-slug)).
+The values of the filters live in the address bar, so you can bookmark or share a dashboard with filters set. Each filter is one query parameter, named after its URL name ([Name and URL name](./filters#name-and-url-name)).
 
 ```text
 /explore/default/dashboards/<id>?status=["O","P"]&priority=1-URGENT&order_date=["1995-03-01","1995-03-31"]
@@ -73,14 +74,14 @@ Egret writes the address with the usual percent-encoding; the example is decoded
 | One value | The text itself: `priority=1-URGENT` |
 | Several values, or a pair (number `between`, date `range`) | A JSON array: `status=["O","P"]` |
 | A value chosen in an `all-options` date filter | A JSON object, as the date picker produces it |
-| A cleared default | The slug with an empty value: `order_date=` |
+| A cleared default | The URL name with an empty value: `order_date=` |
 | No value, on a filter without a default | The parameter is absent |
 
 The rules:
 
 - A parameter in the link beats the filter's default, and an empty parameter (`order_date=`) means the default was cleared. A filter without a parameter takes its default value, if it has one.
 - Changing a filter updates the address without adding a history entry, so the browser's Back button leaves the dashboard.
-- Unknown parameters are ignored. A value that is not valid for the type produces an empty or failing condition, not an error message.
+- Unknown parameters are ignored. This includes the old name of a filter whose URL name was changed after the link was shared. A value that is not valid for the type produces an empty or failing condition, not an error message.
 - Two other parameters control viewing: `refresh=<seconds>` and `fullscreen=true` ([Fullscreen and auto refresh](./view-options)).
 - Cross-filter clicks and **Filter by** in the drill menu write into the same parameters ([Interactivity](./interactivity)).
 - Scheduled reports and image exports do not read the link: they use each filter's default value ([Export, reports and print](./export-and-reports#scheduled-report-rendering)).
