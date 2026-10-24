@@ -15,7 +15,7 @@ Three tabs next to **Results** help you reuse SQL: **History** lists what you ra
 Each entry shows:
 
 - A status badge: *Queued*, *Running*, *Finished*, *Failed* or *Cancelled*.
-- The database name, how long ago the query was submitted (hover for the exact time) and, for finished queries, the number of rows.
+- The database name, how long ago the query was submitted (hover for the exact time) and, for finished queries, the number of rows (*1 row*, *25 rows*).
 - The SQL on one line, cut off if it is long (hover to see it all).
 
 Everything you submit is recorded, including `EXPLAIN` runs and table previews. A query that used [parameters](./parameters) is recorded with the values already substituted.
@@ -29,6 +29,16 @@ Everything you submit is recorded, including `EXPLAIN` runs and table previews. 
 ### Search history
 
 Type in **Search history…** to keep only entries whose SQL or database name contains the text (case-insensitive). With no match the tab says *No history matches “text”.* A user with no runs yet sees *No queries run yet.*
+
+### Clear history
+
+**Clear history**, next to the search box, empties your History list in this workspace, for example to get rid of test runs.
+
+1. Open the **History** tab and press **Clear history**.
+2. The dialog *Clear your query history?* says *Your queries in this workspace leave the History list. Saved queries and other people's history are not affected.* Press **Clear history** to confirm, or **Cancel**.
+3. A toast says *History cleared* and the tab shows *No queries run yet.* until you run something again.
+
+Clearing hides your entries from the list; it does not delete the runs. A result you can still reach by its id (for example a CSV download link) keeps working. Only your own entries are cleared, in this workspace only: there is no way to clear another member's history, and the history you have in other workspaces stays. The list still shows at most your 50 most recent runs; clearing makes room for new ones. The button is not shown while the list is empty.
 
 ## Saved queries
 
@@ -49,7 +59,7 @@ A saved query is a named SQL text with an optional description and the database 
 
 ### Open a saved query
 
-Click a row in **Saved**. The query opens in a **new tab** titled *Saved* (not the query's name), with its database selected and the same row limit as the tab you were in. Rename the tab if you want a better title.
+Click a row in **Saved**. The query opens in a **new tab** named after the saved query, with its database selected and the same row limit as the tab you were in.
 
 Each row shows the name, the database, *updated n minutes ago* and the description (or, when there is no description, the start of the SQL).
 
@@ -65,7 +75,9 @@ Hover over a row to reveal its actions.
 | **Actions** → **Move to new folder…** | Asks for a name, creates the folder and moves the query into it. |
 | **Actions** → **Share…** | Opens the sharing dialog to give a user or a group access to this one query. See [Shared objects](../../workspace-settings/shared-objects). |
 
-Once the workspace has at least one folder for saved queries, the tab groups the list under folder headings with the number of queries in each, plus **Uncategorized**. Click a heading to collapse it. A folder's **…** menu offers **Share…**, **Rename** and **Delete** (deleting a folder does not delete its queries). You can also drag a row onto a folder heading to move it. Folders for saved queries are created from a row's **Move to new folder…** command; there is no separate button.
+A header line at the top of the tab counts the saved queries (*12 saved queries*) and holds **New folder**. Press it, type a name in **New folder** and press **Create**: an empty folder appears in the list (a toast says *Folder created*), ready for queries to be dragged or moved into it. A row's **Move to new folder…** does the same and moves that query in at once.
+
+Once the workspace has at least one folder for saved queries, the tab groups the list under folder headings with the number of queries in each, plus **Uncategorized**. Click a heading to collapse it. A folder's **…** menu offers **Share…**, **Rename** and **Delete** (deleting a folder does not delete its queries). You can also drag a row onto a folder heading to move it.
 
 :::note Changing a saved query's SQL
 There is no way to overwrite the SQL of an existing saved query. To change it, open it, edit the SQL, press **Save** to store the new version, and delete the old one.
@@ -96,14 +108,12 @@ o.orderdate >= DATE '1997-01-01' AND o.orderdate < DATE '1998-01-01'
 
 ### Edit and delete
 
-Hover over a snippet and press the pencil (**Edit**) to change its name, body or description, or the bin (**Delete**) to remove it. Delete acts immediately with no confirmation and the toast *Snippet deleted* is the only sign.
+Hover over a snippet and press the pencil (**Edit**) to change its name, body or description, or the bin (**Delete**) to remove it. **Delete** asks first: the dialog *Delete snippet?* says that the snippet will be permanently deleted for everyone in this workspace. Press **Delete** to confirm; a toast says *Snippet deleted*.
 
 ## Limits and known issues
 
-- History is limited to your last 50 runs and cannot be cleared from the page.
-- Opening a saved query always creates a tab called *Saved*.
+- History shows your last 50 runs. **Clear history** hides them all at once; a single entry cannot be removed.
 - A saved query's SQL cannot be edited in place.
-- Deleting a snippet has no confirmation.
 
 ## Further reading
 

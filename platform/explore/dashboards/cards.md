@@ -26,7 +26,7 @@ On the card in view mode:
 - On hover, a pencil (**Edit question**) opens the chart in the chart editor, and a download button opens the data export ([Export, reports and print](./export-and-reports)). The pencil and the title link are not shown if the title is hidden.
 - Clicking a value follows the card's click behaviour ([Interactivity](./interactivity)).
 
-If the chart has been deleted, the card shows "Chart not found". If a required filter has no value, it shows "Set the required filters to load this card".
+If the chart has been deleted, the card shows "Chart not found". If the chart is not fully set up, for example a bar chart saved without an X-axis, the card says "This chart is not set up yet" and, under it, what the chart editor still asks for ("Add: X-axis"), in view and in edit mode; open the chart and complete it. If a required filter has no value, the card shows "Set the required filters to load this card".
 
 ### Settings
 
@@ -34,7 +34,8 @@ The settings appear in this order.
 
 | Setting | What it does | Default |
 |---|---|---|
-| **Title** | Replaces the chart's name as the card caption. | Chart name |
+| **Show title** | Shows the caption at the top of the card. Off hides the caption, and with it the info icon, the title link and the **Title** box. | On |
+| **Title** | Replaces the chart's name as the card caption. Clearing the box goes back to the chart's name, as its hint "Blank = chart name" says. | Chart name |
 | **Description** | Text shown in a popover behind the info icon in the card header. Line breaks are kept. | None |
 | **On click** | What clicking a value does: **Menu**, **Cross-filter** or **Custom URL**. With **Cross-filter** the panel lists one row per dashboard filter ("*filter name* ←") to choose the clicked column; with **Custom URL** it shows a **url template** box. See [Interactivity](./interactivity). | **Menu** |
 | **Hide this card if there are no results** | Removes the card from the dashboard while its query returns no rows. | Off |
@@ -43,9 +44,7 @@ The settings appear in this order.
 
 Two more settings exist on some chart cards: **Auto height**, which is only offered for table and pivot table charts, makes the card as tall as its content while you edit and locks its height; and the **Visualization** button on the card toolbar, described below.
 
-:::note
-The **Title** box shows the hint "Blank = chart name", but this holds only until you type in it. Once you have typed and then cleared the box, the card stores an empty title and hides its caption (and with it the description icon and the title link). To get the chart name back, retype it.
-:::
+To hide a card's caption, switch **Show title** off. Switching it back on shows the chart's name again; a title you had typed before is not kept.
 
 ### Hide a card when it has no results
 
@@ -74,7 +73,7 @@ A text card shows **GitHub-flavoured Markdown**: headings, lists, bold and itali
 
 ### Show a filter value in text
 
-Write `{{slug}}` where `slug` is the filter's slug (see [Dashboard filters](./filters#name-and-slug)). In view mode the placeholder is replaced by the current value, and the card's settings panel lists the slugs you can use. For example:
+Write `{{slug}}` where `slug` is the filter's URL name (see [Dashboard filters](./filters#name-and-url-name)). When you change a filter's URL name, the `{{…}}` references on the same dashboard are rewritten to the new one. In view mode the placeholder is replaced by the current value, and the card's settings panel lists the slugs you can use. For example:
 
 ```text
 ## Sales for status {{status}}

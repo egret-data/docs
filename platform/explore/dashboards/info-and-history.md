@@ -10,7 +10,7 @@ The info sidebar answers three questions about a dashboard: what is it for, who 
 
 ## Open the info sidebar
 
-Press the **info** button (the circled "i") in the dashboard header, or press `]`. The sidebar opens at the right of the cards and shows the dashboard name with a **✕** to close it. It has two tabs, **Overview** and **History**. The sidebar is available in view mode only.
+Press the **info** button (the circled "i") in the dashboard header, or press `]`. The sidebar (300 px) opens at the right of the cards; on a fixed-width dashboard the page widens by it, so the cards keep their width when the window has room. It shows the dashboard name with a **✕** to close it. It has two tabs, **Overview** and **History**. The sidebar is available in view mode only.
 
 ## Overview
 
@@ -47,9 +47,10 @@ The newest entry is the live version and has no **Revert** button. Every other e
 
 1. Open **History**.
 2. Press **Revert** on the version you want.
-3. A toast says "Reverted". The dashboard now has that version's name, description, filters, tabs, width and cards.
+3. The dialog *Revert to this version?* says that the dashboard goes back to how it was at this point, for everyone, and that the current version stays in the history. Press **Revert** to confirm, or **Cancel**.
+4. A toast says "Reverted". The dashboard now has that version's name, description, filters, tabs, width and cards.
 
-A revert asks for no confirmation. It is itself recorded as a new "reverted" entry at the top, so you can undo a revert by reverting again. Nothing is deleted when you revert; the versions that were newer than the one you chose stay in the list.
+A revert is itself recorded as a new "reverted" entry at the top, so you can undo a revert by reverting again. Nothing is deleted when you revert; the versions that were newer than the one you chose stay in the list.
 
 ### What a version contains
 

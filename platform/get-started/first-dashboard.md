@@ -103,8 +103,8 @@ The other tabs (**Display**, **Axes**) are covered in [Charts](../explore/charts
 3. Press **Edit**, then the **+** in the toolbar (**add chart**). The **Add cards** panel lists the workspace's charts; type
    in **search charts** to narrow it.
 4. Select `Revenue per order priority`, then another chart (the demo has **Orders by priority**). Each click adds a card.
-5. Close the panel (**×**) and drag or resize the cards, then press **Save**. While the panel is open the cards stack in one
-   column and cannot be moved (KI-068).
+5. Drag or resize the cards, then press **Save**. You can close the panel (**×**) first to see the dashboard as viewers
+   will.
 
 ![The dashboard editor with the Add cards panel open](/img/platform/ops/get-started/dashboard-add-chart.png)
 

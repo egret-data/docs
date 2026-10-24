@@ -16,7 +16,7 @@ SQL Lab is the first item in the **Explore** group of the sidebar, so it is the 
 
 ## What is on the page
 
-The page is one resizable workspace. Drag the grey bars between the panels to change their sizes.
+The page is one resizable workspace. By default the editor takes 40 % of the height and the results below it 60 %, so at 1440×900 the grid shows about a dozen rows. Drag the grey bars between the panels to change their sizes.
 
 | Area | What it does | Details |
 |---|---|---|
@@ -49,7 +49,7 @@ The page is one resizable workspace. Drag the grey bars between the panels to ch
 While the query runs, a *Running…* badge shows in the toolbar and the **Cancel** button is enabled. When it ends the badge reads, for example, *Done in 397 ms · 3 rows* (or *Failed in 125 ms*), and the rows appear in **Results**.
 
 :::tip Name tables completely
-Trino tables are `catalog.schema.table`, for example `tpch.tiny.orders`. Click a table in the Explorer to insert its full name at the end of the editor text instead of typing it.
+Trino tables are `catalog.schema.table`, for example `tpch.tiny.orders`. Click a table in the Explorer to insert its full name at the end of the editor text instead of typing it. Egret puts a space in front of it when it would otherwise run into the word before.
 :::
 
 ## How the pieces fit together
@@ -70,12 +70,12 @@ SQL Lab does not itself restrict the kind of statement you can send. A `DROP TAB
 | What | Where | Who sees it |
 |---|---|---|
 | Open tabs (title, SQL, database, limit) | Your browser's local storage, one set per workspace | Only you, only in that browser |
-| Query history | Egret, last 50 runs | Only you |
+| Query history | Egret, last 50 runs; **Clear history** hides your own entries | Only you |
 | Saved queries | Egret, in the workspace | Workspace members with read access to saved queries |
 | Snippets | Egret, in the workspace | Workspace members with read access to saved queries |
 | Result rows | Egret's object store, one file per run | The user who ran the query (and platform admins) |
 
-Because tabs live in the browser, clearing site data or switching browsers gives you a fresh *Query 1*. Anything you want to keep must be saved.
+Because tabs live in the browser, clearing site data or switching browsers gives you a fresh *Query 1*. A tab's result and parameter values last only while the page is open: switching tabs keeps them, a reload does not. Anything you want to keep must be saved.
 
 ## Pages in this section
 

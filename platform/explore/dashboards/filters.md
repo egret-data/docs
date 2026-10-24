@@ -11,46 +11,62 @@ A dashboard filter lets a viewer narrow every connected card at once, for exampl
 ## Add a filter
 
 1. Open the dashboard and press **Edit**.
-2. Press the funnel icon in the edit toolbar (or press `f`). A filter named **Filter**, of type `text`, is added after the existing ones and its settings open in the side panel.
+2. Press the funnel icon in the edit toolbar (or press `f`). A filter named **Filter**, of type **Text**, is added after the existing ones and its settings open in the side panel.
 3. Change the name and type, then connect it to cards, as described below.
 4. Press **Save**.
 
 In edit mode the filters appear as chips above the grid. Click a chip to select that filter and see its settings; drag the grip at the left of a chip to reorder the filters. The order is the order viewers see.
 
-### Name and slug
+### Name and URL name
 
-The **Name** is the label viewers see on the filter. Each filter also has a **slug**, a short identifier made of lower-case letters, digits and underscores. Egret assigns it when you add the filter: `filter`, then `filter_2`, `filter_3`, and so on. The slug does not change when you rename the filter. It is the filter's name in links (`?filter_2=…`, see [Use filters and URL parameters](./using-filters#url-parameters)) and in text cards (`{{filter_2}}`). The text card settings list the slugs that exist.
+The **Name** is the label viewers see on the filter. Each filter also has a **URL name** (the *slug* in the API), a short identifier made of lower-case letters, digits and underscores. It is the filter's name in links (`?order_status=…`, see [Use filters and URL parameters](./using-filters#url-parameters)) and in text cards (`{{order_status}}`). The text card settings list the URL names that exist.
+
+How the URL name is set:
+
+- **A new filter follows its name** until the dashboard is saved. A filter added as **Filter** gets `filter` (then `filter_2`, `filter_3`, … when that is taken), and renaming it to *Order status* before you save changes the URL name to `order_status`.
+- **A saved filter keeps its URL name** when you rename it, so links already shared keep working.
+- **You can edit it** in the **URL name** box. The new text takes effect when you leave the box or press **Enter**. Egret makes it URL-safe (lower case, every run of other characters becomes `_`) and unique on the dashboard (`region` becomes `region_2` when another filter has `region`). An empty box goes back to the current URL name.
+
+When the URL name changes, every `{{old_name}}` on the same dashboard's cards (text and heading cards, link URLs and labels, **Custom URL** templates) is rewritten to the new name in the draft; `{{old_name_2}}` and other names are left alone. Press **Save** to keep it.
+
+:::caution Links already shared
+A link that carries the old name (`?old_name=…`) no longer sets the filter once the URL name is changed and saved: Egret ignores the unknown parameter and the filter takes its default. The help text under **URL name** says so. Share the dashboard again after renaming a URL name. Links on other dashboards or pages that point to this one are not rewritten.
+:::
 
 Filters created through the API can set their own slug.
 
 ## Filter settings
 
-The panel is titled **Filter settings** and is built like the card settings panel: each field has its label above a full-width picker or box, a choice between a few options is a set of radio buttons, and an on/off setting is a switch. It shows only the controls that make sense for the type you selected, in this order: **Name**, **Type**, **Operator**, **How should people filter on this?**, **Where do values come from?**, **People can pick**, **Default value**, **Required**, **Limit this filter's choices**, **Where this filter appears** and **Delete filter**.
+The panel is titled **Filter settings** and is built like the card settings panel: each field has its label above a full-width picker or box, a choice between a few options is a set of radio buttons, and an on/off setting is a switch. It shows only the controls that make sense for the type you selected, in this order: **Name**, **URL name**, **Type**, **Operator**, **How should people filter on this?**, **Where do values come from?**, **People can pick**, **Default value**, **Required**, **Limit this filter's choices**, **Where this filter appears** and **Delete filter**.
 
 ### Name
 
 The label on the filter in the filter bar.
 
+### URL name
+
+See [Name and URL name](#name-and-url-name) above. The help text under the box reads *In links as `?name=…` and in text cards as `{{name}}`. Changing it updates the cards on this dashboard; links already shared stop setting this filter.*
+
 ### Type
 
-The kind of value the filter holds. The select shows the internal type names.
+The kind of value the filter holds. The select shows a label for each type; the API and the rest of this page use the stored key, shown in the second column.
 
-| Type | Use it for | Operators |
-|---|---|---|
-| `text` | Free text on a text column | `is`, `is-not`, `contains`, `does-not-contain`, `starts-with`, `ends-with` |
-| `number` | Numeric columns | `=`, `!=`, `between`, `>=`, `<=` |
-| `date` | Date and time columns | `range`, `relative`, `single`, `month-year`, `quarter-year`, `all-options` |
-| `id` | Key columns | `is` |
-| `category` | A column with a short list of values | `is` |
-| `boolean` | True or false columns | `is` |
-| `location` | Place names | `is`, `is-not` |
-| `temporal_unit` | The time grouping of date charts (day, month, quarter…) | `is` |
+| Type (label) | Key | Use it for | Operators |
+|---|---|---|---|
+| **Text** | `text` | Free text on a text column | `is`, `is-not`, `contains`, `does-not-contain`, `starts-with`, `ends-with` |
+| **Number** | `number` | Numeric columns | `=`, `!=`, `between`, `>=`, `<=` |
+| **Date** | `date` | Date and time columns | `range`, `relative`, `single`, `month-year`, `quarter-year`, `all-options` |
+| **ID** | `id` | Key columns | `is` |
+| **Category** | `category` | A column with a short list of values | `is` |
+| **True / False** | `boolean` | True or false columns | `is` |
+| **Location** | `location` | Place names | `is`, `is-not` |
+| **Time grouping** | `temporal_unit` | The time grouping of date charts (day, month, quarter…) | `is` |
 
 Changing the type resets the operator to the first one in its row.
 
 ### Operator
 
-Shown for `text`, `number` and `date` filters. It decides how the value becomes a condition on the connected column.
+Shown for `text`, `number` and `date` filters. It decides how the value becomes a condition on the connected column. The select shows the operators' internal names, as in the table below (KI-280).
 
 | Type and operator | Condition on the connected column |
 |---|---|
@@ -78,8 +94,8 @@ Shown for `category`, `id`, `location` and `text` filters.
 
 | Option | Widget |
 |---|---|
-| **Dropdown** | A list of values with checkboxes (or radio dots for a single value) and a **Search…** box. Default for the list types. |
-| **Search box** | Currently identical to **Dropdown**. |
+| **Dropdown** | A list of every value with checkboxes (or radio dots for a single value) and a **Search…** box that narrows the list. Default for the list types. |
+| **Search box** | A **Search the values…** box and no list until the viewer types: it says *Type to search the values*, then lists only the values that contain the text. Values already picked stay on show so they can be unticked. Use it for a column with too many values to read as a list. |
 | **Input box** | A plain text box where the viewer types the value. |
 
 ### Where do values come from?
@@ -172,7 +188,8 @@ If the header is too narrow for the title and filters, the filters collapse into
 
 ## Limits and known issues
 
-- The **Search box** widget is the same as **Dropdown**.
+- The **Operator** select shows internal names (`is-not`, `all-options`) instead of labels (KI-280).
+- Changing a saved filter's **URL name** breaks links already shared with the old name (see [Name and URL name](#name-and-url-name)).
 - The `text` and `number` types accept a single value only; a "Multiple values" choice is not offered.
 - Limiting a filter's choices is described from the product source. It has not been verified end to end on the demo data, where every priority occurs with every status.
 

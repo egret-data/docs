@@ -25,7 +25,7 @@ A workspace role is a set of permissions. These are the permissions that matter 
 
 | Permission | What it allows | `ws_viewer` | `ws_editor` | `ws_admin` |
 |---|---|:---:|:---:|:---:|
-| `query:run` | Run queries. Also needed to browse catalogs, schemas, tables and columns, to search objects, to read History and results, to cancel a run and to download CSV. | no | yes | yes |
+| `query:run` | Run queries. Also needed to browse catalogs, schemas, tables and columns, to search objects, to read and clear your own History, to read results, to cancel a run and to download CSV. | no | yes | yes |
 | `saved_query:read` | List and open saved queries and snippets. | yes | yes | yes |
 | `saved_query:manage` | Create, edit, delete and move saved queries; create, edit and delete snippets. | no | yes | yes |
 | `dataset:manage` | Create a dataset, which **Save as dataset** does. | no | yes | yes |

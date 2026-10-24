@@ -49,7 +49,7 @@ The page header has four toolbar buttons next to **+ Dashboard**. Hover a button
 | **Trash** | Switches the list to trashed dashboards. See [Organize dashboards](./organize.md#trash). |
 | **New folder** | Creates a folder to group dashboards. |
 
-Below the search box, a summary line counts the dashboards on screen and the folders that exist, for example "4 dashboards · 2 folders".
+Below the search box, a summary line counts the dashboards on screen and the folders that exist, for example "4 dashboards · 2 folders". In the Trash view it counts only the trashed dashboards, and **+ Dashboard** is not shown there.
 
 ### Search and sort
 
@@ -72,7 +72,7 @@ Each row shows a star, the dashboard name, the card count and when it was last u
 | **Move to "folder"**, **Move to new folder…** | Puts the dashboard in a folder, or in a new one you name. |
 | **Share…** | Opens the sharing dialog. See [Share a dashboard](./sharing.md). |
 | **Subscribe…** | Opens the New report form with this dashboard already chosen. See [Export, reports and print](./export-and-reports.md). |
-| **Move to Trash** | Moves the dashboard to the trash without asking for confirmation. |
+| **Move to Trash** | Asks *Move to Trash?* ("*name*" moves to the Trash. You can restore it from there.), then moves the dashboard to the trash. |
 
 When the workspace has at least one dashboard folder, the list groups rows under folder headings, with an **Uncategorized** group for the rest. See [Organize dashboards](./organize.md).
 
@@ -101,8 +101,6 @@ Under the header you find, in order: the tab bar (only when the dashboard has tw
 ## Limits and known issues
 
 - The list has no pagination; it loads every dashboard in the workspace.
-- The trash view still shows the folder count in the summary line and the **+ Dashboard** button, which are not meaningful there.
-- Trashing a dashboard from the list or from the dashboard page does not ask for confirmation. **Delete permanently** does.
 
 ## Further reading
 

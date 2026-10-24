@@ -37,9 +37,7 @@ With **Menu**, clicking a value opens a small menu with up to two kinds of entri
 
 **See these records** shows all columns of the chart's dataset for the first 1000 rows that match the clicked value. It does not apply the dashboard's current filters, so it can show rows outside the date range you are looking at. A click on a number card has no dimension and offers only **See these records**, titled "All records".
 
-:::note
-The menu is placed at the pointer and is not repositioned when it would run past the right edge of the window, so on a card at the far right part of the menu can be cut off.
-:::
+The menu opens at the pointer. Near the right or bottom edge of the window it moves left or up so that it stays whole, 8 px inside the window.
 
 ## Cross-filter
 

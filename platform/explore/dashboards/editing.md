@@ -70,7 +70,7 @@ Default and minimum sizes, in columns by rows:
 | Any other chart type | 12 × 6 | 4 × 3 |
 
 :::warning
-When the canvas is narrower than 753 px, the grid switches to a one-column layout: every card is full width, stacked in reading order. You cannot move or resize cards in that layout, and Egret does not save it over your desktop layout. Opening a side panel (card settings, filter settings, **Add cards**) takes about 350 px from the canvas, so a **fixed**-width dashboard (1048 px) drops into the one-column layout while a panel is open, and a full-width one does too on a narrow window. Close the panel, or switch **Full width** on, to move cards.
+When the canvas is narrower than 753 px, the grid switches to a one-column layout: every card is full width, stacked in reading order. You cannot move or resize cards in that layout, and Egret does not save it over your desktop layout. A side panel (card settings, filter settings, **Add cards**) is 340 px wide and sits beside the canvas. On a **fixed**-width dashboard the page widens by the panel, so the canvas keeps its 1048 px when the window has room for both. On a **full**-width dashboard the panel takes its width from the canvas, so below a window width of about 1280 px the canvas drops into the one-column layout while a panel is open (KI-282); the same happens to a fixed-width dashboard on a window too narrow for canvas and panel. Close the panel, or widen the window, to move cards.
 :::
 
 ## Card toolbar
@@ -86,7 +86,7 @@ Hover a card in edit mode and a small toolbar appears above its top edge.
 
 ![A card in edit mode with its floating toolbar](/img/platform/dashboards/edit-card-toolbar.png)
 
-Click anywhere else on a card to open its settings in the side panel. Clicking right after a drag also opens the panel.
+Click anywhere else on a card to open its settings in the side panel. The click that ends a drag (the pointer moved more than 4 px since the press) does not open it.
 
 ## Sections
 

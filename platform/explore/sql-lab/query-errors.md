@@ -14,7 +14,7 @@ There are two kinds, depending on when the problem is found.
 
 **The query ran and failed.** The run goes through *Queued* and *Running* to *Failed*. You see:
 
-- The red badge *Failed in 125 ms* in the toolbar and in the Results tab bar.
+- The red badge *Failed in 125 ms* in the toolbar.
 - In **Results**, a red banner **Query failed** with a **Copy** button, then the message in a monospaced box. **Copy** puts the whole message on the clipboard and a toast says *Error copied*.
 - A *Failed* entry in [History](./history-saved-snippets#history).
 
