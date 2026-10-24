@@ -116,7 +116,7 @@ described by their auth line here.
 | Workspaces and members | [Access requests](rest-api/access-requests) | 4 |
 | Workspaces and members | [Sharing](rest-api/shares) | 6 |
 | Explore (BI) | [Databases](rest-api/databases) | 9 |
-| Explore (BI) | [Queries](rest-api/queries) | 6 |
+| Explore (BI) | [Queries](rest-api/queries) | 7 |
 | Explore (BI) | [SQL Lab](rest-api/sqllab) | 15 |
 | Explore (BI) | [Datasets](rest-api/datasets) | 22 |
 | Explore (BI) | [Charts](rest-api/charts) | 14 |
