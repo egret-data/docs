@@ -92,6 +92,8 @@ export const shots = [
   {id: 'admin/gov-people-groups', path: `${gov}/people?kind=group`, settle: 2000},
   {id: 'admin/gov-people-roles', path: `${gov}/people?kind=role`, settle: 2000},
   {id: 'admin/gov-people-unmatched', path: `${gov}/people?kind=unmatched`, settle: 1500},
+  // Platform admins only (platform #741). Not referenced by a page until captured.
+  {id: 'admin/gov-people-reused', path: `${gov}/people?kind=reused`, settle: 2000},
   {id: 'admin/gov-person-overview', path: `${gov}/people`, settle: 2000, prepare: click('Member SSO')},
   {id: 'admin/gov-person-permissions', path: `${gov}/people`, settle: 2000, prepare: seq(click('Member SSO'), tab('Permissions'))},
   {id: 'admin/gov-person-clearances', path: `${gov}/people`, settle: 2000, prepare: seq(click('Farid Haddad'), tab('Clearances'))},
@@ -213,6 +215,17 @@ export const shots = [
   {id: 'admin/cp-workspace-requests', path: `${cp}/workspaces`, settle: 1500, prepare: seq(click('Finance analytics'), tab('Access requests'))},
   {id: 'admin/cp-users', path: `${cp}/users`, settle: 1500},
   {id: 'admin/cp-user-detail', path: `${cp}/users`, settle: 2000, prepare: seq(click('Farid Haddad'))},
+  // The delete dialog with the retired username and Disable instead (platform #741); opening it deletes nothing.
+  // Not referenced by a page until captured.
+  {
+    id: 'admin/cp-user-delete',
+    path: `${cp}/users`,
+    settle: 800,
+    prepare: async (page) => {
+      await click('Farid Haddad')(page);
+      await page.getByRole('button', {name: 'Delete'}).first().click();
+    },
+  },
   {id: 'admin/cp-groups', path: `${cp}/groups`, settle: 1500},
   {id: 'admin/cp-group-detail', path: `${cp}/groups`, settle: 2000, prepare: seq(click('finance-analysts'))},
   {id: 'admin/cp-roles', path: `${cp}/roles`, settle: 1500},

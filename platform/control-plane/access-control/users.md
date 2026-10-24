@@ -27,7 +27,7 @@ A summary strip counts **users**, **active** and **disabled**. Two filters narro
 | **Roles** | Platform roles granted to the user directly, or a dash. A role the user holds through a group is not shown (KI-260). |
 | **Groups** | How many groups the user belongs to. |
 
-The **⋯** menu on a row offers **View access** (the [Access Explorer](./access-explorer.md) for that person), **Assign roles**, **Edit**, **Impersonate** and **Delete**.
+The **⋯** menu on a row offers **View access** (the [Access Explorer](./access-explorer.md) for that person), **Assign roles**, **Edit**, **Reset password** (local accounts), **Impersonate**, **Disable** (or **Enable** for a disabled user) and **Delete**. **Disable** and **Enable** are shown to platform admins only. On your own row **Disable** stays listed but cannot be chosen, and reads *You cannot disable your own account*.
 
 ## Create a local account
 
@@ -75,14 +75,59 @@ The table lists **Role** and **Scope** with a remove button. With none it reads 
 
 ## Disable and delete
 
-**Disable** blocks sign-in without removing anything and signs the user out. It asks first: *Disable \<email\>?* (*They are signed out at once and cannot sign in until the account is enabled again. Their memberships and role grants are kept.*), with **Cancel** and **Disable user**. The status becomes **Disabled**. **Enable** reverses it at once, without a confirmation. **Delete** asks *Delete "\<email\>"?* (*This user, their sessions, group memberships, and role grants will be permanently removed. This cannot be undone.*) and needs you to type `delete`. Prefer disabling: grants and shares that name a deleted user become unmatched names (see [People & groups](../../data-governance/people-and-groups/index.md)).
+Egret's grants, rule exemptions, engine permissions and hand-written engine policies refer to a person by their **engine username** (for example `alice`), the name the query engines know them by. Disabling keeps that username with the person. Deleting retires it for good. When someone leaves or must lose access, **disable** them.
+
+### Disable or enable a user
+
+Press **Disable** in the header of the user page, or choose **Disable** in the row's **⋯** menu. Egret asks first: *Disable \<email\>?*, with the text *They are signed out at once and cannot sign in until the account is enabled again. Their memberships and role grants are kept. Their engine username stays theirs.* For a user who holds `platform_admin` directly, it adds *While disabled they lose all-access on engines.* Press **Disable user** to confirm, or **Cancel**. The status becomes **Disabled**.
+
+Disabling a platform admin removes them from the engines' `egret-admin` policies in the same step, so they lose all access on every engine as soon as the engines' plugins download the new policy version. Their other grants, rules and memberships stay and still name them.
+
+**Enable** (in the header or the row menu) reverses it at once, without a confirmation. An enabled platform admin is put back into the `egret-admin` policies.
+
+You cannot disable your own account; the server answers *you cannot disable or delete your own account*.
+
+### Delete a user
+
+Press **Delete** in the header of the user page or in the row menu. The dialog asks *Delete "\<email\>"?* and says:
+
+> Deletes this user, their sessions, group memberships and role grants. Their engine username **\<username\>** is retired for good: nobody can be given it again, including this person if they come back, so grants and policies naming it will never apply to anyone. To stop them signing in and keep their username, grants and history, disable them instead.
+
+A user who never had an engine username reads *They have no engine username yet.* instead of the second sentence. Type `delete` and press **Delete** to confirm.
+
+For an active user, and when you may disable users, the dialog ends with the last sentence above and offers **Disable instead**; otherwise both are left out. It closes the delete dialog and opens the disable confirmation above. When the user is the last active platform admin, **Disable instead** cannot be pressed and says *No other active user holds platform_admin directly, and the last active platform admin cannot be disabled.*
+
+You cannot delete your own account: **Delete** is greyed out on your own row and page.
+
+A delete is recorded as a governance change. A reader who holds **user:read** sees it on [Governance → Overview → Recent changes](../../data-governance/overview.md#recent-changes) as *\<actor\> deleted user \<username\>*.
+
+### What a retired username means
+
+A username is never given to a second person. After `alice` is deleted, the next person whose email starts with `alice@` gets `alice-2`, and so on. That includes the same person: if they sign in again through SSO, or you create a new local account for them, they are a new user and get `alice-2`.
+
+Grants, rule exemptions and policies that name `alice` stay in place but match nobody, and nobody can come to match them. For an allow this removes access, which is safe. In a deny, or in a grant's **Exclude** list or a policy's **Exclude from allow**, it can widen access for the returning person, because the entry that held them back names their old username. Governance → People & groups → [Reused names](../../data-governance/people-and-groups/index.md#reused-names) lists such names, and **Unmatched names** lists grant principals and rule exemptions that match nobody.
+
+:::warning Prefer Disable to Delete
+Delete only accounts that should never come back, such as test accounts. To take access away from a person, disable them: their username, grants and history are kept, and **Enable** undoes it.
+:::
+
+### The last active platform admin
+
+There must always be one active platform admin. Egret refuses to disable or delete the last active platform admin, or to remove `platform_admin` from them (on the user's **Roles** section or a group's roles), with *Cannot remove the last active platform admin* (HTTP 409). A disabled platform admin does not count as active.
+
+**Disable instead** in the delete dialog checks this before asking the server, from the roles granted to users directly. Someone who is a platform admin only through a group is not counted there, so the server's answer is the one that holds (KI-285). Some other ways of removing the last active admin are not guarded yet (KI-284).
 
 ## Limits and known issues
 
 - Roles are assigned here at platform or workspace scope. Workspace membership itself is managed on the workspace's **Members** page.
+- The last active platform admin can still lose the role by being removed from an admin group, by that group being deleted, or through `PUT /api/admin/users/{id}/platform-roles` (KI-284).
+- The disable dialog says *While disabled they lose all-access on engines.* only for a user who holds `platform_admin` directly, not for one who holds it through a group, although both lose it (KI-285).
+- Bulk **Disable** acts at once, without the disable dialog (KI-262).
 
 ## Further reading
 
 - [Groups](./groups.md)
 - [Roles](./roles.md)
+- [People & groups: Reused names](../../data-governance/people-and-groups/index.md#reused-names)
+- [Backup and restore](../../deploy-operate/backup-restore.md)
 - [Workspace Members](../../workspace-settings/members.md)

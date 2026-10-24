@@ -103,6 +103,23 @@ changing it would park the cluster in a failed state. To get persistence, create
 an existing engine by hand destroys its front end's metadata (catalogs, StarRocks-side users and grants); the chart README
 lists what is lost and what recovers it.
 
+### Usernames are never reused (migration 0209)
+
+From platform #741 a deleted user's engine username is retired for good (see
+[Users](../control-plane/access-control/users.md#what-a-retired-username-means)). Migration `0209_username_ledger.sql`
+records every username in use and every name that a policy, grant, rule or retained governance event names, in the
+append-only table `username_ledger`.
+
+Upgrading retires every username that a policy, grant, rule or retained governance event names but no user holds. A
+hand-written policy that named someone who had not signed in yet will not apply to them: they are given another name (for
+example `alice-2`). **Governance → People & groups → Reused names** lists such names as dead. Rewrite those policies to the
+name the person was given.
+
+After the upgrade, a platform admin should open **Reused names** and the Governance overview once: they report places
+where a deleted user's name was already given to someone else before the upgrade. At its first start the new version also
+rewrites the engines' `egret-admin` policies to the active platform admins, so disabled admins lose engine all access. The
+ledger is data; see [Backup and restore](./backup-restore#the-username-ledger) before restoring data only.
+
 ### StarRocks 4.1.6 enforces view privileges
 
 See [Engines and Ranger setup](./engines-and-ranger#supported-versions).

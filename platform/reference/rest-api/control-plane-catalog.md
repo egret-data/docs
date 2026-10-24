@@ -770,6 +770,7 @@ Operation id: `assign_resource_tag`. Auth: Session cookie and `X-Egret-CSRF` hea
 | 400 | The coordinate cannot be stored (an empty schema or table, or `*`/`?` in any level — see migration 0177), or the tag is being attached to a whole TABLE while a tag-addressed mask names it, which would make that table unreadable rather than... |
 | 401 | Not authenticated |
 | 403 | Missing catalog_registry:update permission |
+| 404 | `code` is `warehouse_not_found` (no warehouse has `warehouse_id`; the body adds `warehouseId`) or `tag_not_found` (no classification has `tag_id`; the body adds `tagId`) |
 | 409 | A rule overlap: the assignment would make two mask (or two row-filter) policies decide one column differently (compiled rules, hand-written tag policies, or one of each), or a profile it recompiles already holds such a pair. The body adds... |
 | 500 | Internal error |
 
@@ -801,6 +802,7 @@ Operation id: `unassign_resource_tag`. Auth: Session cookie and `X-Egret-CSRF` h
 | 200 | Tag removed from the catalog resource (idempotent) |
 | 401 | Not authenticated |
 | 403 | Missing catalog_registry:update permission |
+| 404 | `code` is `warehouse_not_found` or `tag_not_found`, as for the assignment |
 | 409 | A rule overlap that the unassignment does not remove: a profile it recompiles already holds two mask (or two row-filter) rules that decide one request differently. Same body as the assignment's 409 |
 | 500 | Internal error |
 

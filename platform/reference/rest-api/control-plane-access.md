@@ -472,7 +472,7 @@ Operation id: `unassign_group_role`. Auth: Session cookie and `X-Egret-CSRF` hea
 | 401 | Not authenticated |
 | 403 | Requires platform_admin |
 | 404 | No such role |
-| 409 | Would remove the last platform admin |
+| 409 | Would remove the last active platform admin |
 | 500 | Internal error |
 
 ## GET `/api/control-plane/permissions`
@@ -510,6 +510,7 @@ Operation id: `list_users`. Auth: Session cookie. Forbidden (403): Missing user:
 | `status` | string | yes |  |
 | `roles` | string[] | yes |  |
 | `groups` | string[] | yes |  |
+| `username` | string, nullable | no | The engine username, `null` until one is minted. Read-only: a delete retires it for good (username-takeover spec 2026-10-23 §4.4), so the delete dialog names it. |
 
 | Status | Meaning |
 |---|---|
@@ -541,6 +542,7 @@ Operation id: `create_user`. Auth: Session cookie and `X-Egret-CSRF` header. For
 | `status` | string | yes |  |
 | `roles` | string[] | yes |  |
 | `groups` | string[] | yes |  |
+| `username` | string, nullable | no | The engine username, `null` until one is minted. Read-only: a delete retires it for good (username-takeover spec 2026-10-23 §4.4), so the delete dialog names it. |
 
 | Status | Meaning |
 |---|---|
@@ -577,6 +579,7 @@ Operation id: `update_user`. Auth: Session cookie and `X-Egret-CSRF` header. For
 | `status` | string | yes |  |
 | `roles` | string[] | yes |  |
 | `groups` | string[] | yes |  |
+| `username` | string, nullable | no | The engine username, `null` until one is minted. Read-only: a delete retires it for good (username-takeover spec 2026-10-23 §4.4), so the delete dialog names it. |
 
 | Status | Meaning |
 |---|---|
@@ -585,7 +588,7 @@ Operation id: `update_user`. Auth: Session cookie and `X-Egret-CSRF` header. For
 | 401 | Not authenticated |
 | 403 | Missing user:update (or user:disable) permission |
 | 404 | No such user |
-| 409 | Would remove the last platform admin |
+| 409 | Would remove the last active platform admin |
 | 500 | Internal error |
 
 ## DELETE `/api/control-plane/users/{id}`
@@ -600,12 +603,12 @@ Operation id: `delete_user`. Auth: Session cookie and `X-Egret-CSRF` header. For
 
 | Status | Meaning |
 |---|---|
-| 204 | User hard-deleted along with sessions/group memberships/grants |
+| 204 | User hard-deleted along with sessions, group memberships and grants. Their engine username is retired permanently: no user can be given it again, so refs and policies naming it match nobody. To revoke access but keep the username, set... |
 | 400 | Caller attempted to delete their own account |
 | 401 | Not authenticated |
 | 403 | Missing user:delete permission |
 | 404 | No such user |
-| 409 | Would remove the last platform admin |
+| 409 | Would remove the last active platform admin |
 | 500 | Internal error |
 
 ## POST `/api/control-plane/users/{id}/password`
@@ -670,6 +673,6 @@ Operation id: `unassign_user_role`. Auth: Session cookie and `X-Egret-CSRF` head
 | 401 | Not authenticated |
 | 403 | Requires platform_admin |
 | 404 | No such role |
-| 409 | Would remove the last platform admin |
+| 409 | Would remove the last active platform admin |
 | 500 | Internal error |
 

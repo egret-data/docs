@@ -49,7 +49,7 @@ Below **Granted**, **Managed by egret** lists policies egret seeds itself on the
 |---|---|
 | **Every user's baseline** | A baseline policy for every user (engine delegation, admin access or query limits are the things egret seeds). |
 | **egret's delegator** | The policy for egret's own delegating account. |
-| **Platform admins: all access** | Platform admins have all access. |
+| **Platform admins: all access** | Active platform admins have all access. Egret rewrites these `egret-admin` policies whenever someone becomes or stops being an active platform admin, including when an admin is disabled. |
 | **Group admin: all access (seeded defaults)** | The default policy set that gives the group `admin` all access. |
 
 On the provisioned engine `docs-trino` the section held 13 **Platform admins: all access** policies (the user `admin`, every resource kind) and 3 **Every user's baseline** policies. An external engine's profile shows *egret seeds no engine policy on this profile.*
