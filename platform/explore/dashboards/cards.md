@@ -133,6 +133,7 @@ Iframe cards have no title, no description, no auto height and cannot host filte
 ## Limits and known issues
 
 - The card description supports plain text only.
+- A chart card does not load its dataset, so it uses database names where the chart page uses the dataset's **Display names**: table headers (KI-251), and a chart's legend, tooltip, axis titles and drill menu (KI-290). Dataset column formats do not apply either. A **Column title** set in the chart itself does apply.
 
 ## Further reading
 

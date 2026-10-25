@@ -60,8 +60,8 @@ One row per column. See [Column formatting and number formats](./column-formatti
 
 The waterfall's axes use their own, shorter panel.
 
-- **X-axis**: **Show label** (a switch, with an **Auto** text box for your own title) and **Show lines and tick marks** (**Hide**, **Show**, **Compact**, **Rotate 45°**, **Rotate 90°**).
-- **Y-axis**: **Show label** (with the text box), **Auto y-axis range** (turn off to type **Y min** and **Y max**), **Scale** (**Linear** or **Log**), **Show lines and tick marks** (**Hide**, **Show**) and **Number of tick marks** (2 to 20).
+- **X-axis**: **X label** (a switch, with an **Auto** text box for your own title) and **Show lines and tick marks** (**Hide**, **Show**, **Compact**, **Rotate 45°**, **Rotate 90°**).
+- **Y-axis**: **Y label** (with the text box), **Auto y-axis range** (turn off to type **Y min** and **Y max**), **Y scale** (**Linear** or **Log**), **Show lines and tick marks** (**Hide**, **Show**) and **Number of tick marks** (2 to 20).
 
 ## Reading the waterfall
 
@@ -79,8 +79,8 @@ Each bar starts where the previous one ended. A green bar going up is a positive
 | **Show values on data points**, **Data label density** | Display → Format | Off, **Fit** |
 | **Shorten large numbers** | Display → Format | **Auto** |
 | **Goal value**, **Goal label** | Display → Format | None |
-| **Show label**, **Show lines and tick marks** (X) | Axes → X-axis | On, **Show** |
-| **Show label**, **Auto y-axis range**, **Scale**, **Show lines and tick marks**, **Number of tick marks** (Y) | Axes → Y-axis | On, on, **Linear**, **Show**, automatic |
+| **X label**, **Show lines and tick marks** (X) | Axes → X-axis | On, **Show** |
+| **Y label**, **Auto y-axis range**, **Y scale**, **Show lines and tick marks**, **Number of tick marks** (Y) | Axes → Y-axis | On, on, **Linear**, **Show**, automatic |
 
 ## Limits and known issues
 

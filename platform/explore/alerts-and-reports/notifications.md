@@ -6,11 +6,13 @@ sidebar_position: 5
 
 The **Notification** tab says who hears about an alert or report, through which channels, and what the message says. The email server and the Slack app themselves are configured once per workspace under [Workspace settings → Notifications](../../workspace-settings/notifications); this tab only chooses where each item sends.
 
+The tab is one `Setting | Details | Value` table: a **Deliver to** group with one row per destination and an **Add a destination** row, then the **Message** group and, for an alert only, the **Attachment** and **Delivery** groups. A row whose explanation is longer than one line shows the first line in **Details** and the rest behind an info button beside it.
+
 ![The Notification tab with an email, a webhook and a Slack destination](/img/platform/alerts/editor-destinations.png)
 
 ## Deliver to
 
-Under **Deliver to**, press **Add delivery method** and choose **Email**, **Slack** or **Webhook**. You can add several destinations, including several of the same kind, and remove one with its trash icon. An item with no destination still runs and records its result, but tells nobody.
+On the **Add a destination** row, press **Add delivery method** and choose **Email**, **Slack** or **Webhook**. Each destination becomes a row of the **Deliver to** group, named by its kind; you can add several, including several of the same kind, and remove one with the trash icon beside its first field. An item with no destination still runs and records its result, but tells nobody: the **Add a destination** row then reads *None yet: runs are recorded, but nobody is told.*
 
 ### Email
 
@@ -98,7 +100,9 @@ A PNG attachment is shown inside the message between the opening note and the re
 
 ### Don't send when there are no rows
 
-For an alert, tick this to skip the notification when the query returned no rows. The run still happens and is recorded as **Not triggered**; only the message is skipped. Reports and Data API alerts do not read this setting.
+For an alert, tick this to skip the notification when the query returned no rows. The run still happens and is recorded as **Not triggered**; only the message is skipped.
+
+The **Delivery** group and this setting are shown for alerts only. Reports and Data API alerts do not read it, so their Notification tab does not offer it; a value already stored on one of them (for example through the API) is kept and sent back unchanged when you save.
 
 ## When delivery fails
 

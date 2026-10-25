@@ -30,9 +30,10 @@ The right side has the toolbar and the preview.
 | Control | What it does |
 |---|---|
 | Chart name | A text box with the placeholder **Untitled chart**. It is the name the chart is saved under. |
+| Description | The line under the name, with the placeholder *Add a description*. It is the description the chart is saved with. |
 | **Auto** | When on (the default), the chart re-runs 500 ms after you stop changing the query settings. When off, press **Run**. |
 | **Run** | Runs the query now. Disabled while a run is in progress (it reads **Running…**). If a required field is missing it shows a message such as **This chart needs X-axis and a metric**. |
-| **Save** / **Update** | Opens the save dialog. See [Save and update](./#save-and-update). |
+| **Save** / **Update** | **Save** (a new chart) opens the save dialog. **Update** (a saved chart) saves at once and reads **Saving…** while it does. See [Save and update](./#save-and-update). |
 | Download icon (**Export chart**) | Opens **Download data**. See [Export](#export). Disabled until the chart has run. |
 | **View SQL** | A disclosure under the toolbar. It shows the SQL Egret generated for the last run. |
 
@@ -77,7 +78,7 @@ Choose **None** to group by the raw value. **Group by** gives one point per peri
 
 ### Sort
 
-**Sort** appears below the type's own fields. Pick **Add a sort…** and choose a field; each sort row has a direction button (ascending or descending), move-up and move-down buttons, and a remove button. Rows are sorted by the first row, then the second, and so on. The sort runs in the database query, so together with **Row limit** it decides which rows you get.
+**Sort** appears below the type's own fields. Pick **Add a sort…** and choose a field; each sort row has a direction button (ascending or descending), move-up and move-down buttons, and a remove button. Fields are listed by the same title (hover one to see its database name beside it), while the sort itself stores the database name. Rows are sorted by the first row, then the second, and so on. The sort runs in the database query, so together with **Row limit** it decides which rows you get.
 
 The control is offered when the chart groups by at least one dimension (or, for tables of raw rows, when columns are chosen). It is not shown for [Trend](./trend), which always sorts by its time field, or for charts with a single value.
 
@@ -121,7 +122,7 @@ In the editor you can click a chart value to explore it:
 
 A single-value chart ([Big number](./number), [Gauge](./gauge), [Progress](./progress)) offers only **See these records**, because it has no dimension to filter by.
 
-Dashboard cards have the same click menu. The menu names columns by their database names (for example `orderpriority`) rather than their display names.
+The menu names a column by the title the chart draws it under: your own **Column title**, else the dataset's **Display name**, else the database name. Dashboard cards have the same click menu, but there it still names columns by their database names (KI-290).
 
 ## Export
 
@@ -143,7 +144,6 @@ Use **Duplicate** on the Charts list to try a different chart type or setting on
 
 - The editor has no undo. Close the tab without saving to discard changes.
 - Filters can only be created by drilling in. There is no filter builder, and filters do not exist for single-value charts.
-- Axis titles default to the metric's database name (for example `revenue`) rather than its display name (**Revenue**).
 
 ## Further reading
 

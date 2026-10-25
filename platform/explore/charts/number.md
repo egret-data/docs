@@ -36,9 +36,9 @@ A caption under the number. Empty by default. The hint explains why: **Off by de
 
 A second, smaller caption under the label. Empty by default.
 
-### Conditional colours
+### Conditional colors
 
-Colors the number by range. The settings text explains it: **The number takes the colour of the first range it falls in. Leave a bound empty for an open-ended range. A named range also prints its name under the number, so the colour is never the only thing carrying the meaning.**
+Colors the number by range. The settings text explains it: **The number takes the color of the first range it falls in. Leave a bound empty for an open-ended range. A named range also prints its name under the number, so the color is never the only thing carrying the meaning.**
 
 Press **Add range** to add a row. A row has:
 
@@ -50,7 +50,7 @@ Press **Add range** to add a row. A row has:
 | **Label** | An optional name, placeholder **Optional**. When the number falls in a named range, the name is printed under the number. |
 | Trash button | Removes the range. |
 
-Ranges are checked from top to bottom and the first match wins, so put narrow ranges above wide ones. With no ranges, the number uses the default text color, and the panel says **No ranges — the number uses the default text colour.**
+Ranges are checked from top to bottom and the first match wins, so put narrow ranges above wide ones. With no ranges, the number uses the default text color, and the panel says **No ranges — the number uses the default text color.**
 
 When a color is hard to read on the card, a note under the row explains the contrast problem and the minimum Egret expects for a number this size.
 
@@ -72,7 +72,7 @@ With **Compact** switched on under **Formatting**, the number is shortened even 
 |---|---|---|
 | **Metric** | Data | Required |
 | **Label**, **Sublabel** | Display | Empty |
-| **Conditional colours** (ranges) | Display | None |
+| **Conditional colors** (ranges) | Display | None |
 | **Formatting** (one row for the metric) | Display | Dataset's format |
 | **Axes** tab | | Not applicable |
 
@@ -80,7 +80,6 @@ With **Compact** switched on under **Formatting**, the number is shortened even 
 
 - A big number is one number. For a comparison against another period use [Trend](./trend); for a target use [Progress](./progress) or [Gauge](./gauge).
 - Clicking the number opens the drill menu with only **See these records**.
-- The panel spells the color settings with British spelling (**Conditional colours**); other chart types use **color**.
 
 ## Further reading
 

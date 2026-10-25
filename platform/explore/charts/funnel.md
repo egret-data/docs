@@ -25,12 +25,12 @@ A funnel shows how a quantity falls from one stage of a process to the next: vis
 | **Dataset** | The dataset to read. |
 | **Stage (dimension)** | The column holding the stage names. Required. A time column gets a **Group … by** select. |
 | **Metric** | The value at each stage. Required. |
-| **Steps** | The stages in display order, with a show/hide switch each. Appears after the chart has run. |
+| **Steps** | The stages in display order, with a show/hide switch each. Lists the stages after the chart has run; before that it says when they will appear. |
 | **Sort**, **Row limit** | Query controls. |
 
 ### Steps
 
-Drag a stage's handle to change its order and use its switch to leave it out. The note under the list says **A funnel reads left to right in this order — it is not re-sorted by size.** Until you reorder, stages appear in the order the query returned them, so add a **Sort** or reorder the steps; otherwise the stage order follows whatever the database returns. Stage names show with the dimension's column format, but the list's names cannot be edited.
+Before the first run, once a stage column is chosen, the section says *The steps appear here after the first run, to reorder or hide. Until they are ordered here or by a sort, the funnel shows them in the order the database returns them.* After a run it lists the stages. Drag a stage's handle to change its order and use its switch to leave it out. The note under the list says **A funnel reads left to right in this order — it is not re-sorted by size.** Until you reorder, stages appear in the order the query returned them, so add a **Sort** or reorder the steps; otherwise the stage order follows whatever the database returns. Stage names show with the dimension's column format, but the list's names cannot be edited.
 
 ## Display
 
@@ -72,6 +72,7 @@ There is no **Axes** tab.
 - The percentage under each stage is relative to the **first stage in the displayed order**, not to the previous stage.
 - Stage names cannot be renamed here; rename or alias them in the dataset or the query.
 - Clicking a stage opens the drill menu for that stage.
+- The first stage's metric name is the database name (`visitors`), not the dataset's **Display name** or your **Column title** (KI-292).
 - **.png** export is offered only with **Bar — a column per step**. The default funnel is not drawn as one image, so it offers **.csv**, **.xlsx** and **.json** only.
 
 ## Further reading
