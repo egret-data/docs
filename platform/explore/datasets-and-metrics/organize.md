@@ -55,7 +55,7 @@ Press the **Trash** button in the toolbar to open the **Trash** view, where each
 
 ![The Trash view with one trashed dataset and its Restore and Delete permanently menu](/img/platform/sql-datasets/datasets-trash.png)
 
-Press the **Trash** button again to leave the view. An empty trash says *Trash is empty.*
+The Trash view's summary line counts only the trashed datasets (*1 dataset*), not the folders, and **Create** is not shown there. Press the **Trash** button again to leave the view. An empty trash says *Trash is empty.*
 
 What trashing does, as tested on the demo:
 

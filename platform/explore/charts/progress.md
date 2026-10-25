@@ -27,7 +27,7 @@ A progress bar shows one value against a goal as a filled bar. Use it for target
 
 ## Display
 
-### Colour
+### Color
 
 The bar color. The default is the second color in Egret's chart palette. Click the swatch for the palette or **Custom…**. The track behind the bar uses shades derived from this color.
 
@@ -59,7 +59,7 @@ When the value is below the goal there is no message.
 |---|---|---|
 | **Metric** | Data | Required |
 | **Goal** | Data | Empty (no goal) |
-| **Colour** | Display | The palette's second color (green) |
+| **Color** | Display | The palette's second color (green) |
 | **Goal from a metric** | Display | **None — use the fixed goal** |
 | **Formatting** (one row for the metric) | Display | Dataset's format |
 
@@ -69,7 +69,6 @@ With **Metric** = **Orders** (15,000 orders in the sample) and **Goal** = `20000
 
 ## Limits and known issues
 
-- The panel uses the spelling **Colour** here, **Color** on most other types.
 - Clicking the bar opens the drill menu with only **See these records**.
 - There is no **Row limit**: the query always returns one row.
 

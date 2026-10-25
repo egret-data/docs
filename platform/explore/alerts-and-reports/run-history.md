@@ -15,13 +15,13 @@ Two places show it:
 - In the list, open the **⋯** menu on a row and choose **Run log**. The dialog is titled *Run log — name*.
 - Open the item. **Recent runs** under the editor shows the last five runs, newest first.
 
-Each row has four columns.
+An alert's or Data API alert's log has four columns. A report's log has three: a report measures nothing, so it has no **Value** column. Only **Detail** wraps onto several lines; **State** and **Started** stay on one.
 
 | Column | What it shows |
 |---|---|
 | **State** | The outcome of the run. |
 | **Started** | When the run began, for example `8 minutes ago`. |
-| **Value** | The number the run measured: the first column of the first row for an alert, the metric for a Data API alert. Empty for a report. |
+| **Value** | The number the run measured: the first column of the first row for an alert, the metric for a Data API alert. `—` when the run measured nothing. Not shown for a report. |
 | **Detail** | An error or delivery message, shown in red. **Notification sent** when every destination took the message, and `—` when nothing was sent. |
 
 ## Run states
@@ -56,6 +56,8 @@ These runs were captured on the Docker demo stack, where email goes to Mailpit a
 | Executive summary snapshot, a PNG report | **Success** | — | **Notification sent** |
 | A five-dashboard PDF report (36.9 seconds to render) | **Success** | — | **Notification sent** |
 
+The two reports show `—` under **Value** in this table only; their own run log has no **Value** column.
+
 Other messages you may see, all with **Error**: `email: smtp is not configured for this workspace`, `query failed: engine: line 2:8: Column 'nope' cannot be resolved` and `alert query must return a number or NULL in its first column, got "O"`.
 
 When several destinations fail, **Detail** lists every one, separated by `; `, each prefixed with the destination: `email: …`, `slack #channel: …` or `webhook <host>: …`. A webhook is named by its host only, because the path and query of a webhook URL often carry its secret. A note about a delivery that did go out, such as a skipped attachment, follows the failures; it does not make the run an **Error**.
@@ -79,10 +81,6 @@ If a scheduled run of the same item is in progress (**Working**) when you press 
 ## Retention
 
 Finished runs are kept for the item's **Run log retention (days)**, 90 by default. See [Schedules and limits](./schedules#run-log-retention-days).
-
-## Limits and known issues
-
-- **Value** is empty for reports, and in the run log dialog of a report the **Value** and **Detail** headings run together (KI-171).
 
 ## Further reading
 

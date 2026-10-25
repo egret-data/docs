@@ -28,6 +28,8 @@ A Data API alert appears on the **Alerts** tab with a **Data API** tag.
 | **Window (seconds)** | How far back from now each run measures, up to 30 days (2,592,000 seconds). | 300 |
 | **Condition** | An operator (`<`, `<=`, `>`, `>=`, `==`, `!=`) and a **Threshold** compared with the measured value. | `>` and `0` |
 
+In the editor, each row's **Details** is one line (for example *Which endpoint's traffic this watches.*), and the info button beside it opens the rest, such as what **Whole workspace** means or how the chosen metric is computed. The operator select of **Condition** is narrow and the **Threshold** box fills the rest of the row.
+
 ### Metrics
 
 | Metric | Measures | An empty window |
@@ -66,7 +68,7 @@ A Data API alert runs as its owner. If the owner loses read access to the endpoi
 
 - The measurement is over the whole window each time; it is not a rolling comparison against a previous period.
 - A deleted endpoint appears in the editor as *(not visible — trashed or inaccessible)*.
-- The **Don't send when there are no rows** setting does not apply: an empty measurement already records **Not triggered** on its own.
+- The Notification tab does not offer **Don't send when there are no rows**: an empty measurement already records **Not triggered** on its own.
 
 ## Further reading
 

@@ -50,7 +50,7 @@ The **Display** tab has only **Formatting**, one row per field. Use it for **Col
 
 ## Example: browsing orders
 
-On the *orders* dataset, choose **orderkey**, **custkey**, **orderstatus**, **totalprice**, **orderdate**, **orderpriority** and **clerk**, set **Row limit** to `50` and press **Save**. The card shows the first order as seven field and value lines, with the date in the default style (for example **July 25, 1994**), numbers with thousands separators (even `orderkey`, until you change its format), and the footer reads **1 / 50**. Without a **Sort**, which order is first is up to the database. The arrows step through the next 49 orders.
+On the *orders* dataset, choose **orderkey**, **custkey**, **orderstatus**, **totalprice**, **orderdate**, **orderpriority** and **clerk**, set **Row limit** to `50` and press **Save**. The card shows the first order as seven field and value lines, with the date in the default style (for example **July 25, 1994**), numbers with thousands separators except the identifiers `orderkey` and `custkey`, which read as plain digits (for example **29989**; see [Separator style](./column-formatting#separator-style)), and the footer reads **1 / 50**. Without a **Sort**, which order is first is up to the database. The arrows step through the next 49 orders.
 
 ![The Display tab of an object detail chart](/img/platform/charts/object-display.png)
 

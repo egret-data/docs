@@ -19,6 +19,12 @@ An alert runs one SQL query on a schedule, looks at the first value of the first
 
 The editor has four tabs, **General**, **Condition**, **Schedule** and **Notification**. A **Create** (or **Save**) and **Cancel** bar sits under the form. Leaving with unsaved changes asks for confirmation. A saved alert opens on the same four tabs, with its **Recent runs** (the last five) underneath.
 
+The open tab is part of the page address, named after the tab: `?section=condition`, `?section=schedule` or `?section=notification` (no `section` for **General**). A report's second tab is `?section=contents`. Send such a link to point a colleague at one part. Older links with `?section=what` still open the second tab, and `condition` and `contents` open it on any kind of item. A name that matches no tab opens **General** with the message *There is no section called “…”, so General is shown. The sections are General, Condition, Schedule, Notification.*; choosing a tab clears it.
+
+:::caution
+Opening an existing item straight on `?section=schedule` can show its schedule wrongly (KI-295). Open it on **General** and then choose **Schedule** before you edit or save.
+:::
+
 ## General
 
 ![The General tab of an existing alert, with Recent runs underneath](/img/platform/alerts/detail.png)

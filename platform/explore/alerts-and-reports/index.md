@@ -23,7 +23,7 @@ Open **Explore → Alerts & Reports**. The page has two tabs, **Alerts** (which 
 | **Name** | The name, a star to bookmark it, and its description. |
 | **Active** | A switch. Turn it off to pause the schedule without deleting it; a paused item shows **Paused** and keeps its history. |
 | **Last run** | The result of the last run, scheduled or **Run now**: **Success**, **Working**, **Error**, **Not triggered** or **On grace**. A run whose message did not reach every destination is **Error**. **Never run** until it has run once. See [Run history](./alerts-and-reports/run-history). |
-| **Schedule** | A plain-language form of the cron schedule, with the timezone, for example `Every day at 08:00 Asia/Ho_Chi_Minh`. Hover for the raw cron expression. An hourly schedule (`0 * * * *`) and a custom expression such as `30 8 * * 1-5` are shown as the raw cron (KI-038). |
+| **Schedule** | A plain-language form of the cron schedule, with the timezone, for example `Every day at 08:00 Asia/Ho_Chi_Minh`. Hover for the raw cron expression. Hourly, weekday-range, monthly and yearly schedules are worded too (`Every hour at minute 0`, `Every Monday to Friday at 08:30`); an expression with no plain wording is shown as written. See [How a schedule is shown](./alerts-and-reports/schedules#how-a-schedule-is-shown). |
 | **Next run** | When the scheduler will run it next, for example `in 9 hours`. |
 | **Owners** | The people whose permissions the query runs with. |
 

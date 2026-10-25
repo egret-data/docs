@@ -55,7 +55,7 @@ The checklist toolbar button turns on a checkbox column. Tick charts (the header
 
 ### Trash
 
-**Move to Trash** is reversible. The trash toolbar button switches the page to the **Trash** view, with its own search box. Each trashed chart has **Restore** and **Delete permanently** in its menu. The Trash view has no folders, bookmarks or bulk select.
+**Move to Trash** is reversible. The trash toolbar button switches the page to the **Trash** view, with its own search box. Each trashed chart has **Restore** and **Delete permanently** in its menu. The Trash view has no folders, bookmarks or bulk select, and its summary counts only the trashed charts (*1 chart*), not the folders. **+ Chart** is still offered there (KI-291).
 
 ![The Trash view with one trashed chart and its Restore and Delete permanently menu](/img/platform/charts/list-trash.png)
 
@@ -73,7 +73,7 @@ The checklist toolbar button turns on a checkbox column. Tick charts (the header
 
 ![A new bar chart before any field is set: the preview asks for the missing fields](/img/platform/charts/new-empty.png)
 
-After saving, Egret opens the chart at its own address and the button on the toolbar changes from **Save** to **Update**.
+After saving, Egret opens the chart at its own address and the button on the toolbar changes from **Save** to **Update**. The chart's name and description are then edited on the toolbar itself.
 
 You can also start from a dataset: the dataset's detail page has a **Create chart** button. See [The chart editor](./the-chart-editor.md) for the editor layout, running queries, exporting and drilling.
 
@@ -110,9 +110,11 @@ The rest of the section covers the settings that several types share:
 
 ## Save and update
 
-The **Save** (or **Update**) button on the editor toolbar opens a dialog with **Name** and **Description**. Saving a new chart creates it and moves you to its page. Saving an existing chart overwrites it in place: there is no version history for charts.
+On a new chart, **Save** on the editor toolbar opens the **Save chart** dialog with **Name** and **Description**; its **Save** creates the chart and moves you to its page.
 
-![The Update chart dialog with the name and description](/img/platform/charts/editor-save-dialog.png)
+![The Save chart dialog with the name and description](/img/platform/charts/editor-save-dialog.png)
+
+On an existing chart, the name is the box at the top of the editor and the description is the line under it (placeholder *Add a description*). **Update** saves the chart in one step, with no dialog: the button reads **Saving…** while the request runs, then a *Saved* message appears. Saving overwrites the chart in place: there is no version history for charts.
 
 Saving fails with a message in these cases:
 
