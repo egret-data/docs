@@ -12,7 +12,7 @@ An alert runs one SQL query on a schedule, looks at the first value of the first
 
 1. Go to **Explore → Alerts & Reports**, stay on the **Alerts** tab and press **+ Alert**.
 2. On **General**, name the alert and choose its owners.
-3. On **Condition**, pick the **Database**, write the **SQL**, and choose the **Condition**.
+3. On **Condition**, pick the **Connection**, write the **SQL**, and choose the **Condition**.
 4. On **Schedule**, choose when it runs. See [Schedules and limits](./schedules).
 5. On **Notification**, add at least one destination. See [Notifications](./notifications).
 6. Press **Create**.
@@ -20,10 +20,6 @@ An alert runs one SQL query on a schedule, looks at the first value of the first
 The editor has four tabs, **General**, **Condition**, **Schedule** and **Notification**. A **Create** (or **Save**) and **Cancel** bar sits under the form. Leaving with unsaved changes asks for confirmation. A saved alert opens on the same four tabs, with its **Recent runs** (the last five) underneath.
 
 The open tab is part of the page address, named after the tab: `?section=condition`, `?section=schedule` or `?section=notification` (no `section` for **General**). A report's second tab is `?section=contents`. Send such a link to point a colleague at one part. Older links with `?section=what` still open the second tab, and `condition` and `contents` open it on any kind of item. A name that matches no tab opens **General** with the message *There is no section called “…”, so General is shown. The sections are General, Condition, Schedule, Notification.*; choosing a tab clears it.
-
-:::caution
-Opening an existing item straight on `?section=schedule` can show its schedule wrongly (KI-295). Open it on **General** and then choose **Schedule** before you edit or save.
-:::
 
 ## General
 
@@ -42,7 +38,7 @@ Creating a second alert with a name already used by another alert is refused: `a
 
 | Setting | What it does |
 |---|---|
-| **Database** | The [database connection](../../workspace-settings/databases) the query runs against. |
+| **Connection** | The [connection](../../workspace-settings/databases) the query runs against. |
 | **SQL** | The query to run. **The first column of the first row** is the value the condition is tested against. |
 | **Condition** | What about the value makes the alert fire. |
 
@@ -63,7 +59,7 @@ The alert **Pending orders above 100** uses these settings:
 
 | Setting | Value |
 |---|---|
-| **Database** | `trino-demo` |
+| **Connection** | `trino-demo` |
 | **SQL** | `SELECT count(*) FROM tpch.tiny.orders WHERE orderstatus = 'P'` |
 | **Condition** | **Value meets a comparison**, operator `>`, threshold `100` |
 | **Schedule** | Daily at 08:00, timezone `Asia/Ho_Chi_Minh` |

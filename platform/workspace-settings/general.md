@@ -17,7 +17,7 @@ sidebar_position: 1
 | Group | Pages |
 |---|---|
 | **ACCESS** | [Members](./members.md), [Roles & permissions](./roles-and-permissions.md), [Access requests](./access-requests.md), [Shared objects](./shared-objects.md) |
-| **CONNECTIONS** | [Engines](./databases.md) |
+| **DATA** | [Connections](./databases.md) |
 | **WORKSPACE** | [Notifications](./notifications.md), **General** |
 
 The page header reads *Manage members, access, and configuration for \<workspace name\>.* The settings menu has no **Collapse** of its own: the app sidebar's **Collapse** is the only one on the page. Below 1024 px wide the menu becomes one row of tabs, without the group headings, that scrolls sideways with a shade on the clipped edge.

@@ -2,26 +2,28 @@
 sidebar_position: 4
 ---
 
-# Databases
+# Connections
 
-A **database connection** (shown in the UI as an *engine connection*) tells the workspace how to reach a query engine. SQL Lab, datasets, charts and dashboards run their queries through these connections. They are configured under **Manage → Workspace settings → Connections → Engines**.
+A **connection** tells the workspace how to reach a query engine. SQL Lab, datasets, charts, dashboards, Data API endpoints and alerts run their queries through these connections. They are configured under **Manage → Workspace settings → Connections** (in the **Data** group of the settings menu).
+
+The workspace level says *Connections*; the Control Plane's **Engines** are the query engines themselves (see [Query engines](../control-plane/query-engines/index.md)). The REST API and some older pages still call a connection a *database* (`/api/ws/{ws}/databases`, `database_id`); the address of this page is still `…/settings/engines`.
 
 ![The Engines page of the Docs sandbox workspace: the provisioned engine docs-trino and the connection trino-sandbox](/img/platform/admin/ws-engines.png)
 
-*Query engine connections this workspace can use in SQL Lab and charts.* The page needs workspace-admin rights; without them it says *Requires workspace-admin to manage engines.* A new workspace says *No engines connected yet.*
+*Connections to query engines that this workspace can use in SQL Lab and charts.* The page needs workspace-admin rights; without them it says *You don't have access to this section.* with *Only a workspace admin can manage connections.* A new workspace says *No connections yet.*
 
-A member who is not a workspace admin but holds `query:run` or `dataset:read` still gets the list of granted connections through the API, cut down to id, name, engine and delegation, so that SQL Lab and the dataset pickers can offer them (see [SQL Lab permissions](../explore/sql-lab/permissions.md#which-databases-you-can-use)). This page shows such a member the *Requires workspace-admin to manage engines.* notice instead of the rows.
+A member who is not a workspace admin but holds `query:run` or `dataset:read` still gets the list of granted connections through the API, cut down to id, name, engine and delegation, so that SQL Lab and the dataset pickers can offer them (see [SQL Lab permissions](../explore/sql-lab/permissions.md#which-databases-you-can-use)). This page shows such a member the *Only a workspace admin can manage connections.* notice instead of the rows.
 
 ## The connection list
 
-A summary strip counts the **connections**, how many are **ok** and how many are in **error**. **Search connections…** filters by name. If the workspace has engines assigned by the platform admins, they appear in a **Provisioned by egret** section above **Your connections**; those are read-only (*Provisioned by egret — read-only*).
+A summary strip counts the **connections** (*1 connection* in the singular), how many are **ok** and how many are in **error**; the counts follow a **Test** at once. **Search connections…** filters by name. If the workspace has engines assigned by the platform admins, they appear in a **Provisioned by egret** section above **Your connections**; those are read-only (*Provisioned by egret — read-only*).
 
 | Column | Meaning |
 |---|---|
 | **Name** | The connection name, for example `trino-sandbox`. |
 | **Engine** | `trino` or `starrocks`. |
 | **Host:Port** | Where it listens. |
-| **Status** | The last known state: **Unknown** for a new connection, then **Healthy** or **Error** after a test. |
+| **Status** | The last known state: **Healthy** or **Error** after a test. A connection that was never tested shows **Unknown**. |
 | **Secret** | **Configured** when a password is stored, **Not set** otherwise. |
 | **Actions** | **Test**, **Edit** and **Delete** (each icon is labelled with the connection name). |
 
@@ -37,7 +39,7 @@ A provisioned engine shows as a card with its name, type and a delegation badge 
 
 ![The Add engine connection dialog](/img/platform/admin/ws-add-connection.png)
 
-The dialog is *Connect a Trino or StarRocks query engine. Egret validates reachability on save.*
+The dialog is *Connect a Trino or StarRocks query engine. Egret tests the connection once it is saved.* Saving does not check that the engine is reachable; right after the save the page runs the same **Test** as the row's button, so the new row shows **Healthy** and *OK*, or **Error** and the reason, without a reload.
 
 ### Connection fields
 
@@ -80,7 +82,7 @@ Choose how the password is held:
 
 ## Test a connection
 
-Press the **Test connection for \<name\>** icon. Egret runs a probe and shows **OK** next to the row or an error. The **Status** column shows *Unknown* until the page is reloaded after a test.
+Press **Test** on the row (its accessible name is **Test connection for \<name\>**). Egret runs a probe and shows **OK** next to the row, or the reason the probe gave (*Failed* when it gave none), wrapped beside the buttons. The **Status** column and the counts follow the result at once.
 
 ## Edit a connection
 
@@ -88,10 +90,10 @@ Press **Edit**. The dialog is *Update the connection details. Leave password bla
 
 ## Delete a connection
 
-Press **Delete**. The dialog says *This engine connection will be removed. Any SQL Lab tabs or charts that reference it may break.* A toast says *Connection deleted*.
+Press **Delete**. The dialog says *This connection will be removed. Any SQL Lab tabs or charts that reference it may break.* A toast says *Connection deleted*.
 
 :::warning Trino setup
-Trino must accept forwarded headers (`http-server.process-forwarded=true`). Without it Trino returns HTTP 406 and Egret shows *502 Bad Gateway*.
+Trino must accept forwarded headers (`http-server.process-forwarded=true`) when Egret connects over plain HTTP. Without it Trino answers HTTP 406, and **Test**, SQL Lab and dataset creation say *Trino refused the X-Forwarded-Proto header egret sends over plain HTTP (HTTP 406). Set http-server.process-forwarded=true in the coordinator's config.properties, or connect over https.* See [Engine 406 and 502 errors](../deploy-operate/troubleshooting/engine-406-502).
 :::
 
 ## Example
@@ -100,8 +102,7 @@ On the Docker demo stack, the workspace `default` connects to the demo Trino as 
 
 ## Limits and known issues
 
-- Egret validates reachability on save, but a new connection shows **Unknown** until you press **Test**.
-- **Engines** is hidden from a non-admin's settings menu, and a non-admin who opens it by its address gets *You don't have access to this section.* with *Only a workspace admin can manage engine connections.* When the workspace has no connection at all, though, that reader sees the same *No engines connected yet.* empty state as an admin, and its **Add connection** button then answers 403 (KI-243).
+- **Connections** is hidden from a non-admin's settings menu, and a non-admin who opens it by its address gets *You don't have access to this section.* with *Only a workspace admin can manage connections.* When the workspace has no connection at all, though, that reader sees the same *No connections yet.* empty state as an admin, and its **Add connection** button then answers 403 (KI-243).
 - Only Trino and StarRocks connections can be added here. External engines for Governance are registered in the Control Plane (see [Register an external engine](../control-plane/query-engines/register-external.md)).
 
 ## Further reading

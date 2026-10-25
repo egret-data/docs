@@ -9,7 +9,7 @@ Three actions work on an execution from its page: **Resume** releases a paused r
 | Action | Shown when | Result |
 |---|---|---|
 | **Resume** | The execution is **Paused** | The paused `Pause` tasks end successfully and the execution goes on. |
-| **Replay** | Always; enabled once the execution has finished | A new execution from the original's frozen YAML and inputs. |
+| **Replay** | The execution has finished | A new execution from the original's frozen YAML and inputs. |
 | **Kill** | The execution has not ended | The execution ends `KILLED`. |
 
 ## Resume a paused execution
@@ -36,6 +36,8 @@ tasks:
     message: Approved
 ```
 
+A paused execution shows **Resume** and **Kill** at the top right (the screenshot predates platform #747 and still shows a disabled **Replay**).
+
 ![A paused execution with Resume, Replay and Kill](/img/platform/workflows/execution-paused.png)
 
 Resuming releases every paused `Pause` task of the execution at once, whatever its `pauseDuration`. If the execution is paused only because a `LoopUntil` is waiting for its next check, **Resume** is disabled and says *Waiting on a loop condition, not a Pause task*. A resume that arrives just as the pause's own timer ends is refused with a conflict and the page asks you to refresh. A resume feedback toast says *Resumed the execution*, or warns if the execution then ended in a failure.
@@ -58,7 +60,7 @@ Things to know:
 
 - **It starts from the beginning.** Replay does not resume from the failed task. All tasks run again.
 - **It uses the old text.** If you fixed the flow and want the fix, press **Run** on the flow's page instead.
-- **It is not available** while the execution is running (*Replay is available when the execution has finished*), for a loop iteration (replay the loop's own execution), or when the flow is disabled. A flow in the trash cannot be replayed either.
+- **It is not available** while the execution is running (the button is shown only once the execution has finished), for a loop iteration (replay the loop's own execution), or when the flow is disabled. A flow in the trash cannot be replayed either; restore it first. An execution of a flow that was deleted permanently cannot be replayed: the server answers `404` *not found: flow* (KI-297).
 
 ## Kill an execution
 

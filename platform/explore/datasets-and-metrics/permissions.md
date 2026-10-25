@@ -69,7 +69,7 @@ A dataset only holds definitions. When someone opens **Preview** or a chart, Egr
 - With the **shared service account**, the query reads whatever that account can read, no matter who asked. Giving someone a viewer share on a dataset therefore lets them see its rows even if they have no access in the engine.
 - With **per-user delegation**, the query runs as the person looking, and the engine's access policies (row filters, column masks, denied tables) apply. A reader who may not read the table sees an error in **Preview** (an error message with the engine's text).
 
-See [Databases](../../workspace-settings/databases) and [Data Governance](../../data-governance/overview).
+See [Connections](../../workspace-settings/databases) and [Data Governance](../../data-governance/overview).
 
 ## What the interface shows
 

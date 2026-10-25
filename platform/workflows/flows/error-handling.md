@@ -36,7 +36,7 @@ The task above fails three times, one second apart. The **Gantt** tab draws each
 
 ![The Gantt tab with three attempts of import_rows, then the handler](/img/platform/workflows/execution-gantt.png)
 
-The three retry types, and `behavior`, are in the [YAML reference](./yaml-reference.md#task-retry). `warningOnRetry` is accepted and has no effect.
+The three retry types, and `behavior`, are in the [YAML reference](./yaml-reference.md#task-retry). `warningOnRetry` is accepted and has no effect; the editor warns `ignored_property` when you save.
 
 ### Retry the whole flow
 
@@ -140,7 +140,7 @@ A running execution can be killed, a paused one resumed and a finished one repla
 ## Limits and known issues
 
 - Flow-level `finally:` and `afterExecution:` do not run, and the editor does not warn about them.
-- `errorLogs()`, `render()` and `warningOnRetry` do not work yet. See [Expressions](./expressions.md).
+- `errorLogs()` and `render()` do not work yet, and `warningOnRetry` has no effect. See [Expressions](./expressions.md).
 - `Pause` does not accept `errors` or `finally`.
 - Flow-level `concurrency:` and `sla:` are not enforced, so a flow cannot cancel or queue a second run, and a maximum duration is not checked.
 

@@ -11,7 +11,7 @@ Parameters let a caller change what an endpoint returns: filter by a status, pic
 ## Declare a parameter
 
 1. Open the endpoint and stay on the **Query** tab.
-2. Open **Database and parameters (N)** and press **Add parameter**.
+2. Open **Connection and parameters (N)** and press **Add parameter**. Closed, the strip names its contents: the connection and the parameter names (*warehouse · region, limit*), or *No connection chosen* and *no parameters*. It stays closed by default so the SQL editor keeps its height.
 3. Fill in the row, then refer to the name in the SQL as `{{ name }}`.
 4. Press **Save**, then **Preview unsaved draft** to test.
 

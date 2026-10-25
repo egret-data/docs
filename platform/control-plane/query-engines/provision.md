@@ -71,7 +71,7 @@ A StarRocks engine has its own configuration screen with sections such as **Repl
 
 1. Egret starts the cluster, creates a **policy profile** with the engine's name (for example `docs-trino`, with the tag service `docs-trino_tag`) and binds it.
 2. The attached catalogs are applied to the engine (state **Applied** on the **Catalogs** tab).
-3. Assign the engine to a workspace on its **Workspaces** tab. It then appears in the workspace's SQL Lab as a database with the engine's name, and in **Workspace settings → Engines** under **Provisioned by egret**.
+3. Assign the engine to a workspace on its **Workspaces** tab. It then appears in the workspace's SQL Lab as a connection with the engine's name, and in **Workspace settings → Connections** under **Provisioned by egret**.
 4. The Governance area lists the engine under **Engine & policy**, and grants on its catalogs reach it.
 
 If the engine fails to start, its page shows *The engine failed to start.* with the reason, and the Governance overview raises an **engine failed** finding.

@@ -101,7 +101,7 @@ A later release compiles both cases. Until then the preview counts the affected 
 
 ## Edit and delete
 
-Rows have **Edit** and **Delete** buttons. An edit replaces the whole rule, including **Exempt**: a field left out is cleared. Deleting shows *This rule is permanently removed and every profile it reaches recompiles.* A rule with a pattern states how far it reaches. Each rule also has a page, `/governance/rules/<id>`, showing its **Kind**, what it **Selects**, and who is **Exempt**.
+Rows have **Edit** and **Delete** buttons, labelled in words (below a 1024 px wide window, icons only). An edit replaces the whole rule, including **Exempt**: a field left out is cleared. Deleting shows *This rule is permanently removed and every profile it reaches recompiles.* A rule with a pattern states how far it reaches. Each rule also has a page, `/governance/rules/<id>`, showing its **Kind**, what it **Selects**, and who is **Exempt**.
 
 ## When two rules collide
 

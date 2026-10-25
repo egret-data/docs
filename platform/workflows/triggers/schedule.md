@@ -45,7 +45,7 @@ The screenshot is a run of `docs.demo.sales/daily-revenue`, whose `every_morning
 | `description` | Free text. | none |
 | `disabled` | `true` switches the trigger off in the YAML. | `false` |
 
-Not supported: `when` and `lateMaximumDelay` are refused, and `stopAfter`, `labels` and `allowConcurrent` are accepted and ignored.
+Not supported: `when` and `lateMaximumDelay` are refused (the editor warns `schedule_not_resolvable` when you save, and the trigger never fires), and `stopAfter`, `labels` and `allowConcurrent` are accepted and ignored (the editor warns `ignored_property`).
 
 ### Cron expressions
 
@@ -60,7 +60,7 @@ The expressions below were accepted and their next run was computed by a demo in
 | `@hourly`, `@daily` | Macros | next hour, next midnight |
 | `*/10 * * * * *` with `withSeconds: true` | Every 10 seconds | the next tenth second |
 
-A bad expression is not rejected when you save. For `cron: "60 * * * *"` the trigger goes off the queue and the **Triggers** drawer shows the **Last error** `invalid cron: minutes: value 60 not in range [0, 59]`. Fix the flow and save it again.
+A bad expression saves, with a warning in the editor's **Problems** panel: `schedule_not_resolvable`, *trigger 'every_minute' will never fire: invalid cron: …*. The same check covers an unknown time zone, `when` and `lateMaximumDelay`. If you save it anyway, the trigger goes off the queue and the **Triggers** drawer shows the **Last error**, for `cron: "60 * * * *"` `invalid cron: minutes: value 60 not in range [0, 59]`. Fix the flow and save it again.
 
 ### Time zones
 
@@ -70,7 +70,7 @@ A bad expression is not rejected when you save. For `cron: "60 * * * *"` the tri
 
 ### Inputs
 
-`inputs:` takes plain values only. A value with `{{ }}` in it is not rendered: the trigger stays off the queue with the error *inputs.stamp contains template syntax, which a scheduled execution cannot render*. Inputs the flow declares and the schedule leaves out use their `defaults:`.
+`inputs:` takes plain values only. A value with `{{ }}` or `{% %}` in it is not rendered. The editor warns when you save (`schedule_input_templated`, *trigger 'nightly': inputs.stamp contains template syntax, which a scheduled execution cannot render; every tick of this schedule will be refused*), and each tick is refused with the error *inputs.stamp contains template syntax, which a scheduled execution cannot render*. Inputs the flow declares and the schedule leaves out use their `defaults:`.
 
 ```yaml
 triggers:

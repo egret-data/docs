@@ -43,7 +43,7 @@ What this means in practice:
 
 ## Which databases you can use
 
-The database picker lists only the connections that are granted to the workspace; see [Databases](../../workspace-settings/databases). A request for any other database is refused with *database not granted to workspace*.
+The database picker lists only the connections that are granted to the workspace; see [Connections](../../workspace-settings/databases). A request for any other database is refused with *database not granted to workspace*.
 
 The picker is filled from `GET /api/ws/{ws}/databases`. What that list holds depends on your role in the workspace:
 
@@ -83,4 +83,4 @@ The Explorer and the search use the same identity as running queries, so a table
 
 - [Roles and permissions](../../workspace-settings/roles-and-permissions)
 - [Workspaces](../../control-plane/workspaces)
-- [Databases](../../workspace-settings/databases)
+- [Connections](../../workspace-settings/databases)

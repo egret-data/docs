@@ -27,7 +27,7 @@ A failed query's message starts with a short prefix that tells you who said it.
 | Prefix or text | Who said it | What it means |
 |---|---|---|
 | `engine: …` | The database engine | The engine received the query and rejected it: a syntax error, an unknown table or column, an unsupported statement, a type mismatch. The rest of the text is the engine's own message. |
-| `connect: …` | Egret | Egret could not reach the engine (host unreachable, port closed, TLS failure). Check the connection under [Databases](../../workspace-settings/databases). |
+| `connect: …` | Egret | Egret could not reach the engine (host unreachable, port closed, TLS failure). Check the connection under [Connections](../../workspace-settings/databases). |
 | `timeout: the query ran longer than the 60 s limit for SQL Lab queries and was stopped. …` | Egret | The query ran longer than the server's `engine.query_timeout_secs` (60 seconds by default). The message names the setting. When Trino stops the query itself at that limit, the message is Trino's *exceeded maximum time limit* followed by the same hint. |
 | `engine authentication failed` | Egret | The engine refused the identity Egret presented. With per-user delegation this usually means your engine token could not be verified. |
 | `forbidden` | Egret or the engine | You are not allowed to run this. On a delegated connection, a user without an SSO session gets it. |

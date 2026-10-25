@@ -26,7 +26,7 @@ One service account can have several clients, for example one per consuming syst
 |---|---|
 | **Client** | The service account's name and email, with the number of clients and when it was created; under it, each client's name. |
 | **ID** | A shortened `client_id` (`egret-da…805e`) with a copy button. |
-| **Status** | **Active**, **Revoked** (with *revoked an hour ago*) or **Expired** (with *expires 9 months ago*, which means it expired then; KI-025). |
+| **Status** | **Active**, **Revoked** (with *revoked an hour ago*) or **Expired** (with *expired 9 months ago*); an active client with an expiry shows *expires in …*. |
 | **Last used** | When the client last minted a token, or *Never*. |
 
 **Search service accounts…** filters by name. The **⋯** menu on a service account offers **Issue client…** and **Delete**; on an active client it offers **Revoke…**. A client that is already revoked has no menu.
@@ -36,7 +36,7 @@ One service account can have several clients, for example one per consuming syst
 1. Press **+ Service account**.
 2. Enter a **Name**, for example `orders-reporting-bot`. The account's email address is derived from it and shown on its row.
 3. Optionally add a **Description** of what the account is for and who owns it.
-4. Press **Create service account**.
+4. Press **Create service account** at the top right.
 
 ![The New service account page](/img/platform/data-api/service-account-new.png)
 

@@ -8,7 +8,7 @@ sidebar_position: 7
 
 ![The Notifications page with SMTP settings for the demo mail catcher and the Slack section](/img/platform/admin/ws-notifications.png)
 
-*Alerts and reports in this workspace send mail through this relay, as this from-address.* Reading and changing the settings needs `workspace:manage_members` in the workspace, which workspace admins hold (the API checks it on every request); the page is not listed for anyone else. The destinations themselves (an email recipient list, a Slack channel) are chosen on each alert or report in [Alerts & Reports](../explore/alerts-and-reports).
+*Alerts and reports in this workspace send mail through this relay, as this from-address.* Reading and changing the settings needs `workspace:manage_members` in the workspace, which workspace admins hold (the API checks it on every request); the page is not listed for anyone else. Over the API, `GET /api/ws/{ws}/notifications/smtp` and `GET /api/ws/{ws}/notifications/slack` answer `200` with the stored settings, or `204` with no body while nothing is configured (before platform #748 they answered `404`). The destinations themselves (an email recipient list, a Slack channel) are chosen on each alert or report in [Alerts & Reports](../explore/alerts-and-reports).
 
 ## Email (SMTP)
 
@@ -71,7 +71,6 @@ For a finance workspace: SMTP host `smtp.corp.example`, port `587`, **STARTTLS**
 
 ## Limits and known issues
 
-- Before settings exist the page loads two 404 responses (`/notifications/smtp` and `/notifications/slack`) that show as errors in the browser console. They are harmless.
 - Passwords and tokens are write-only. You cannot read them back; replace them to change them.
 
 ## Further reading

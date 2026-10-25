@@ -60,7 +60,7 @@ import egret_marimo as egret
 
 | Function | What it does |
 |---|---|
-| `egret.connect(database, dialect="sql")` | Returns a DB-API 2.0 connection for the database named `database` (its name in **Workspace settings → Engines**). marimo SQL cells list it and can use it. |
+| `egret.connect(database, dialect="sql")` | Returns a DB-API 2.0 connection for the database named `database` (its name in **Workspace settings → Connections**). marimo SQL cells list it and can use it. |
 | `egret.sql(query, database, params=())` | Runs `query` and returns a Polars `DataFrame`. `params` is a list of values bound to `?` markers in order. |
 | `egret.databases()` | Returns `(name, engine)` pairs for pickers, for example `[('trino-demo', 'trino')]`. **Edit mode only**: a viewer's session gets a `403`, because listing a workspace's databases is an admin act. An app that needs the names when viewed carries them in its source. |
 

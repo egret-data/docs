@@ -81,7 +81,6 @@ How long a finished run stays in the [run log](./run-history). Default 90 days.
 
 - The schedule is evaluated by the Egret server's scheduler; if the scheduler is disabled (`automation.enabled = false`), nothing runs and **Next run** keeps counting down.
 - Items run no more often than the scheduler tick.
-- Opening an existing item straight on its **Schedule** tab (a link or a reload with `?section=schedule`) can leave **Repeat** and **Timezone** blank and show the wrong cron under the form; saving from there would overwrite the stored schedule and timezone. Open the item on **General** and then choose **Schedule** (KI-295).
 
 ## Further reading
 

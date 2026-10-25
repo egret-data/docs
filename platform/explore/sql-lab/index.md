@@ -12,7 +12,7 @@ SQL Lab is the interactive SQL editor in a workspace. You pick one of the worksp
 The Docker demo stack has one connection, *trino-demo*, a Trino server with the catalogs `tpch` (generated TPC-H data in schemas `tiny`, `sf1`, `sf100` and so on) and `memory`, plus Trino's own `system`. Every example on these pages runs against `tpch.tiny`.
 :::
 
-SQL Lab is the first item in the **Explore** group of the sidebar, so it is the page a workspace opens on when the SQL Lab module is turned on. It runs on the database connections that a workspace admin has added under **Manage → Workspace settings → Databases** (see [Databases](../../workspace-settings/databases.md)). Trino and StarRocks connections are supported.
+SQL Lab is the first item in the **Explore** group of the sidebar, so it is the page a workspace opens on when the SQL Lab module is turned on. It runs on the database connections that a workspace admin has added under **Manage → Workspace settings → Databases** (see [Connections](../../workspace-settings/databases.md)). Trino and StarRocks connections are supported.
 
 ## What is on the page
 
@@ -61,7 +61,7 @@ Trino tables are `catalog.schema.table`, for example `tpch.tiny.orders`. Click a
 
 ## Who the query runs as
 
-By default every query runs with the connection's own credentials, so all workspace members who can use SQL Lab see what that service identity can see. If the connection has per-user delegation switched on, the query runs as you, with a short-lived engine token minted from your session, and the engine's own access policies apply to you. A user who is not signed in through SSO cannot run on a delegated connection and gets a *forbidden* error. These options are set per connection; see [Databases](../../workspace-settings/databases.md).
+By default every query runs with the connection's own credentials, so all workspace members who can use SQL Lab see what that service identity can see. If the connection has per-user delegation switched on, the query runs as you, with a short-lived engine token minted from your session, and the engine's own access policies apply to you. A user who is not signed in through SSO cannot run on a delegated connection and gets a *forbidden* error. These options are set per connection; see [Connections](../../workspace-settings/databases.md).
 
 SQL Lab does not itself restrict the kind of statement you can send. A `DROP TABLE` on the demo Trino was sent to the engine and refused by the engine ("This connector does not support dropping tables"). What is allowed depends on the connection's credentials and on the engine's access policies.
 
@@ -97,4 +97,4 @@ Because tabs live in the browser, clearing site data or switching browsers gives
 
 - [Datasets & metrics](../datasets-and-metrics/index.md)
 - [Charts](../charts/index.md)
-- [Databases](../../workspace-settings/databases.md)
+- [Connections](../../workspace-settings/databases.md)

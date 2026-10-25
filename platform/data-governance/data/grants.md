@@ -31,7 +31,7 @@ The tab opens with the sentence *Lists egret grants. Hand-written and egret-seed
 
 Grants set by a workspace assignment appear under **Inherited** with the label *Set by workspace assignment · Default*. They cannot be edited here; change the catalog's workspace assignment in the Control Plane instead.
 
-Each row has **Edit** and **Delete** icon buttons. Both need the **policy:update** permission; without it the page says so.
+Each row has **Open**, which opens the [grant's own page](#the-single-grant-page) and is there for every reader, and **Edit** and **Delete**, which need the **policy:update** permission (without it the page says so). Below a 1024 px wide window the three show only their icons, so the pinned column does not cover the row.
 
 ## Create a grant
 
@@ -40,7 +40,7 @@ Each row has **Edit** and **Delete** icon buttons. Both need the **policy:update
 3. Leave **Effect** as **Allow**. Under **Actions**, keep **Read** ticked.
 4. Under **Principals → Include**, choose a kind (**user**, **group** or **role**), then search.
 5. A user who already has an engine username is added by selecting the match. For a user who has none yet, the match shows **Allocate username and add**: press it. Confirm **Allocate and add** in the dialog *Allocate a username to Member SSO?* Egret reports *Member SSO was allocated a username and added, stored as member-sso.* The username is kept even if you close the form without saving.
-6. Press **Preview**. The preview names the profiles that would be recompiled, for example `docs-trino`, and how many policies would be created, updated, deleted or left unchanged.
+6. Press **Preview**. The dialog scrolls to the preview, so its result and **Create** are both on screen. The preview names the profiles that would be recompiled, for example `docs-trino`, and how many policies would be created, updated, deleted or left unchanged.
 7. Press **Create**. You see *Grant created.*
 
 ![The New grant dialog after a preview: read and write on demo_warehouse.analytics.sessions for alice-nguyen, which would recompile docs-trino](/img/platform/admin/gov-grant-dialog.png)
@@ -74,7 +74,7 @@ Press **Edit** on a row to reopen the dialog as **Edit grant**; the button is **
 
 ## The single grant page
 
-Every grant has its own page at `/governance/grants/<id>`, reached from links in explain results, the overlap report and the People pages. It shows the grant's **Effect**, **Actions**, **Scope**, **Principals** and **Except** set, with **Edit** and **Delete**. A workspace-assignment grant shows *The workspace assignment sync writes this grant; change the workspace's catalog assignment to change it.* A deleted id shows *No grant has this id; it may have been deleted.*
+Every grant has its own page at `/governance/grants/<id>`, reached from **Open** on a row of the Data page's **Permissions** tab and from links in explain results, the overlap report and the People pages. Opened from the Data page, its back link returns there (*Back to tiny* for the `tiny` schema). It shows the grant's **Effect**, **Actions**, **Scope**, **Principals** and **Except** set, with **Edit** and **Delete**. A workspace-assignment grant shows *The workspace assignment sync writes this grant; change the workspace's catalog assignment to change it.* A deleted id shows *No grant has this id; it may have been deleted.*
 
 ## Principals and what reaches the engine
 

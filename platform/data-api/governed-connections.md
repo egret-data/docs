@@ -19,7 +19,7 @@ A Data API call is made by a **service account**, so the caller the engine sees 
 3. Egret runs the query on the endpoint's database connection **as that service account**, where the connection allows it.
 4. The engine applies its own policies to that identity.
 
-What step 3 means depends on three flags on the database connection, set under **Workspace settings → Engines** (see [Databases](../workspace-settings/databases)).
+What step 3 means depends on three flags on the database connection, set under **Workspace settings → Connections** (see [Connections](../workspace-settings/databases)).
 
 | Connection setting | Effect on Data API calls |
 |---|---|
@@ -41,7 +41,7 @@ Marking a connection **Governed data** says that the data behind it is filtered 
 | A governed database that **is** per-user | Allowed. Each call runs as its service account, so the engine's row filters and masks apply to that account. |
 | An ungoverned database | Allowed whether or not it is per-user. |
 
-You see this in the editor before you reach Publish. On the **New endpoint** page and in the **Database** picker of the **Query** tab, governed databases are labelled *Governed*, and picking one that is not per-user shows:
+You see this in the editor before you reach Publish. On the **New endpoint** page and in the **Connection** picker of the **Query** tab, governed databases are labelled *Governed*, and picking one that is not per-user shows:
 
 > This database is governed: its row filters and column masks are applied per user at the engine. A query here would run on the shared service credential, so every consumer would read what that account can read. Running and publishing are both refused until the connection has per-user delegation (or impersonation) turned on.
 
@@ -73,6 +73,6 @@ A cached answer is keyed on the caller by default. **Per caller** (the default *
 
 ## Further reading
 
-- [Databases](../workspace-settings/databases)
+- [Connections](../workspace-settings/databases)
 - [Access](./endpoints/access)
 - [Error reference](./errors)
