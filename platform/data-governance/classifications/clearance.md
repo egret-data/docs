@@ -36,6 +36,12 @@ Not enforced in the engine: no group provider or usersync means a group name nev
 
 If a clearance names only groups, egret saves it but warns *Clearance saved but not enforced in any engine*.
 
+### A classification on a whole table
+
+On Trino a clearance covers every column of a table that carries the classification on the table itself. On StarRocks it does not: StarRocks applies a clearance only where the classification is on a column, and a classification on a whole table compiles no clearance there (KI-286). A later release compiles it. When the clearance requires a role, the Clearance tab says so: *Compiles to one deny tag policy in each Trino profile's tag service, and on StarRocks to a select deny and a NULL mask per tagged column. On StarRocks, a classification on a whole table compiles no clearance.*
+
+To gate a table on StarRocks today, put the classification on its columns. **Who can read?** states the gap for each person on a StarRocks engine: *Clearance PII is **not enforced** here: it is on the whole table, and StarRocks applies a clearance only where it is on a column.* See [Explain access](../data/explain-access.md#clearance-on-starrocks) for how a StarRocks clearance shows up there.
+
 ## What a clearance does not do
 
 - **Writes are not withheld.** Once gated, the page warns *This clearance withholds reads only, on Trino and on StarRocks alike: a user without it can still overwrite a column they cannot read.* Measured, an uncleared user inserted and deleted through a live clearance on Trino.
