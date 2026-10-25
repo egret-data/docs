@@ -69,7 +69,7 @@ These were produced on the demo Trino with the `tpch` catalog, each from a one-l
 | What you see | Cause |
 |---|---|
 | The page *403 — Forbidden* | The **SQL Lab** module is switched off for this workspace. See [Permissions and availability](./permissions). |
-| The toast *Pick a database* | The tab has no database chosen. Choose one in the Explorer. |
+| The toast *Pick a connection* | The tab has no connection chosen. Choose one in the Explorer. |
 | *Couldn’t load — no access or engine error.* in the Explorer | The browse request failed; see [The schema browser](./schema-browser#states-you-can-meet). |
 | **Query not started** with `forbidden` after pressing **Run** | Your role does not include `query:run`. |
 

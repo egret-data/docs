@@ -22,7 +22,7 @@ The page is one resizable workspace. By default the editor takes 40 % of the hei
 |---|---|---|
 | **Tab strip** (top) | The page title **SQL Lab**, then one editor per tab, plus the **+** button and the **⌘ K for commands** hint. | [The query editor](./editor.md) |
 | **Explorer** (left) | Database picker, a search box and a tree of catalogs, schemas, tables and columns. | [The schema browser](./schema-browser.md) |
-| **Toolbar** (above the editor) | **Run**, **Cancel**, **Format**, **Limit**, the database badge, a status badge, **Save**, **Save as dataset**, the command palette button and a **…** menu. | [The query editor](./editor.md) |
+| **Toolbar** (above the editor) | **Run**, **Cancel**, **Format**, **Limit**, the connection badge, a status badge, **Save**, **Save as dataset**, the command palette button and a **…** menu. | [The query editor](./editor.md) |
 | **Editor** | The SQL text, with syntax colouring and autocomplete. A **Parameters** bar appears when the SQL contains `{{name}}`. | [Query parameters](./parameters.md) |
 | **Results** (below) | The rows of the last run as a table or a small chart, with filter, copy and export. | [Query results](./results.md) |
 | **History**, **Saved**, **Snippets** (tabs next to **Results**) | Your past runs, the workspace's saved queries and reusable SQL fragments. | [History, saved queries and snippets](./history-saved-snippets.md) |
@@ -90,7 +90,7 @@ Because tabs live in the browser, clearing site data or switching browsers gives
 
 ## Limits and known issues
 
-- SQL Lab needs at least one database connection granted to the workspace. Without one the database picker is empty, the Explorer says *No connection is granted to this workspace. Ask a workspace admin.*, and **Run** reports *Pick a database*.
+- SQL Lab needs at least one database connection granted to the workspace. Without one the database picker is empty, the Explorer says *No connection is granted to this workspace. Ask a workspace admin.*, and **Run** reports *Pick a connection*.
 - The row limit, the 60-second query timeout and the 100,000-row ceiling are server settings; see [Query results](./results.md#limits).
 
 ## Further reading

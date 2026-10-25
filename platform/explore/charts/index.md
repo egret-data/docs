@@ -37,11 +37,11 @@ The **⋯** menu at the end of a row offers:
 - **Move to new folder…**: asks for a name, creates the folder and moves the chart into it.
 - **Share…**: opens the sharing dialog for the chart.
 - **Subscribe…**: opens a new **Alerts & Reports** report with this chart already chosen as its target.
-- **Move to Trash**.
+- **Move to Trash**: asks first (*Move to Trash?*, "*name*" moves to the Trash. You can restore it from there.); press **Move to Trash** to confirm.
 
 ### Folders
 
-Press the folder toolbar button (**New folder**) to create a folder; the dialog asks for a name. Once you have a folder, the list is grouped into collapsible sections: the folders in alphabetical order, then **Uncategorized**. Each header shows the number of charts in the section and a **⋯** menu to share, rename or delete the folder. Drag a row onto a folder header, or use the row menu, to move a chart. Deleting a folder does not delete its charts: they move to **Uncategorized**.
+Press the folder toolbar button (**New folder**) to create a folder; the dialog asks for a name. Once you have a folder, the list is grouped into collapsible sections: the folders in alphabetical order, then **Uncategorized**. Each header shows the number of charts in the section and a **⋯** menu to share, rename or delete the folder. Drag a row onto a folder header, or use the row menu, to move a chart. Deleting a folder does not delete its charts: they move to **Uncategorized**. **Delete** asks first (*Delete folder?*); the dialog names the folder and says how many charts move ("The 6 charts in it move to Uncategorized; none is deleted.") or that it is empty. Press **Delete folder** to confirm.
 
 ![The Charts list grouped into the folders Chart gallery and KPIs, then Uncategorized, with the row menu of a chart open on its folder commands](/img/platform/charts/list-folders.png)
 
@@ -49,13 +49,13 @@ While a search, type filter or bookmark filter is active, the sections stay, but
 
 ### Bulk select
 
-The checklist toolbar button turns on a checkbox column. Tick charts (the header checkbox selects every visible row), then use **Move *n* to folder…** or **Move *n* to Trash** next to the **Type** filter. Collapsed folders are not included in **select all**.
+The checklist toolbar button turns on a checkbox column. Tick charts (the header checkbox selects every visible row), then use **Move *n* to folder…** or **Move *n* to Trash** next to the **Type** filter. Collapsed folders are not included in **select all**. **Move *n* to Trash** asks first ("2 charts move to the Trash. You can restore them from there.").
 
 ![Bulk select with two charts in the KPIs folder selected and the Move 2 to folder… and Move 2 to Trash buttons](/img/platform/charts/list-bulk.png)
 
 ### Trash
 
-**Move to Trash** is reversible. The trash toolbar button switches the page to the **Trash** view, with its own search box. Each trashed chart has **Restore** and **Delete permanently** in its menu. The Trash view has no folders, bookmarks or bulk select, and its summary counts only the trashed charts (*1 chart*), not the folders. **+ Chart** is still offered there (KI-291).
+**Move to Trash** is reversible. The trash toolbar button switches the page to the **Trash** view, with its own search box. Each trashed chart has **Restore** and **Delete permanently** in its menu. The Trash view has no folders, bookmarks or bulk select, and its summary counts only the trashed charts (*1 chart*), not the folders. **+ Chart** is not shown there.
 
 ![The Trash view with one trashed chart and its Restore and Delete permanently menu](/img/platform/charts/list-trash.png)
 

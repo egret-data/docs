@@ -60,7 +60,7 @@ Things to know:
 
 - **It starts from the beginning.** Replay does not resume from the failed task. All tasks run again.
 - **It uses the old text.** If you fixed the flow and want the fix, press **Run** on the flow's page instead.
-- **It is not available** while the execution is running (the button is shown only once the execution has finished), for a loop iteration (replay the loop's own execution), or when the flow is disabled. A flow in the trash cannot be replayed either; restore it first. An execution of a flow that was deleted permanently cannot be replayed: the server answers `404` *not found: flow* (KI-297).
+- **It is not available** while the execution is running (the button is shown only once the execution has finished), for a loop iteration (replay the loop's own execution), or when the flow is disabled. A flow in the trash cannot be replayed either; restore it first. An execution of a flow that was deleted permanently cannot be replayed: **Replay** is shown disabled, and the line under the buttons says *Replay: The flow was deleted permanently, so this execution cannot be replayed*.
 
 ## Kill an execution
 

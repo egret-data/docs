@@ -76,6 +76,7 @@ This is what a PDF of **Sales performance** (two tabs, a heading, a text card an
 - PNG and PDF report rendering needs the rendering service. A large dashboard takes about 20 seconds to render. Egret allows 30 seconds per dashboard plus 30 seconds for the whole render, and a page that does not finish drawing within 20 seconds fails.
 - A table card in a PNG or PDF report shows only the rows that fit the table's own maximum height; use a CSV report for every row.
 - Charts on the print page are drawn at the rendering service's screen width (1280 px), and the PDF shrinks them to fit the sheet, so labels come out small (KI-283).
+- Charts in a PNG or PDF report use the chart's own settings only: the dataset's **Display names** and column formats, which the dashboard and the chart page apply, do not apply there (KI-301).
 
 ## Further reading
 

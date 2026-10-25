@@ -122,7 +122,7 @@ In the editor you can click a chart value to explore it:
 
 A single-value chart ([Big number](./number), [Gauge](./gauge), [Progress](./progress)) offers only **See these records**, because it has no dimension to filter by.
 
-The menu names a column by the title the chart draws it under: your own **Column title**, else the dataset's **Display name**, else the database name. Dashboard cards have the same click menu, but there it still names columns by their database names (KI-290).
+The menu names a column by the title the chart draws it under: your own **Column title**, else the dataset's **Display name**, else the database name. Dashboard cards have the same click menu and name columns the same way.
 
 ## Export
 

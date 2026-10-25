@@ -50,7 +50,7 @@ Hiding a column only hides it in the table. It is still fetched, and conditional
 
 The gear opens the per-column format: **Column title**, number style, decimals, prefix and suffix, **Show a mini bar chart**, date style, **Display as** and more. All of it is documented in [Column formatting and number formats](./column-formatting).
 
-A column header shows the dataset's **Display name** for the column or metric unless you set a **Column title**; with neither, it shows the column name. On a dashboard card the header shows the column name or your **Column title**, not the dataset's display name.
+A column header shows the dataset's **Display name** for the column or metric unless you set a **Column title**; with neither, it shows the column name. A dashboard card's header reads the same.
 
 ![The format popover of a numeric column](/img/platform/charts/table-column-settings.png)
 

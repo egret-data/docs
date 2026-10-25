@@ -158,7 +158,6 @@ To compare a count and an amount, set one metric to **Right** under the value ax
 
 - A chart with a **Series** plots one metric. Use several metrics without a series, or a series without extra metrics.
 - Scatter charts have no **Max categories** and no **Stacking**. A scatter's **Trend line** is hidden when the X-axis is a metric.
-- On a dashboard card the legend, tooltip and axis titles use database names, because the card does not load the dataset's display names (KI-290).
 
 ## Further reading
 

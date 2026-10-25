@@ -12,7 +12,7 @@ This page lists 21 endpoints (OpenAPI tag `alerts`). It is generated from `opena
 
 | Method | Path | Operation id | Notes |
 |---|---|---|---|
-| GET | `/api/render/payload` | `render_payload` |  |
+| GET | `/api/render/payload` | `render_payload` | The print page's ONE request. |
 | GET | `/api/ws/{workspace}/alerts` | `list` |  |
 | POST | `/api/ws/{workspace}/alerts` | `create` |  |
 | GET | `/api/ws/{workspace}/alerts/{id}` | `detail` |  |
@@ -26,7 +26,7 @@ This page lists 21 endpoints (OpenAPI tag `alerts`). It is generated from `opena
 | POST | `/api/ws/{workspace}/alerts/{id}/run` | `run_now` | Run one schedule immediately (P5's "Run now"). |
 | GET | `/api/ws/{workspace}/alerts/{id}/runs` | `runs` |  |
 | POST | `/api/ws/{workspace}/alerts/{id}/trash` | `trash` | Move to the trash (soft delete), so the list keeps a Restore path and the scheduler stops claiming it — `deleted_at IS NULL` is part of the claim predicate, ... |
-| GET | `/api/ws/{workspace}/notifications/slack` | `slack_get` | The print page's ONE request. |
+| GET | `/api/ws/{workspace}/notifications/slack` | `slack_get` | The workspace's Slack app. |
 | PUT | `/api/ws/{workspace}/notifications/slack` | `slack_put` |  |
 | DELETE | `/api/ws/{workspace}/notifications/slack` | `slack_delete` |  |
 | GET | `/api/ws/{workspace}/notifications/smtp` | `smtp_get` |  |
@@ -37,6 +37,10 @@ This page lists 21 endpoints (OpenAPI tag `alerts`). It is generated from `opena
 ## GET `/api/render/payload`
 
 Operation id: `render_payload`. Auth: Session cookie.
+
+The print page's ONE request.
+
+Deliberately token-only: there is no `WsContext` extractor here, so an ordinary session cookie authenticates nothing on this route — widening it to sessions would make it a second, unaudited read path for any chart or dashboard.
 
 **Response 200 (application/json)**: `RenderPayload`
 
@@ -566,7 +570,7 @@ Move to the trash (soft delete), so the list keeps a Restore path and the schedu
 
 Operation id: `slack_get`. Auth: Session cookie.
 
-The print page's ONE request. Deliberately token-only: there is no `WsContext` extractor here, so an ordinary session cookie authenticates nothing on this route — widening it to sessions would make it a second, unaudited read path for any chart or dashboard. The workspace's Slack app.
+The workspace's Slack app.
 
 Gated on `SMTP_MANAGE` — the same permission as the relay, and for the same reason: a bot token is workspace administration, not alert authoring. An editor who may write a schedule still may not swap the credential every schedule posts with.
 

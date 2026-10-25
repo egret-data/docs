@@ -20,7 +20,7 @@ You can create a dataset in three ways: from a table in one of your databases (a
 2. In **New dataset**, choose a **Connection**. The list shows each connection as *name (engine)*.
 3. Type a **Name**. The name must be unique in the workspace; an existing name is refused with *a dataset with this name already exists*.
 4. Optionally type a **Description**.
-5. On Trino, choose a **Catalog**. The list stays disabled until you pick a connection (it says *Pick a database first*).
+5. On Trino, choose a **Catalog**. The list stays disabled until you pick a connection (it says *Pick a connection first*).
 6. Choose a **Schema**, then a **Table**. Each list stays disabled until the one before it has a value.
 7. Press **Create**.
 
@@ -100,7 +100,7 @@ For a virtual dataset use `"source": {"kind": "virtual", "sql": "SELECT ..."}`. 
 
 | Message | Cause |
 |---|---|
-| *Pick a database* | No connection chosen. |
+| *Pick a connection* | No connection chosen. |
 | *Name required* | The name is empty. |
 | *a dataset with this name already exists* | Names are unique per workspace. |
 | ``the query returns more than one column named `x`; give each column its own name with AS`` | A virtual dataset's query returns two columns with the same name. Alias one of them. |

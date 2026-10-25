@@ -33,6 +33,8 @@ With **Menu**, clicking a value opens a small menu with up to two kinds of entri
 | **Filter by *column* is *value*** | Sets the dashboard filter that is connected to that column to the clicked value. One entry is offered for each dimension of the clicked point (for a stacked bar, both the x value and the series). For a time-grouped date it reads "*column* ≥ *start* and < *end*", and the filter gets the start of the period. |
 | **See these records** | Opens a dialog titled "Records where *column* = *value*" with the matching rows of the underlying dataset. |
 
+The menu names a column as the card draws it: the chart's own **Column title**, else the dataset's **Display name**, else the database name.
+
 **Filter by** needs a connected filter. If no filter on the dashboard is connected to the clicked column, the entry closes the menu and nothing else happens. A filter holds a single value, so only the first condition of a bucketed value is used.
 
 **See these records** shows all columns of the chart's dataset for the first 1000 rows that match the clicked value. It does not apply the dashboard's current filters, so it can show rows outside the date range you are looking at. A click on a number card has no dimension and offers only **See these records**, titled "All records".
