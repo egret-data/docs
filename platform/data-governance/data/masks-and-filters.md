@@ -31,7 +31,7 @@ Each row shows the rule **Name**, the path or tag it selects, its **Kind** (for 
 3. Type a **Name**. A name is required: *Name the rule.*
 4. Choose the **Kind**: **Filter rows** or **Mask a column**.
 5. Fill the kind's field: **Filter expression** for a row filter, **Mask type** for a mask.
-6. Choose what the rule **Selects by**: **Path** or **Tag**, and name the target.
+6. Choose what the rule **Applies to**: **Classification** or **Path**, and name the target.
 7. Optionally add **Exempt** users and groups.
 8. Press **Preview**, read the result, then press **Create**. You see *Rule created.*
 
@@ -43,6 +43,10 @@ Each row shows the rule **Name**, the path or tag it selects, its **Kind** (for 
 |---|---|
 | **Mask a column** | Replaces the column's values for every non-exempt reader. |
 | **Filter rows** | Keeps only rows for which the expression is true. |
+
+With **Applies to** set to **Classification** and **Filter rows** chosen, a hint under **Kind** reads: *On Trino, a row filter by classification applies only where the classification is on the whole table; on StarRocks, only where it is on a column.* See [Engine gaps for row filters by classification](#engine-gaps-for-row-filters-by-classification).
+
+A new rule's suggested name follows **Kind** until you edit it: a name seeded as *Mask PII Data* becomes *Filter rows PII Data* when you switch to **Filter rows**.
 
 ### Mask type
 
@@ -63,12 +67,12 @@ The list is fixed and mirrors Ranger's own vocabulary:
 
 A SQL boolean expression over the table's columns, for example `region = 'us'` or `user_id IS NOT NULL`. Egret stores it as written and the engine evaluates it, so it must be valid in the engine's dialect.
 
-### Selects by
+### Applies to
 
 | Option | Fields | Notes |
 |---|---|---|
-| **Path** | **Scope**: catalog (required), schema, table, and column for a mask. | A row filter by path needs catalog, schema and table together, and never a column; the dialog shows no column field and blocks saving until the three are set. A line below the fields reads *Selects demo_warehouse.analytics.sessions*. |
-| **Tag** | **Tag**: search tags by name and pick one. | The rule applies to every table or column carrying the tag. The tag is stored by its key, shown as *stored as personal-data-pii*. **Change** picks another. A tag rule is catalog-unscoped. |
+| **Path** | **Scope**: catalog (required), schema, table, and column for a mask. | A row filter by path needs catalog, schema and table together, and never a column; the dialog shows no column field and blocks saving until the three are set. A line below the fields reads *Applies to demo_warehouse.analytics.sessions*. |
+| **Classification** | **Classification**: pick a classification. | The rule applies to every table or column carrying the tag. The tag is stored by its key, shown as *stored as personal-data-pii*. **Change** picks another. A tag rule is catalog-unscoped. |
 
 ### Exempt
 
@@ -77,6 +81,23 @@ The principals the rule does not apply to. The picker offers **user** and **grou
 ### Preview this write
 
 Like grants, a rule needs a current **Preview** before **Create**. For a tag rule the preview text warns: *A tag rule is catalog-unscoped, so this can recompile every Trino profile in the installation — see which, here, before committing.* A result reads, for example, *Would recompile docs-trino. created 1 · updated 0 · deleted 0 · unchanged 12*.
+
+## Engine gaps for row filters by classification
+
+A row filter by classification does not compile on every table on both engines yet:
+
+- **Trino** filters by a classification only where the classification is on the **whole table**. On a table where it is only on columns, the row filter filters nothing on Trino (KI-287).
+- **StarRocks** filters by a classification only where it is on a **column**. On a table where it is only on the table itself, the row filter filters nothing on StarRocks (KI-288).
+
+A later release compiles both cases. Until then the preview counts the affected tables and shows a warning, for example:
+
+> On Trino this row filter filters nothing on 3 tables in demo_warehouse: *Personal data (PII)* is on their columns, not on the table. StarRocks filters them. Attach *Personal data (PII)* to the table to filter on Trino.
+
+> On StarRocks this row filter filters nothing on 1 table in demo_warehouse: *Personal data (PII)* is on the table, not on its columns. Trino filters it. Attach *Personal data (PII)* to a column of the table to filter on StarRocks.
+
+**Create** stays disabled until you tick **Create anyway: I understand this row filter filters nothing on Trino on these tables** (or *… on StarRocks on these tables*); while it waits, its reason reads *Tick 'Create anyway' to create a row filter that filters nothing on Trino on these tables.* When editing a rule the words are **Save anyway** and *save*. Every new preview clears the tick. To filter everywhere, attach the classification to the table (for Trino) and to a column of the table (for StarRocks).
+
+**Who can read?** states the same gap for a person: *member-sso sees **every row**: rule US rows only does not filter on Trino here, because PII is on a column, not on the table*.
 
 ## Edit and delete
 
@@ -88,7 +109,9 @@ Two mask or row-filter rules that select the same column or table at the same pr
 
 ## Verify a rule
 
-Masks and filters are enforced by the engine, and **Who can read?** does not report them for Trino. To confirm a rule, query the table as a non-exempt user in SQL Lab, or compare the **Policies** tab of the engine, where each rule appears as a `Masking`, `Masking (by tag)` or `Row filter` policy compiled by egret.
+Masks and filters are enforced by the engine. To check a rule for a person, open the column in **Governance → Data**, press **Who can read this column?** and explain the person, or a group to see every member (see [Explain access](./explain-access.md)). The answer says, per engine, what they read and why, for example *member-sso reads `user_id` as **hashed** (rule Hash personal data)*, or *(exempt from rule Hash personal data via group data-stewards)* for an exempt member, and which rows they see.
+
+To confirm against the engine itself, query the table as a non-exempt user in SQL Lab, or compare the **Policies** tab of the engine, where each rule appears as a `Masking`, `Masking (by tag)` or `Row filter` policy compiled by egret.
 
 On the demo stack the `sessions` table has three rules: the row filter *EU sessions only* (`country IN ('FRANCE', 'GERMANY', 'UNITED KINGDOM', 'ROMANIA', 'RUSSIA')`, exempt group `data-stewards`), the mask *Hide revenue outside finance* (**Nullify** on `revenue`, exempt group `finance-analysts`) and the tag rule *Hash personal data* (**Hash** on every column tagged *Personal data (PII)*, exempt group `data-stewards`). Queried through `docs-trino` as `member-sso`, who is in none of the exempt groups:
 
@@ -106,6 +129,8 @@ The local platform admin `admin@egret.local` got the same masked values: platfor
 
 - On a Trino profile without a tag service, tag rules compile to nothing. Egret refuses to bind such a profile to an engine.
 - A mask on a column whose type the mask cannot apply to can return an error from the engine rather than a masked value.
+- A row filter by classification filters nothing on Trino where the classification is only on columns (KI-287), and nothing on StarRocks where it is only on the table (KI-288).
+- A second row filter on a table that already has one is refused by the preview, and the refusal links the new rule to a page that does not exist (KI-289).
 
 ## Further reading
 

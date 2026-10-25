@@ -25,6 +25,8 @@ The tag then appears in the **Tags** column of the table's **Columns** list, in 
 A tag applied to a table reaches its columns for policy purposes: engines roll tags up the resource hierarchy. A tag applied to a column does not show up when you explain access for the table. Ask about the column.
 :::
 
+When you add a classification to a whole table, the dialog says: *On a whole table, this classification counts for clearance on every column on Trino. StarRocks applies a clearance only where the classification is on a column. A rule that masks by classification needs it on columns, not on the table.* A StarRocks engine therefore enforces neither the clearance nor a classification row filter for a table-level classification (KI-286, KI-288), and a Trino engine does not apply a classification row filter for a column-level one (KI-287).
+
 On a catalog egret does not manage the button is disabled with *Tags can be added to egret-managed catalogs only*.
 
 ## Tag a BI object
@@ -52,7 +54,7 @@ Engines match a rule by its tag's **name**, so a rule written on another tag wit
 
 ### Tag rules and explain
 
-**Who can read?** lists the **Tags that could decide here** for the target. Tags populate only when the target names both a schema and a table, and a tag on a column does not appear when you ask about its table.
+**Who can read?** on a column says, for each person and engine, what a tag rule does to them, for example *member-sso reads `user_id` as **hashed** (rule Hash personal data)*, or why they see the real value. Under **Which policies decided this** it lists the **Tags that could decide here** for the target. Tags populate only when the target names both a schema and a table, and a tag on a column does not appear when you ask about its table. See [Explain access](../data/explain-access.md).
 
 ## Examples
 
@@ -63,6 +65,7 @@ Engines match a rule by its tag's **name**, so a rule written on another tag wit
 
 - The tag page counts tagged BI objects only; data tags are visible on the Data page.
 - A mask by tag on a column type the mask cannot apply to returns an engine error rather than a masked value.
+- On StarRocks, a classification on a whole table compiles no clearance (KI-286) and no row filter (KI-288). On Trino, a row filter by a classification that is only on columns filters nothing (KI-287).
 
 ## Further reading
 

@@ -283,6 +283,7 @@ POST because the request carries a subject, an action and a whole target scope â
 | `outcome` | ExplainOutcome | yes | Which of `explain`'s two shapes a response carries. |
 | `profiles` | ExplainProfile[] | yes | Empty exactly when `outcome` is `no_profile_serves_the_catalog`. |
 | `tag_resolution_declined` | ExplainTagDecline | no |  |
+| `effect_line` | ExplainEffectLine | no |  |
 
 | Status | Meaning |
 |---|---|
@@ -958,6 +959,8 @@ What a STORED rule does â€” the same [`crate::effect::RuleEffect`] a preview ret
 | `exemptEveryone` | boolean | yes | `exempt.include` names the `public` group: nobody is masked. |
 | `alreadyMasked` | ExistingMask[] | yes | Other mask rules that reach a column this rule reaches (at most 20). |
 | `truncated` | boolean | yes | `alreadyMasked` may be incomplete: a cap cut the columns examined (50), the classifications read (1000) or the entries listed (20). |
+| `trinoColumnOnly` | TrinoColumnOnly | no |  |
+| `starrocksTableOnly` | StarRocksTableOnly | no |  |
 
 | Status | Meaning |
 |---|---|

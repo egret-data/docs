@@ -24,6 +24,21 @@ const seq = (...fns) => async (page) => {
 };
 // Open an engine of the Control Plane list by name (the list links each name).
 const engine = (name) => seq(link(name), async (page) => page.waitForTimeout(1500));
+// Who can read this column? for a user (picked by a search) or a group (searched by name), then Explain.
+const whoCanReadColumn = (subject, search) => async (page) => {
+  await page.getByRole('button', {name: 'Who can read this column?'}).click();
+  const d = page.getByRole('dialog');
+  if (subject === 'group') {
+    await d.getByRole('combobox').nth(0).click();
+    await page.getByRole('option', {name: 'Group', exact: true}).click();
+  }
+  await d.getByRole('combobox').nth(1).click();
+  await page.keyboard.type(search);
+  await page.waitForTimeout(1500);
+  await page.getByRole('option').first().click();
+  await d.getByRole('button', {name: 'Explain'}).click();
+  await page.waitForTimeout(4000);
+};
 // The provisioned engine the cp-engine-* shots open (DOCS_ENGINE overrides it for a pass that adds its own).
 const DOCS_ENGINE = process.env.DOCS_ENGINE ?? 'docs-trino';
 
@@ -86,6 +101,54 @@ export const shots = [
       await page.getByRole('option').first().click();
       await d.getByRole('button', {name: 'Explain'}).click();
       await page.waitForTimeout(4000);
+    },
+  },
+  // Platform #744 (verify a mask per user): the answer's sentences on a column, for a user and for a group's members,
+  // at 1440 and 390 px; the rule dialog's row-filter gap warning; the Add tag dialog's whole-table note.
+  // Not referenced by a page until captured; the prepare steps were written without a running stack.
+  {id: 'admin/gov-who-can-read-column', path: `${T}?column=user_id`, settle: 800, prepare: whoCanReadColumn('user', 'member')},
+  {id: 'admin/gov-who-can-read-group', path: `${T}?column=user_id`, settle: 800, prepare: whoCanReadColumn('group', 'data-stewards')},
+  {
+    id: 'admin/gov-who-can-read-column-390',
+    path: `${T}?column=user_id`,
+    settle: 800,
+    prepare: seq(async (page) => page.setViewportSize({width: 390, height: 844}), whoCanReadColumn('user', 'member')),
+  },
+  {
+    id: 'admin/gov-who-can-read-group-390',
+    path: `${T}?column=user_id`,
+    settle: 800,
+    prepare: seq(async (page) => page.setViewportSize({width: 390, height: 844}), whoCanReadColumn('group', 'data-stewards')),
+  },
+  {
+    id: 'admin/gov-rule-row-filter-warning',
+    path: `${T}?tab=masks`,
+    settle: 800,
+    prepare: async (page) => {
+      await page.getByRole('button', {name: 'Add rule'}).click();
+      const d = page.getByRole('dialog');
+      await d.getByRole('combobox', {name: 'Kind', exact: true}).click();
+      await page.getByRole('option', {name: 'Filter rows'}).click();
+      await d.getByRole('combobox', {name: 'Applies to', exact: true}).click();
+      await page.getByRole('option', {name: 'Classification', exact: true}).click();
+      await d.getByRole('combobox', {name: 'Classification'}).click();
+      await page.getByRole('option', {name: /Personal data \(PII\)/}).first().click();
+      await d.getByLabel('Filter expression').fill("country = 'FRANCE'");
+      await d.getByRole('button', {name: 'Preview', exact: true}).click();
+      await page.waitForTimeout(3000);
+      await d.getByText(/filters nothing on/).first().scrollIntoViewIfNeeded();
+    },
+  },
+  {
+    id: 'admin/gov-add-tag-table-note',
+    path: T,
+    settle: 800,
+    prepare: async (page) => {
+      await page.getByRole('button', {name: 'Add tag'}).first().click();
+      await page.waitForTimeout(600);
+      await page.getByRole('dialog').getByRole('combobox').first().click();
+      await page.getByRole('option', {name: /Finance/}).first().click();
+      await page.getByRole('dialog').getByText(/On a whole table, this classification/).waitFor();
     },
   },
   {id: 'admin/gov-people-users', path: `${gov}/people`, settle: 2000},
