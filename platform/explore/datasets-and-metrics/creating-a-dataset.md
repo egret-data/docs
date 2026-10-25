@@ -10,17 +10,17 @@ You can create a dataset in three ways: from a table in one of your databases (a
 
 ## Before you start
 
-- The workspace needs at least one database connection. Workspace admins add connections under **Manage → Workspace settings → Databases** ([Databases](../../workspace-settings/databases)).
+- The workspace needs at least one database connection. Workspace admins add connections under **Manage → Workspace settings → Databases** ([Connections](../../workspace-settings/databases)).
 - You need the `dataset:manage` permission in the workspace, which the built-in `ws_editor` and `ws_admin` roles have. See [Permissions](./permissions).
 - The Datasets module must be on for the workspace.
 
 ## Create a physical dataset from a table
 
 1. Go to **Explore → Datasets** and press **Create**. (On an empty workspace the button reads **Create your first dataset**.)
-2. In **New dataset**, choose a **Database**. The list shows each connection as *name (engine)*.
+2. In **New dataset**, choose a **Connection**. The list shows each connection as *name (engine)*.
 3. Type a **Name**. The name must be unique in the workspace; an existing name is refused with *a dataset with this name already exists*.
 4. Optionally type a **Description**.
-5. On Trino, choose a **Catalog**. The list stays disabled until you pick a database.
+5. On Trino, choose a **Catalog**. The list stays disabled until you pick a connection (it says *Pick a database first*).
 6. Choose a **Schema**, then a **Table**. Each list stays disabled until the one before it has a value.
 7. Press **Create**.
 
@@ -75,7 +75,7 @@ Column types are mapped to three classes: numeric, temporal and string. The clas
 ## Example: a Customers dataset
 
 1. **Explore → Datasets → Create**.
-2. **Database**: *trino-demo (trino)*. **Name**: *Customers*. **Description**: *One row per customer (tpch tiny).*
+2. **Connection**: *trino-demo (trino)*. **Name**: *Customers*. **Description**: *One row per customer (tpch tiny).*
 3. **Catalog**: *tpch*. **Schema**: *tiny*. **Table**: *customer*.
 4. Press **Create**.
 
@@ -100,7 +100,7 @@ For a virtual dataset use `"source": {"kind": "virtual", "sql": "SELECT ..."}`. 
 
 | Message | Cause |
 |---|---|
-| *Pick a database* | No database chosen. |
+| *Pick a database* | No connection chosen. |
 | *Name required* | The name is empty. |
 | *a dataset with this name already exists* | Names are unique per workspace. |
 | ``the query returns more than one column named `x`; give each column its own name with AS`` | A virtual dataset's query returns two columns with the same name. Alias one of them. |

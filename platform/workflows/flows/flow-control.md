@@ -241,7 +241,7 @@ Without `pauseDuration` it waits until someone resumes it: open the execution an
 
 ![A paused execution with the Resume, Replay and Kill buttons](/img/platform/workflows/execution-paused.png)
 
-A pause can only be released through the page or the API (`POST /executions/{id}/resume`). `Pause` accepts `pauseDuration` only: `tasks`, `errors`, `behavior` and `onPause` are refused when you save, and `onResume` is accepted and ignored. Killing a paused execution ends it `KILLED` at once.
+A pause can only be released through the page or the API (`POST /executions/{id}/resume`). `Pause` accepts `pauseDuration` only: `tasks`, `errors`, `behavior` and `onPause` are refused when you save, and `onResume` is accepted and ignored (the editor warns `ignored_property`). Killing a paused execution ends it `KILLED` at once.
 
 ## WorkingDirectory
 

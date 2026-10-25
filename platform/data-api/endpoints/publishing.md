@@ -31,7 +31,7 @@ The **Versions** tab, **History** table, lists every version, newest first.
 |---|---|
 | **Version** | `v1`, `v2` …, with a **Live** badge on the one being served. A version published with breaking changes shows a badge such as **1 breaking change** (hover for the detail). A version compared against something other than its predecessor is marked *compared against vN*. |
 | **Note** | The note you wrote when publishing. |
-| **Who** | Who published it. |
+| **Who** | Who published it: the email for a user who may list the platform's users (a platform administrator), a shortened user id for anyone else (KI-296). |
 | **When** | When, as a relative time. |
 | Action | **Roll back** on every version except the live one. |
 

@@ -7,7 +7,7 @@ sidebar_position: 2
 This page lists every key a flow document can hold, in the order the editor's **Docs** tab shows them, and says what the engine does with each one. The language is Kestra 2.0's flow language, so a key that is not listed here is either not part of it or is ignored.
 
 :::warning Accepted does not always mean enforced
-A flow can contain keys that the engine reads, stores and then does not act on. The editor warns about some (`concurrency`, `checks`, `sla`, `quotas`). It does not warn about the others in the **Not run yet** list below, and an unknown top-level key or an unknown property on a task is accepted without a message. Check the status column before you rely on a key.
+A flow can contain keys that the engine reads, stores and then does not act on. The editor warns about `concurrency`, `checks`, `sla` and `quotas` (*not yet enforced*), about every key marked **Ignored** (`ignored_property`), and about a key that is not a property at all, such as a typo (`unknown_property`), on the flow, a task of a Kestra type, a retry and a trigger (egret-only task types are not checked). It does not warn about flow-level `finally` and `afterExecution` (**Not run yet** below). Check the status column before you rely on a key.
 :::
 
 ## A complete example
@@ -59,7 +59,7 @@ errors:
 | `finally` | list of tasks | Not run yet | Parsed and kept, but its tasks never run. The execution's topology shows them as *Finally · Not run*. |
 | `afterExecution` | list of tasks | Not run yet | Parsed and kept, but never run. |
 
-Keys such as `deleted`, `draft`, `revision`, `updated`, `workerSelector` and `policyRefs` are read from imported Kestra flows and ignored.
+Keys such as `deleted`, `draft`, `revision`, `updated`, `workerSelector` and `policyRefs` are read from imported Kestra flows and ignored; the editor warns about each (`ignored_property`).
 
 ### Flow-level retry
 
@@ -102,7 +102,7 @@ Every task has the same base keys, then its own. A task entry looks like this:
 | `runIf` | Works | An expression. When it renders to a false value the task ends `SKIPPED` and the flow goes on. |
 | `allowFailure` | Works | The task may fail without failing the execution; the execution ends `WARNING`. |
 | `allowWarning` | Works | Same idea for tasks that end in a warning. |
-| `logLevel`, `logToFile`, `taskCache`, `workerGroup`, `workerSelector`, `version`, `assets`, `policyRefs` | Ignored | Accepted from Kestra flows and ignored. |
+| `logLevel`, `logToFile`, `taskCache`, `workerGroup`, `workerSelector`, `version`, `assets`, `policyRefs` | Ignored | Accepted from Kestra flows and ignored, with a warning when you save. |
 
 ### Task retry
 
@@ -114,7 +114,7 @@ Three retry types are available. All of them take `maxAttempts`, `maxDuration` a
 | `exponential` | `interval`, `maxInterval` | Starts at `interval` and grows by `delayFactor` after each attempt, up to `maxInterval`. |
 | `random` | `minInterval`, `maxInterval` | A random time between the two. |
 
-Intervals are ISO-8601 durations such as `PT1S`. The `warningOnRetry` key is accepted and has no effect yet. The **Gantt** and **Logs** tabs show each attempt of a task that was retried.
+Intervals are ISO-8601 durations such as `PT1S`. The `warningOnRetry` key is accepted and has no effect; the editor warns `ignored_property`. The **Gantt** and **Logs** tabs show each attempt of a task that was retried.
 
 ## Inputs, outputs and expressions
 
@@ -122,8 +122,8 @@ Any string value can hold an expression written in `{{ }}`. The flow keys above 
 
 ## Limits and known issues
 
-- Unknown top-level keys, unknown task properties and the keys in the **Not run yet** rows produce no warning when you save.
-- Deleting a flow keeps its namespace and id reserved: creating the same namespace and id again is refused with *a trashed flow still holds* that name.
+- Flow-level `finally` and `afterExecution` (the **Not run yet** rows) produce no warning when you save.
+- A flow in the trash keeps its namespace and id reserved until it is restored or deleted permanently. See [Flows](./index.md#delete-restore-and-trash).
 - The editor schema lists `ForEach`-style loops as `Loop`. A flow that uses `ForEach` is refused.
 
 ## Further reading

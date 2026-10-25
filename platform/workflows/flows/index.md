@@ -18,8 +18,9 @@ Go to **Workflows → Flows**. Flows are grouped in a tree by namespace: `docs.d
 | **Namespace** | Shows one namespace, or **All**. |
 | **State** | **Active**, **Disabled**, or **All**. |
 | Summary line | Counts the flows that match, split into active and disabled. |
+| **Trash** | Switches to the flows in the trash (see [Delete, restore and trash](#delete-restore-and-trash)). |
 
-A table row shows the flow's **State**, its latest **Version** (a dash while no version exists), when it was last **Updated** and who it was **Created by**. Press a flow's name to open it.
+A table row shows the flow's **State**, its latest **Version** (**Draft** while no version exists), when it was last **Updated** and who it was **Created by**. Press a flow's name to open it.
 
 ## Create a flow
 
@@ -38,7 +39,7 @@ tasks:
     message: Hello from egret
 ```
 
-The flow's namespace and id come from the `namespace:` and `id:` keys in the text. There is no separate name field. If a flow with the same namespace and id already exists in the workspace, **Save** is refused and your text stays in the editor.
+The flow's namespace and id come from the `namespace:` and `id:` keys in the text. There is no separate name field. If a flow with the same namespace and id already exists in the workspace, **Save** is refused and your text stays in the editor. A flow in the trash still holds its namespace and id: the refusal says *a flow in the trash still holds … in this workspace; restore it, or delete it permanently to free the name*.
 
 You can save a flow that has problems. The editor reports them in the **Problems** tab (see [The flow editor](./editor.md)), and **Run** and **Create version** stay disabled until they are fixed.
 
@@ -48,14 +49,14 @@ Open a flow to see four tabs and a set of actions.
 
 ![A flow's page with the code editor and the Docs panel](/img/platform/workflows/flow-editor.png)
 
-The header shows the flow id, a state chip (**Active**, or **Disabled** when the flow or its YAML says `disabled: true`), its latest version (with a **Changes since v1** badge when the saved draft differs from it) and its namespace. The actions are:
+The header shows the flow id, a state chip (**Active**, or **Disabled** when the flow or its YAML says `disabled: true`), its latest version (with a **Changes since v1** badge when the saved draft differs from it) and its namespace. A flow with no version yet reads **Draft, no version yet**; it is still **Active**, because the chip says whether the flow runs and a draft runs. The info button beside the version (**What is a version?**) says: *A version is a numbered snapshot of the saved draft, to compare and restore. Runs, schedules and webhooks always use the saved draft, whether or not it has a version.* The actions are:
 
 | Action | What it does | Needs |
 |---|---|---|
 | **Save** | Stores the editor text as the flow's draft. Disabled while there is nothing new to save. | `workflow:manage` |
 | **Create version** | Opens a dialog with an optional **Note** and freezes the saved draft as the next version. Disabled until the draft is saved and has no errors. | `workflow:manage` |
 | **Run** | Starts an execution of the saved draft. Disabled while there are unsaved changes, while the flow has errors, and when the flow is disabled. | `workflow:manage` |
-| **Delete** | Removes the flow from the list after a confirmation. Executions already started are not stopped. | `workflow:manage` |
+| **Delete** | Moves the flow to the trash after a confirmation. Executions already started are not stopped. | `workflow:manage` |
 
 Next to a disabled action the page prints the reason, for example *Run: Save first: Run uses the saved draft*. A person who only has `workflow:read` sees the editor read-only, with no actions.
 
@@ -99,13 +100,27 @@ The **Revisions** tab lists versions with their **Version** number, **Author** a
 
 A flow that has never had a version shows *No versions yet*.
 
-## Disable or delete a flow
+## Disable a flow
 
-Add `disabled: true` at the top level of the YAML and save. A disabled flow shows the **Disabled** chip, cannot be run or replayed, and its triggers do not fire. Remove the line to enable it again. **Delete** removes the flow from the list.
+Add `disabled: true` at the top level of the YAML and save. A disabled flow shows the **Disabled** chip, cannot be run or replayed, and its triggers do not fire. Remove the line to enable it again.
+
+## Delete, restore and trash
+
+**Delete** on a flow's page moves the flow to the trash. The confirmation says: *The flow moves to the trash (Flows, then Trash), where it can be restored or deleted permanently. Until then it cannot be run or scheduled, and its namespace and id stay taken. Executions already started are not stopped.*
+
+Press **Trash** on the **Flows** page to see the trash (the address gets `?view=trash`). It lists each trashed flow with its **Flow** name, **Version** (**Draft** when it never had one) and when it was **Deleted**, newest first, with two actions:
+
+| Action | What it does |
+|---|---|
+| **Restore** | Puts the flow back in the flow list with its draft, state and versions. Its schedules are recreated and start at their next tick after now; ticks missed while it was in the trash are not run. A toast says *Restored namespace.id to the flow list*. |
+| **Delete permanently** | Asks you to type `delete`, then deletes the flow, its versions and its trigger state. Its namespace and id are free again for a new flow. Its executions are kept. This cannot be undone. |
+
+Both need `workflow:manage` and are written to the audit log (`workflow_flow:restore`, `workflow_flow:purge`). Only a flow already in the trash can be deleted permanently. Press **Trash** again to go back to the flow list.
+
+The executions of a permanently deleted flow stay in the **Executions** list, but they can no longer be replayed (KI-297).
 
 ## Limits and known issues
 
-- A flow's page says **Active** for every flow that is not disabled, including a draft that has never had a version.
 - The `concurrency:`, `checks:`, `sla:` and `quotas:` keys are accepted but not enforced yet, and flow-level `finally:` and `afterExecution:` are accepted but do not run. See the [YAML reference](./yaml-reference.md).
 - Two people editing the same flow: if the draft changed on the server since you opened it, **Save** shows a dialog and asks you to reload before saving.
 

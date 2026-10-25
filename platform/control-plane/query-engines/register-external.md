@@ -54,7 +54,12 @@ A Trino profile created in the console has no tag service and cannot be bound. U
 
 ## After you register
 
-You land on the engine's **Plugin config** tab. Without a profile it says *conflict: engine \<name\> is bound to no policy profile: bind a profile first Bind a policy profile on the Settings tab, then come back.* The tabs are **Overview**, **Catalogs**, **Plugin config** and **Settings**. Then:
+A dialog, *Engine registered: save its Ranger credential*, shows the engine's Ranger credential once: *Copy it now: egret shows this password once.* Its button depends on the profile:
+
+- With a profile bound, **Open plugin configuration** takes you to the engine's **Plugin config** tab.
+- Without one, **Bind a policy profile** takes you to the engine's **Settings** tab, because the plugin configuration names the profile's Ranger service and cannot be shown yet. **Plugin config** on such an engine says *No policy profile is bound to this engine yet. The plugin configuration names the profile's Ranger service, so bind a profile first.* with an **Open Settings** button.
+
+The tabs are **Overview**, **Catalogs**, **Plugin config** and **Settings**. Then:
 
 1. **Settings**: bind a policy profile that has a tag service, and press **Save changes**.
 2. **Plugin config**: copy the files to your engine and restart it (see [Ranger plugin](../../data-governance/engines-and-policy/ranger-plugin.md)).
@@ -77,7 +82,6 @@ Binding the console-created Trino profile `docs-external-policy` at this point f
 
 - Egret holds a record only: it does not monitor the engine, so the page shows no health status.
 - An engine name cannot be changed after registration; remove the record and register again.
-- The message after registering keeps the raw `conflict:` prefix of the API error.
 
 ## Further reading
 

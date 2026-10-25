@@ -39,7 +39,7 @@ To attach another, choose it in **Catalog to attach** and press **Attach**. With
 1. Press **Add workspace**. The dialog says *Assign this engine to an active workspace.* and lists the workspaces not yet assigned.
 2. Select one. A toast says *Workspace assigned*.
 
-The engine then appears in that workspace's SQL Lab as a database named after the engine (`docs-trino (trino)`) and under **Workspace settings → Engines → Provisioned by egret**. **Remove** unassigns it. **Add workspace** is disabled until **JWT authentication** is on in the engine's **Security & Exposure** settings.
+The engine then appears in that workspace's SQL Lab as a connection named after the engine (`docs-trino (trino)`) and under **Workspace settings → Connections → Provisioned by egret**. **Remove** unassigns it. **Add workspace** is disabled until **JWT authentication** is on in the engine's **Security & Exposure** settings.
 
 ### Settings
 
@@ -132,7 +132,7 @@ Declaring a catalog is what makes governance work: grants on a catalog reach onl
 
 ![The Plugin config tab: service name, download URL, warnings and the two configuration files](/img/platform/admin/cp-engine-plugin.png)
 
-The installation files and warnings for the Ranger plugin: **Ranger service name**, **Policy download URL**, **Authentication**, **Declared plugin version**, *You must supply*, *What egret assumes* and the files `access-control.properties` and `ranger-trino-security.xml` with **Copy** and **Download**. With no profile bound it says *engine … is bound to no policy profile: bind a profile first. Bind a policy profile on the Settings tab, then come back.* See [Ranger plugin](../../data-governance/engines-and-policy/ranger-plugin.md).
+The installation files and warnings for the Ranger plugin: **Ranger service name**, **Policy download URL**, **Authentication**, **Declared plugin version**, *You must supply*, *What egret assumes* and the files `access-control.properties` and `ranger-trino-security.xml` with **Copy** and **Download**. With no profile bound it says *No policy profile is bound to this engine yet. The plugin configuration names the profile's Ranger service, so bind a profile first.* with **Open Settings**, which switches to the **Settings** tab. Other errors show the server's message. See [Ranger plugin](../../data-governance/engines-and-policy/ranger-plugin.md).
 
 ### Settings
 

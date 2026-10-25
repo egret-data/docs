@@ -49,7 +49,7 @@ In **Trash**, a row offers **Restore** (the endpoint returns **disabled**, never
 ## Create an endpoint
 
 1. Go to **Explore → Data API → Endpoints** and press **+ Endpoint**.
-2. Fill in **Name**, **Path**, an optional **Description**, **Method**, **Database** and **SQL**.
+2. Fill in **Name**, **Path**, an optional **Description**, **Method**, **Connection** and **SQL**.
 3. Press **Create endpoint**.
 
 ![The New endpoint page filled in for Customer spend on trino-demo](/img/platform/data-api/endpoint-new.png)
@@ -62,10 +62,10 @@ The create page collects only what an endpoint cannot exist without. Parameters,
 | **Path** | The URL path, appended to the workspace base URL. | Required. See the path rules below. |
 | **Description** | What the endpoint returns and who it is for. Becomes the operation description in OpenAPI. | Optional. |
 | **Method** | `GET` or `POST`. | Default `GET`. |
-| **Database** | The [database connection](../workspace-settings/databases) the query runs on. | Required. Governed databases are labelled *Governed*; see [Governed connections](./governed-connections). |
+| **Connection** | The [connection](../workspace-settings/databases) the query runs on (*Choose a connection*). | Required. Governed databases are labelled *Governed*; see [Governed connections](./governed-connections). |
 | **SQL** | The query to publish. | Required. One `SELECT` (or `WITH … SELECT`). |
 
-The page also shows a warning under **Database** when you pick a governed connection that does not run queries as the caller. Both running and publishing are refused until that is fixed.
+The page also shows a warning under **Connection** when you pick a governed connection that does not run queries as the caller. Both running and publishing are refused until that is fixed.
 
 ### Path rules
 

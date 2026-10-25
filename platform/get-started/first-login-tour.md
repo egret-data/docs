@@ -110,7 +110,7 @@ When you follow a link to a page you have no access to, the page reads *403 — 
 Below 1024 px wide the sidebar is always the 64 px icon rail, and **Collapse** is hidden because there is nothing to toggle. A table wider than the page scrolls sideways inside its own box, with a shade on the edge that is cut off; the page itself does not scroll sideways. Rows of page tabs wrap onto a second line, and the Workspace settings tabs scroll sideways with the same shade.
 
 :::tip Where do I register a database?
-Under **Manage → Workspace settings → Engines**, not under Explore. See [Databases](../workspace-settings/databases), or
+Under **Manage → Workspace settings → Connections**, not under Explore. See [Connections](../workspace-settings/databases), or
 follow the first step of [Your first dashboard](./first-dashboard).
 :::
 

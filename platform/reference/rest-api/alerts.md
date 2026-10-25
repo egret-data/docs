@@ -585,7 +585,7 @@ Gated on `SMTP_MANAGE` — the same permission as the relay, and for the same re
 | Status | Meaning |
 |---|---|
 | 200 | The workspace's Slack app |
-| 404 | Not configured |
+| 204 | Not configured |
 
 ## PUT `/api/ws/{workspace}/notifications/slack`
 
@@ -656,7 +656,7 @@ Operation id: `smtp_get`. Auth: Session cookie.
 | Status | Meaning |
 |---|---|
 | 200 | The workspace's SMTP settings, without the password |
-| 404 | Not configured |
+| 204 | Not configured |
 
 ## PUT `/api/ws/{workspace}/notifications/smtp`
 

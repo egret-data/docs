@@ -72,8 +72,8 @@ you should change it. On the demo stack it is `Admin12345!` for `admin@egret.loc
 
 ### Where do I register a database?
 
-Under **Manage → Workspace settings → Engines**, not under Explore. See [Your first dashboard](./get-started/first-dashboard) and
-[Databases](./workspace-settings/databases).
+Under **Manage → Workspace settings → Connections**, not under Explore. See [Your first dashboard](./get-started/first-dashboard) and
+[Connections](./workspace-settings/databases).
 
 ### Why can I not save a connection with a password?
 
@@ -107,10 +107,10 @@ OAuth2 client-credentials flow to get a bearer token. See [Data API clients](./d
 
 ## Running queries
 
-### Creating a dataset fails with *502 Bad Gateway*. Why?
+### Creating a dataset fails with *Trino refused the X-Forwarded-Proto header*. Why?
 
-If the engine is Trino you run yourself, it answered HTTP 406 because Egret sends `X-Forwarded-Proto`. Set
-`http-server.process-forwarded=true` on Trino. See [Engine 406 and 502 errors](./deploy-operate/troubleshooting/engine-406-502).
+The engine is a Trino you run yourself, and it answered HTTP 406 because Egret sends `X-Forwarded-Proto` over plain HTTP. Set
+`http-server.process-forwarded=true` in the coordinator's `config.properties`, or connect over https. See [Engine 406 and 502 errors](./deploy-operate/troubleshooting/engine-406-502).
 
 ### Why are there only 1,000 rows?
 

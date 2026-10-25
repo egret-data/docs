@@ -70,7 +70,7 @@ A workspace is useful once it has:
 
 1. **Members.** Add people and groups (see [Members](../../workspace-settings/members.md)).
 2. **An engine and catalogs.** Assign an engine and a catalog (see [Workspace details](./workspace-detail.md#resources) and [Catalogs](../catalogs/index.md)).
-3. **A database connection** in **Workspace settings → Engines** (see [Databases](../../workspace-settings/databases.md)).
+3. **A database connection** in **Workspace settings → Connections** (see [Connections](../../workspace-settings/databases.md)).
 4. **Notifications** if alerts and reports will email or post to Slack (see [Notifications](../../workspace-settings/notifications.md)).
 
 ## Limits and known issues

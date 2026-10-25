@@ -63,6 +63,10 @@ Typical messages:
 | `task id '…' is declared more than once` | Two tasks in the flow share an id. |
 | `this egret deployment has no container runner` | A script task needs `workflow.container_runner`. The flow is fine; this deployment cannot run it. |
 | `` `concurrency` is declared … but is not yet enforced `` | A warning: the key is accepted and ignored. |
+| `` …: `colour` is not a property of a flow; egret ignores it `` | A warning (`unknown_property`): a key the flow, a task, a retry or a trigger does not have, often a typo such as `mesage:`. The flow saves; the key does nothing. |
+| `` …: `onResume` is accepted, but egret does not act on it `` | A warning (`ignored_property`): a Kestra property egret reads and ignores, such as a retry's `warningOnRetry`, `Pause` `onResume`, or `logLevel` on a task. |
+| `trigger '…' will never fire: …` | A warning (`schedule_not_resolvable`): the scheduler would refuse this schedule (a bad cron, an unknown time zone, `when`, `lateMaximumDelay`). See [Schedule triggers](../triggers/schedule.md). |
+| `trigger '…': inputs.… contains template syntax` | A warning (`schedule_input_templated`): a schedule input with `{{ }}`, which every tick would refuse. |
 
 ### Topology
 

@@ -85,7 +85,7 @@ A secret is a platform-wide object. Rotating it changes the credential for every
 
 - In a **storage connection**: the **Secret** field.
 - In a **catalog** (JDBC, Elasticsearch): **Password secret**.
-- In a **database connection** of a workspace: the **Secret** selector (see [Databases](../workspace-settings/databases.md)).
+- In a **database connection** of a workspace: the **Secret** selector (see [Connections](../workspace-settings/databases.md)).
 
 ## Limits and known issues
 
@@ -97,4 +97,4 @@ A secret is a platform-wide object. Rotating it changes the credential for every
 
 - [Storage](./storage/index.md)
 - [Create a catalog](./catalogs/create-catalog.md)
-- [Databases](../workspace-settings/databases.md)
+- [Connections](../workspace-settings/databases.md)

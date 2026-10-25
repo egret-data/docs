@@ -53,7 +53,7 @@ The **Calls** list shows individual requests, newest first, fifty at a time. Pre
 | **Status code** | Limit to one HTTP status, for example `404`. |
 | **Error code** | Limit to one `error_code`, for example `rate_limited`. |
 | **Request ID** | Look up one call from an error body. Paste the `request_id` a consumer gives you. |
-| **Include trial runs** | Also show calls made from the endpoint editor's **Try it** tab. Off by default, so the page shows real consumer traffic. A trial is marked with a **Trial** badge and the name of the person who ran it. |
+| **Include trial runs** | Also show calls made from the endpoint editor's **Try it** tab. Off by default, so the page shows real consumer traffic. A trial is marked with a **Trial** badge and the email of the person who ran it (a shortened user id for a viewer who may not list the platform's users, KI-296). |
 
 When the filters match nothing the page says so; with no calls at all it offers **View endpoints**.
 

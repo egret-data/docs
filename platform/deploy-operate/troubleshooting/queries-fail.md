@@ -42,7 +42,7 @@ Kubernetes, use the address as seen from the Egret pod.
 seconds to become healthy); the connection says `https` but the engine speaks `http`, or the reverse; a self-signed engine
 certificate (Egret verifies certificates; the `EGRET_ENGINE_TLS_INSECURE` override is for development only).
 
-Use **Test** on the connection in **Manage → Workspace settings → Engines** to repeat the check; it reports the error and the
+Use **Test** on the connection in **Manage → Workspace settings → Connections** to repeat the check; it reports the error and the
 latency.
 
 ## `engine: http 406 Not Acceptable`, or *502 Bad Gateway*
@@ -93,4 +93,4 @@ configured for JWT. A user signed in with the local break-glass account has no i
 ## Further reading
 
 - [SQL Lab](../../explore/sql-lab)
-- [Databases](../../workspace-settings/databases)
+- [Connections](../../workspace-settings/databases)

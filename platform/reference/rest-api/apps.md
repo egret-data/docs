@@ -416,6 +416,7 @@ Operation id: `publish`. Auth: Session cookie and `X-Egret-CSRF` header. Forbidd
 | `from_revision` | integer (int64), nullable | no | The draft revision this version was published from; `None` for a restore. |
 | `restored_from` | string (uuid), nullable | no | The version this one republished; `None` for a publish. |
 | `published_by` | string (uuid), nullable | no |  |
+| `published_by_name` | string, nullable | no | The publisher's display name: the profile name, else the email. Null when `published_by` is null or the user no longer exists. |
 | `published_at` | string (date-time) | yes |  |
 
 | Status | Meaning |
@@ -425,7 +426,7 @@ Operation id: `publish`. Auth: Session cookie and `X-Egret-CSRF` header. Forbidd
 | 401 | Not authenticated |
 | 403 | Missing app:write on this app |
 | 404 | No such app in this workspace |
-| 409 | expected_revision is stale (reload current_revision), or the app is in the trash |
+| 409 | expected_revision is stale (reload current_revision), the draft is still the new-app starter (code `starter_draft`), or the app is in the trash |
 | 500 | Internal error |
 
 ## POST `/api/ws/{workspace}/apps/{id}/restore`
@@ -517,6 +518,7 @@ Operation id: `versions`. Auth: Session cookie. Forbidden (403): Missing app:wri
 | `from_revision` | integer (int64), nullable | no | The draft revision this version was published from; `None` for a restore. |
 | `restored_from` | string (uuid), nullable | no | The version this one republished; `None` for a publish. |
 | `published_by` | string (uuid), nullable | no |  |
+| `published_by_name` | string, nullable | no | The publisher's display name: the profile name, else the email. Null when `published_by` is null or the user no longer exists. |
 | `published_at` | string (date-time) | yes |  |
 
 | Status | Meaning |
@@ -547,6 +549,7 @@ Operation id: `version_get`. Auth: Session cookie. Forbidden (403): Missing app:
 | `from_revision` | integer (int64), nullable | no | The draft revision this version was published from; `None` for a restore. |
 | `restored_from` | string (uuid), nullable | no | The version this one republished; `None` for a publish. |
 | `published_by` | string (uuid), nullable | no |  |
+| `published_by_name` | string, nullable | no | The publisher's display name: the profile name, else the email. Null when `published_by` is null or the user no longer exists. |
 | `published_at` | string (date-time) | yes |  |
 | `source` | string | yes |  |
 
@@ -578,6 +581,7 @@ Operation id: `version_restore`. Auth: Session cookie and `X-Egret-CSRF` header.
 | `from_revision` | integer (int64), nullable | no | The draft revision this version was published from; `None` for a restore. |
 | `restored_from` | string (uuid), nullable | no | The version this one republished; `None` for a publish. |
 | `published_by` | string (uuid), nullable | no |  |
+| `published_by_name` | string, nullable | no | The publisher's display name: the profile name, else the email. Null when `published_by` is null or the user no longer exists. |
 | `published_at` | string (date-time) | yes |  |
 
 | Status | Meaning |

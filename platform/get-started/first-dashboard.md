@@ -17,9 +17,9 @@ StarRocks engine you can reach. Any table works; the steps name the places where
 ## 1. Connect a database
 
 On the demo stack the connection `trino-demo` is already there: skip to [step 2](#2-run-a-query). On another installation,
-skip this step if your workspace already lists a connection under **Manage → Workspace settings → Engines**.
+skip this step if your workspace already lists a connection under **Manage → Workspace settings → Connections**.
 
-1. Go to **Manage → Workspace settings → Engines**.
+1. Go to **Manage → Workspace settings → Connections**.
 
    ![The Engines page lists the workspace's engine connections](/img/platform/ops/get-started/engines-page.png)
 
@@ -28,12 +28,11 @@ skip this step if your workspace already lists a connection under **Manage → W
    you can also set **User**, **HTTP scheme** (`http` or `https`), **Catalog** and **Schema**. **Add connection** stays disabled,
    with the hint *Fill in name, host, port*, until those three are set.
 4. Leave **Run queries as the logged-in user**, **Per-user delegation** and **Governed data** off for now. They are covered
-   in [Databases](../workspace-settings/databases).
+   in [Connections](../workspace-settings/databases).
 5. If the engine needs a password, choose it under **Secret**. Saving a secret needs `EGRET_SECRETS__MASTER_KEY` to be set on
    the server.
-6. Press **Add connection**. Egret checks that the engine is reachable when you save. **Test** on the connection's row
-   repeats the check and shows **OK** next to the button. A new connection's **Status** says **Unknown** until it has
-   been tested, and turns to **Healthy** only when you reload the page.
+6. Press **Add connection**. Right after the save, Egret tests the new connection: its row shows **OK** and **Healthy**, or the
+   reason the test failed. **Test** on the connection's row repeats the check at any time, and **Status** follows it at once.
 
 ![The Add engine connection dialog](/img/platform/ops/get-started/add-connection.png)
 
@@ -116,7 +115,7 @@ The dashboard now shows both charts:
 
 | Object | Where it lives | Reuse it by |
 |---|---|---|
-| Database connection | **Manage → Workspace settings → Engines** | Choosing it in SQL Lab, datasets and Data API endpoints |
+| Connection | **Manage → Workspace settings → Connections** | Choosing it in SQL Lab, datasets and Data API endpoints |
 | Dataset with a metric | **Explore → Datasets** | Building more charts on it |
 | Chart | **Explore → Charts** | Adding it to any dashboard |
 | Dashboard | **Explore → Dashboards** | Sharing it, scheduling it as a report |

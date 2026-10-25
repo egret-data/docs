@@ -55,7 +55,7 @@ Select the name or **Details** on a row. The page depends on the kind: see [Engi
 ## How engines relate to catalogs and workspaces
 
 - A **catalog** (see [Catalogs](../catalogs/index.md)) becomes queryable on an engine when it is **attached** (provisioned engine) or **declared** (external engine).
-- A **workspace** sees the engines assigned to it, plus the database connections an admin adds in **Workspace settings → Engines** (see [Databases](../../workspace-settings/databases.md)).
+- A **workspace** sees the engines assigned to it, plus the database connections an admin adds in **Workspace settings → Connections** (see [Connections](../../workspace-settings/databases.md)).
 - **Governance** policies reach an engine through the profile the engine downloads (see [Engines and policy](../../data-governance/engines-and-policy/index.md)).
 
 ## Limits and known issues

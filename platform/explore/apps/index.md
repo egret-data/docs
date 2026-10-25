@@ -39,6 +39,8 @@ Above the table: **Search apps…**, and the toolbar buttons **Bookmarks**, **Bu
 
 ### Row actions
 
+Each row's **⋯** button is named after its app (*Actions for Revenue explorer*), as in the Data API lists, so screen readers tell the rows apart.
+
 ![The row menu of Revenue explorer, with Open, Edit, Rename, Duplicate, the folder actions, Share and Move to Trash](/img/platform/apps/row-menu.png)
 
 | Action | What it does |
@@ -63,7 +65,7 @@ Above the table: **Search apps…**, and the toolbar buttons **Bookmarks**, **Bu
 
 Egret creates the app with a starter notebook and takes you straight to the editor. The dialog explains it in one line: *A data app is a marimo notebook that runs SQL as whoever is looking at it. You edit a draft; publishing it makes it the version people open.* The dialog asks only for a name; add a description later with **Rename…**.
 
-The starter source is:
+The starter source is written the way marimo saves a notebook, so opening the editor leaves it unchanged. An app created through the API with a database also gets a cell with `db = egret.connect("<database>")`. Until you change and save it, the draft cannot be published (see [Publish and version an app](./apps/publishing)). The starter source is:
 
 ```python
 import marimo
@@ -76,12 +78,15 @@ app = marimo.App(width="medium")
 def _():
     import marimo as mo
     import egret_marimo as egret
-    return egret, mo
+
+    return (mo,)
 
 
 @app.cell
 def _(mo):
-    mo.md("# New data app")
+    mo.md("""
+    # New data app
+    """)
     return
 
 

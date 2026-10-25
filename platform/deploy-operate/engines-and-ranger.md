@@ -51,7 +51,7 @@ There are two ways, both under **Control Plane → Engines** (see [Query engines
 | **Register external engine** | Stores the host, port and the plugin version you declare. Never touches the cluster. | A reachable Trino or StarRocks. Works with no Kubernetes. |
 | **Add engine** | Provisions the engine and wires the plugin, catalog and delegation: as Kubernetes workloads, or, with the Docker provisioner, as containers on one Docker host (Trino only). | A cluster and a service account for Egret (see [Kubernetes](./kubernetes)), or the Docker provisioner. |
 
-Then a workspace points at the engine with a database connection (**Manage → Workspace settings → Engines**).
+Then a workspace points at the engine with a database connection (**Manage → Workspace settings → Connections**).
 
 `[engines] provisioner` (`EGRET_ENGINES__PROVISIONER`) chooses the backend: `auto` (the default: Kubernetes when Egret runs in
 a cluster or finds a kubeconfig), `kubernetes`, `docker` or `none`. `auto` never picks `docker`. With `auto` and no cluster the
