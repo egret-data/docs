@@ -19,7 +19,7 @@ Which columns are listed depends on the chart: the ones it plots (for a bar char
 
 ### Column title
 
-Replaces the column's name in headers, legends and tooltips. The placeholder is the original name. Clearing the box goes back to the original. When the dataset gives the column or metric a **Display name**, that name is used as the title in the chart editor and the dataset's Preview unless you set a title here; see [Columns](../datasets-and-metrics/columns#display-name). The title also names the column in the **Sort** menu and the drill menu. Dashboard cards do not apply the dataset's display names (KI-251, KI-290).
+Replaces the column's name in headers, legends and tooltips. The placeholder is the original name. Clearing the box goes back to the original. When the dataset gives the column or metric a **Display name**, that name is used as the title in the chart editor and the dataset's Preview unless you set a title here; see [Columns](../datasets-and-metrics/columns#display-name). The title also names the column in the **Sort** menu and the drill menu, on the chart page and on dashboard cards.
 
 ## Number columns
 
@@ -54,7 +54,7 @@ How the decimal point and thousands separator are written.
 | `100000.00` | No thousands separator |
 | `100’000.00` | Apostrophe for thousands |
 
-**Identifier columns** have no thousands separator unless you choose a style: an order number reads `29989`, not `29,989`. Egret treats a column as an identifier when its type is an integer (`tinyint`, `smallint`, `int`/`integer`, `bigint`, `largeint`) and its name is `id`, ends in `_id` or `Id` (`customer_id`, `customerId`), or ends in `key` (`orderkey`, `custkey`, `order_key`). A decimal column named `…key` stays a number. The select shows the style the column is drawn with (`100000.00` for an identifier), and a style you choose, here or in the dataset's column format, always wins. The rule applies to table cells, Object detail and formatted exports. A dimension drawn on a chart (a funnel step, a box plot or Sankey category) is written as stored, but once that column has any formatting, even only a **Column title** or a dataset **Display name**, it gets thousands separators (KI-294).
+**Identifier columns** have no thousands separator unless you choose a style: an order number reads `29989`, not `29,989`. Egret treats a column as an identifier when its type is an integer (`tinyint`, `smallint`, `int`/`integer`, `bigint`, `largeint`) and its name is `id`, ends in `_id` or `Id` (`customer_id`, `customerId`), or ends in `key` (`orderkey`, `custkey`, `order_key`). A decimal column named `…key` stays a number. The select shows the style the column is drawn with (`100000.00` for an identifier), and a style you choose, here or in the dataset's column format, always wins. The rule applies to table cells, Object detail, formatted exports and a dimension drawn on a chart (a funnel step, a box plot or Sankey category), also when the column has other formatting such as a **Column title** or a dataset **Display name**.
 
 ### Multiply by a number
 

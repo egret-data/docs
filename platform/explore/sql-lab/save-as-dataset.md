@@ -15,7 +15,7 @@ When a query returns the rows you want to chart, you can promote it to a **virtu
 3. In the **Save as dataset** dialog, type a **Name** (required) and, optionally, a **Description**. The **Query** box shows the SQL that will be saved; it is read only. To change it, close the dialog and edit the editor.
 4. Press **Create dataset**. The button stays disabled until the name and the SQL are not empty.
 
-Egret asks the engine to describe the query, creates the dataset with one column per result column, and opens the new dataset's page. The dataset belongs to the database of the tab. If no database is chosen, the toast *Pick a database* appears instead.
+Egret asks the engine to describe the query, creates the dataset with one column per result column, and opens the new dataset's page. The dataset belongs to the connection of the tab. If no connection is chosen, the toast *Pick a connection* appears instead.
 
 ![The dataset page that opens after the query is saved](/img/platform/sql-datasets/sqllab-dataset-created.png)
 

@@ -29,7 +29,7 @@ The **⋯** menu on a row has **Delete**.
 
 1. Press **New classification**. The dialog says *A tag to classify tables, columns and BI objects with.*
 2. Type a **Name**. It is required. The **Key** follows the name (for example `personal-data-pii`) until you edit it.
-3. Optionally pick a **Colour** and write a **Description**.
+3. Optionally pick a **Color** and write a **Description**.
 4. Edit the **Key** if you want a different one.
 5. Press **Create classification**.
 
@@ -38,13 +38,13 @@ The **⋯** menu on a row has **Delete**.
 | Field | Notes |
 |---|---|
 | **Name** | Required. Shown everywhere the tag appears. |
-| **Colour** | A colour picker. |
+| **Color** | A color picker. The line beside it reads *Color of the swatch shown next to the name.* and gives the value, for example `#6366f1`. |
 | **Key** | Required. *Fixed once created. Follows the name until you edit it. Lowercase letters, digits, -, _ and :.* |
 | **Description** | Free text. |
 
 ## The tag page
 
-Select a tag to open its page. The header shows the colour, name, key and description, a **Clearance** badge when a clearance is set, and **Edit** and **Delete**. **Edit** turns the header into a form for **Name**, **Colour** and **Description** with **Save** and **Cancel**; *Key personal-data-pii is fixed once created.*
+Select a tag to open its page. The header shows the colour, name, key and description, a **Clearance** badge when a clearance is set, and **Edit** and **Delete**. **Edit** turns the header into a form for **Name**, **Color** and **Description** with **Save** and **Cancel**; *Key personal-data-pii is fixed once created.*
 
 ![The tag page of Personal data (PII): the tables and columns that carry it](/img/platform/admin/gov-tag-detail.png)
 

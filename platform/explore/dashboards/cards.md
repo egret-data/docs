@@ -25,6 +25,7 @@ On the card in view mode:
 - The **title** is the chart's name unless you set a different one. A small **info** icon after the title opens the card description.
 - On hover, a pencil (**Edit question**) opens the chart in the chart editor, and a download button opens the data export ([Export, reports and print](./export-and-reports)). The pencil and the title link are not shown if the title is hidden.
 - Clicking a value follows the card's click behaviour ([Interactivity](./interactivity)).
+- Columns are named and formatted as on the chart page: the dataset's **Display names** and column formats apply (table headers, legend, tooltip, axis titles and the drill menu), and anything the chart sets itself, such as a **Column title** or a number format, wins over them. The dashboard loads each dataset once, however many cards use it. A viewer who may not read the dataset (for example, a guest who holds only the dashboard grant) sees the chart's own settings: database names where the chart sets no title.
 
 If the chart has been deleted, the card shows "Chart not found". If the chart is not fully set up, for example a bar chart saved without an X-axis, the card says "This chart is not set up yet" and, under it, what the chart editor still asks for ("Add: X-axis"), in view and in edit mode; open the chart and complete it. If a required filter has no value, the card shows "Set the required filters to load this card".
 
@@ -133,7 +134,7 @@ Iframe cards have no title, no description, no auto height and cannot host filte
 ## Limits and known issues
 
 - The card description supports plain text only.
-- A chart card does not load its dataset, so it uses database names where the chart page uses the dataset's **Display names**: table headers (KI-251), and a chart's legend, tooltip, axis titles and drill menu (KI-290). Dataset column formats do not apply either. A **Column title** set in the chart itself does apply.
+- The print page that PNG and PDF reports are made from draws chart cards with the chart's own settings only: the dataset's **Display names** and formats do not apply there (KI-301).
 
 ## Further reading
 

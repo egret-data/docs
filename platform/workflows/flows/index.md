@@ -117,7 +117,7 @@ Press **Trash** on the **Flows** page to see the trash (the address gets `?view=
 
 Both need `workflow:manage` and are written to the audit log (`workflow_flow:restore`, `workflow_flow:purge`). Only a flow already in the trash can be deleted permanently. Press **Trash** again to go back to the flow list.
 
-The executions of a permanently deleted flow stay in the **Executions** list, but they can no longer be replayed (KI-297).
+The executions of a permanently deleted flow stay in the **Executions** list, but they can no longer be replayed: their **Replay** button is disabled and says why.
 
 ## Limits and known issues
 

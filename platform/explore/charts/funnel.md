@@ -47,7 +47,7 @@ One row for the dimension and one for the metric. See [Column formatting and num
 
 ## Reading the funnel
 
-- The first stage is the reference. It shows its name, its value in large type and the metric name, and every later stage shows a percentage of it, for example **65.32 %** for 8,100 of 12,400.
+- The first stage is the reference. It shows its name, its value in large type and the metric's title (your **Column title**, else the dataset's **Display name**, else the database name: **Visitors**, as the **Metric** picker shows it), and every later stage shows a percentage of it, for example **65.32 %** for 8,100 of 12,400.
 - The height of each band follows the stage's value relative to the **largest** stage, and the bands fade from dark to light along the funnel.
 - Hiding a stage with its switch removes it from the funnel, and the percentages are recomputed against the new first stage.
 
@@ -72,7 +72,6 @@ There is no **Axes** tab.
 - The percentage under each stage is relative to the **first stage in the displayed order**, not to the previous stage.
 - Stage names cannot be renamed here; rename or alias them in the dataset or the query.
 - Clicking a stage opens the drill menu for that stage.
-- The first stage's metric name is the database name (`visitors`), not the dataset's **Display name** or your **Column title** (KI-292).
 - **.png** export is offered only with **Bar — a column per step**. The default funnel is not drawn as one image, so it offers **.csv**, **.xlsx** and **.json** only.
 
 ## Further reading

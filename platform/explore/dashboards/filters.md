@@ -66,21 +66,21 @@ Changing the type resets the operator to the first one in its row.
 
 ### Operator
 
-Shown for `text`, `number` and `date` filters. It decides how the value becomes a condition on the connected column. The select shows the operators' internal names, as in the table below (KI-280).
+Shown for `text`, `number` and `date` filters. It decides how the value becomes a condition on the connected column. The select shows a label for each operator; the dashboard stores the key, which the API and the **Type** table above use.
 
-| Type and operator | Condition on the connected column |
-|---|---|
-| `text` `is` / `is-not` | equals / does not equal the value |
-| `text` `contains`, `does-not-contain` | matches `%value%` / does not match it |
-| `text` `starts-with`, `ends-with` | matches `value%` / `%value` |
-| `number` `=`, `!=`, `>=`, `<=` | the comparison with the number |
-| `number` `between` | at least the first number and at most the second; either end can stay empty |
-| `date` `range` | between two dates, both inclusive |
-| `date` `single` | equals one date |
-| `date` `relative` | the last 7, 30, 90 or 365 days up to today |
-| `date` `month-year` | the whole chosen month |
-| `date` `quarter-year` | the whole chosen quarter of a year |
-| `date` `all-options` | a relative window (past, next or current n days, weeks, months, quarters, years) or a specific date (on, before, after, between). |
+| Type | Operator (label) | Key | Condition on the connected column |
+|---|---|---|---|
+| `text` | **Is** / **Is not** | `is` / `is-not` | equals / does not equal the value |
+| `text` | **Contains** / **Does not contain** | `contains` / `does-not-contain` | matches `%value%` / does not match it |
+| `text` | **Starts with** / **Ends with** | `starts-with` / `ends-with` | matches `value%` / `%value` |
+| `number` | **Equal to**, **Not equal to**, **Greater than or equal to**, **Less than or equal to** | `=`, `!=`, `>=`, `<=` | the comparison with the number |
+| `number` | **Between** | `between` | at least the first number and at most the second; either end can stay empty |
+| `date` | **Date range** | `range` | between two dates, both inclusive |
+| `date` | **Single date** | `single` | equals one date |
+| `date` | **Relative date** | `relative` | the last 7, 30, 90 or 365 days up to today |
+| `date` | **Month and year** | `month-year` | the whole chosen month |
+| `date` | **Quarter and year** | `quarter-year` | the whole chosen quarter of a year |
+| `date` | **All options** | `all-options` | a relative window (past, next or current n days, weeks, months, quarters, years) or a specific date (on, before, after, between). |
 
 Dates are compared as calendar dates in UTC.
 
@@ -188,7 +188,6 @@ If the header is too narrow for the title and filters, the filters collapse into
 
 ## Limits and known issues
 
-- The **Operator** select shows internal names (`is-not`, `all-options`) instead of labels (KI-280).
 - Changing a saved filter's **URL name** breaks links already shared with the old name (see [Name and URL name](#name-and-url-name)).
 - The `text` and `number` types accept a single value only; a "Multiple values" choice is not offered.
 - Limiting a filter's choices is described from the product source. It has not been verified end to end on the demo data, where every priority occurs with every status.

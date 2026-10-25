@@ -75,6 +75,7 @@ Operation id: `activity_calls`. Auth: Session cookie. Forbidden (403): Missing d
 | `client_id` | string, nullable | no |  |
 | `request_id` | string | yes |  |
 | `actor_user_id` | string (uuid), nullable | no | Non-null ⇒ a Try-it run by this person, not consumer traffic. |
+| `actor_name` | string, nullable | no | The actor's profile name, else email; null for consumer traffic or a deleted user. Resolved here because the user list is admin-only, so an editor's browser could not (KI-296). |
 
 | Status | Meaning |
 |---|---|
@@ -903,6 +904,7 @@ Operation id: `list_endpoint_versions`. Auth: Session cookie. Forbidden (403): M
 | `note` | string | yes |  |
 | `is_live` | boolean | yes | True for the version `endpoints.live_version_id` points at. |
 | `created_by` | string (uuid), nullable | no |  |
+| `created_by_name` | string, nullable | no | The publisher's profile name, else email; null for a deleted user. Resolved here because the user list is admin-only, so an editor's browser could not (KI-296), as the Apps versions' `published_by_name` (KI-027). |
 | `created_at` | string (date-time) | yes |  |
 | `snapshot` | EndpointSnapshot | yes | The frozen definition. **This is the only thing P4 may read to decide what a request returns** — see the module comment. |
 | `breaking_changes` | ContractChange[], nullable | no | What publishing this version did to the consumers of the one it replaced (package 6), and therefore what its `created_by` accepted when they acknowledged it. |

@@ -12,7 +12,7 @@ The **Explorer** is the panel on the left of SQL Lab. It lists what is in the da
 
 The picker at the top of the Explorer lists every connection that is granted to the workspace, written as *name (engine)*, for example *trino-demo (trino)*. A small **egret** badge marks an engine that Egret provisioned itself. If there is only one connection it is selected for you; otherwise the picker says *Select a connection* and the panel shows *Select a connection to browse its schema.* until you choose one.
 
-The choice is stored with the tab. Changing the database clears the search box and resets the names used for [autocomplete](./editor#autocomplete), but it does not touch the SQL in the editor. A database that was removed from the workspace after you chose it shows *This database is no longer available.*
+The choice is stored with the tab. Changing the connection clears the search box and resets the names used for [autocomplete](./editor#autocomplete), but it does not touch the SQL in the editor. A connection that was removed from the workspace after you chose it shows *This connection is no longer available.*
 
 ## Browse the tree
 

@@ -32,7 +32,7 @@ From left to right:
 | **Cancel** | Asks the engine to stop the running query. Disabled when nothing is running. |
 | **Format** | Reformats the editor text. |
 | **Limit** | The maximum number of rows to return. |
-| Database badge | Shows the database and engine for this tab, for example *trino-demo · trino*. Read only. Change the database in the [Explorer](./schema-browser#choose-a-connection). |
+| Connection badge | Shows the connection and engine for this tab, for example *trino-demo · trino*, or *No connection* before one is chosen. Read only. Change the database in the [Explorer](./schema-browser#choose-a-connection). |
 | Status badge | *Running…*, *Done in 397 ms · 3 rows* (*1 row* for one row) or *Failed in 125 ms*. The time is measured in your browser from submit to the end of the run. This is the only place the run status is shown; the Results panel does not repeat it. |
 | **Save** | Opens **Save query** (see [Saved queries](./history-saved-snippets#saved-queries)). |
 | **Save as dataset** | Opens **Save as dataset** (see [Save a query as a dataset](./save-as-dataset)). |

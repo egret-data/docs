@@ -27,7 +27,7 @@ Open **Explore → Alerts & Reports**. The page has two tabs, **Alerts** (which 
 | **Next run** | When the scheduler will run it next, for example `in 9 hours`. |
 | **Owners** | The people whose permissions the query runs with. |
 
-Above the table: **Search** by name, description or owner; **Last run** filters by state (including **Never run**); the counters show how many are total, **active** and **paused**, and a **failing** shortcut appears when at least one item's last run was **Error** (for example "6 reports · 5 active · 1 paused · 1 failing"). The toolbar buttons are **Bookmarks**, **Bulk select**, **Trash** and **New folder**. Folders group items on the page.
+Above the table: **Search** by name, description or owner; **Last run** filters by state (including **Never run**); the counters show how many are total, **active** and **paused**, and a **failing** shortcut appears when at least one item's last run was **Error** (for example "6 reports · 5 active · 1 paused · 1 failing"). The toolbar buttons are **Bookmarks**, **Bulk select**, **Trash** and **New folder**. Folders group items on the page. Deleting a folder asks first (*Delete folder?*: "Everything in it moves to Uncategorized; nothing is deleted."; a folder can hold both alerts and reports, so no count is given). With **Bulk select**, **Move *n* to Trash** also asks first ("2 reports move to the Trash. You can restore them from there.").
 
 ### Row actions
 
@@ -41,7 +41,7 @@ The **⋯** menu on a row:
 | **Run now** | Runs it once immediately and shows the result in a message such as *Ran now: Success*. A manual run follows the same rules as a scheduled one, including the grace period. |
 | **Edit…** | Opens the editor. |
 | **Move to new folder…** | Puts it in a folder. |
-| **Move to Trash** | Soft-deletes it so the scheduler stops running it. **Trash** offers **Restore** and **Delete permanently**; permanently deleting also removes the run history and recipients. |
+| **Move to Trash** | Asks first (*Move to Trash?*), then soft-deletes it so the scheduler stops running it. **Trash** offers **Restore** and **Delete permanently**; permanently deleting also removes the run history and recipients. |
 
 ## Permissions
 

@@ -91,6 +91,7 @@ Reports ignore the grace period. A report that runs on its schedule always deliv
 ## Limits and known issues
 
 - The rendered pages show chart cards only, each under its chart's own name. Text and heading cards, card title overrides and tabs are not reproduced; see [Export, reports and print](../dashboards/export-and-reports#scheduled-report-rendering) (KI-073).
+- PNG and PDF charts use the chart's own settings only, not the dataset's **Display names** and column formats (KI-301).
 - CSV and text reports apply the table's default number format, not a column's own format settings (KI-266).
 - The opening and closing notes appear in the HTML part of the email only; the plain-text part has the result line alone (KI-170).
 - Report subjects accept the same placeholders as alerts, for example `Weekly sales overview - {{date}}`.
