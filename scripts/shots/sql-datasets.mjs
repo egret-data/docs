@@ -259,11 +259,11 @@ export const shots = [
     prepare: async (page) => {
       await page.getByRole('button', {name: 'Create', exact: true}).click();
       await page.getByRole('combobox').first().click();
-      await page.getByRole('option').first().click();
+      await page.getByRole('option', {name: /trino-demo/}).first().click();
       await page.getByPlaceholder('Dataset name').fill('Customers');
       await page.getByPlaceholder("What it's for").fill('One row per customer (tpch tiny).');
       await page.getByRole('combobox').nth(1).click();
-      await page.getByRole('option', {name: 'tpch'}).click();
+      await page.getByRole('option', {name: 'tpch', exact: true}).click();
       await page.getByRole('combobox').nth(2).click();
       await page.getByRole('option', {name: 'tiny'}).click();
       await page.getByRole('combobox').nth(3).click();

@@ -6,7 +6,7 @@ sidebar_position: 2
 
 A tag does nothing until it is applied. This page covers how to apply a tag to the tables and columns of an egret catalog and to BI objects, and how to write a **tag-based rule** so a mask or row filter follows the tag wherever it is applied.
 
-![The Add tag dialog for the started_at column, with the tag list open](/img/platform/admin/gov-add-tag.png)
+![The Add classification dialog for the started_at column, with the list of classifications open](/img/platform/admin/gov-add-tag.png)
 
 ## Tag a table or a column
 
@@ -17,7 +17,7 @@ Tags attach to tables and columns in egret-managed catalogs (Iceberg warehouses)
 3. In **Add tag**, open **Tag** and choose a tag. Tags already on the object are not offered; if there are none left the dialog says *Every tag is already on this table* (or *column*). With no tags defined it says *No tags are defined yet.*
 4. Press **Add tag**. A toast says *Tag added.*
 
-![The Data page for the sessions table: header, engine docs-trino, and the Columns list with tags and masking rules](/img/platform/admin/gov-table-overview.png)
+![The Data page for the sessions table: header, engine docs-trino, and the Columns list with classifications and rules](/img/platform/admin/gov-table-overview.png)
 
 The tag then appears in the **Tags** column of the table's **Columns** list, in the object header for a table-level tag, and in the column panel. You can also tag from **Control plane → Catalogs → \<catalog\> → Browse**, where each table and column has a tag control.
 
@@ -42,7 +42,7 @@ A rule can select **by tag** instead of by path. It then applies to every table 
 3. Set **Selects by** to **Tag**, search for the tag, and pick it.
 4. Preview, then **Create**.
 
-The rule shows under **By tag** on every tagged table, for example *Hash personal data — tag Personal data (PII) — mask · MASK_HASH — On column user_id*, and in the engine's **Policies** tab as a masking policy on `tag: Personal data (PII)`. The tag page's **Mask & filter** tab lists every rule selecting the tag, with columns **Rule**, **Kind**, **Reaches this tag** and **Exempt**.
+The rule shows under **By tag** on every tagged table, for example *Hash personal data — tag Personal data (PII) — mask · MASK_HASH — On column user_id*, and in the engine's **Policies** tab as a masking policy on `tag: Personal data (PII)`. The tag page's **Rules** tab lists every rule selecting the tag, with columns **Rule**, **Kind**, **Reaches this tag** and **Exempt**.
 
 On the demo stack the rule *Hash personal data* (Hash, exempt group `data-stewards`) made `member-sso` read `user_id` as a 64-character hash such as `B25935C0F9C4BB9A…`. It took effect after the next plugin download, within a minute of saving.
 

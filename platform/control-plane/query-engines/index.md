@@ -6,7 +6,7 @@ sidebar_position: 2
 
 **Control Plane → Infrastructure → Engines** is the registry of the query engines of the platform: the Trino and StarRocks clusters that run SQL for SQL Lab, charts and dashboards. An engine here is either **provisioned** by egret, or **external**: a cluster you run yourself and have registered so egret can manage its access policy.
 
-![The Engines list with the Trino and StarRocks tabs and one external engine, docs-trino-ext](/img/platform/admin/cp-engines.png)
+![The Engines list with the Trino and StarRocks tabs: the provisioned docs-trino and the external docs-trino-ext and trino-demo-ext](/img/platform/admin/cp-engines.png)
 
 You need **engine:read** to open the page. Registering and creating engines need **engine:create**.
 

@@ -78,14 +78,15 @@ export const shots = [
     prepare: async (page) => {
       await page.getByRole('button', {name: 'Add rule'}).click();
       const d = page.getByRole('dialog');
-      await d.getByRole('combobox', {name: 'Kind', exact: true}).click();
-      await page.getByRole('option', {name: 'Mask a column'}).click();
-      await d.getByLabel('Name').fill('Hash session ids');
-      await d.getByRole('combobox', {name: 'Mask type'}).click();
+      // Kind defaults to Mask a column; Applies to defaults to a classification, the button switches it to this table's path.
+      await d.getByRole('button', {name: /table sessions only/}).click();
+      await d.locator('#rule-name').fill('Hash session ids');
+      await d.locator('#rule-mask-type').click();
       await page.getByRole('option', {name: 'Hash', exact: true}).click();
       await d.getByPlaceholder('e.g. ssn').fill('session_id');
       await d.getByRole('button', {name: 'Preview', exact: true}).click();
       await page.waitForTimeout(3000);
+      await d.getByText(/Would recompile/).first().scrollIntoViewIfNeeded();
     },
   },
   {
@@ -96,7 +97,7 @@ export const shots = [
       await page.getByRole('button', {name: 'Who can read?'}).click();
       const d = page.getByRole('dialog');
       await d.getByRole('combobox').nth(1).click();
-      await page.keyboard.type('member');
+      await page.keyboard.type('member-sso');
       await page.waitForTimeout(1500);
       await page.getByRole('option').first().click();
       await d.getByRole('button', {name: 'Explain'}).click();
@@ -106,13 +107,13 @@ export const shots = [
   // Platform #744 (verify a mask per user): the answer's sentences on a column, for a user and for a group's members,
   // at 1440 and 390 px; the rule dialog's row-filter gap warning; the Add tag dialog's whole-table note.
   // Not referenced by a page until captured; the prepare steps were written without a running stack.
-  {id: 'admin/gov-who-can-read-column', path: `${T}?column=user_id`, settle: 800, prepare: whoCanReadColumn('user', 'member')},
+  {id: 'admin/gov-who-can-read-column', path: `${T}?column=user_id`, settle: 800, prepare: whoCanReadColumn('user', 'member-sso')},
   {id: 'admin/gov-who-can-read-group', path: `${T}?column=user_id`, settle: 800, prepare: whoCanReadColumn('group', 'data-stewards')},
   {
     id: 'admin/gov-who-can-read-column-390',
     path: `${T}?column=user_id`,
     settle: 800,
-    prepare: seq(async (page) => page.setViewportSize({width: 390, height: 844}), whoCanReadColumn('user', 'member')),
+    prepare: seq(async (page) => page.setViewportSize({width: 390, height: 844}), whoCanReadColumn('user', 'member-sso')),
   },
   {
     id: 'admin/gov-who-can-read-group-390',
@@ -144,7 +145,7 @@ export const shots = [
     path: T,
     settle: 800,
     prepare: async (page) => {
-      await page.getByRole('button', {name: 'Add tag'}).first().click();
+      await page.getByRole('button', {name: 'Add classification'}).first().click();
       await page.waitForTimeout(600);
       await page.getByRole('dialog').getByRole('combobox').first().click();
       await page.getByRole('option', {name: /Finance/}).first().click();
@@ -240,13 +241,13 @@ export const shots = [
     id: 'admin/gov-tag-rules',
     path: `${gov}/classifications`,
     settle: 2500,
-    prepare: seq(click('Personal data (PII)'), tab('Mask & filter')),
+    prepare: seq(click('Personal data (PII)'), tab('Rules')),
   },
   {
     id: 'admin/gov-tag-exposure',
     path: `${gov}/classifications`,
     settle: 3000,
-    prepare: seq(click('Personal data (PII)'), tab('View exposure')),
+    prepare: seq(click('Personal data (PII)'), tab('Views')),
   },
   {id: 'admin/gov-tag-clearance', path: `${gov}/classifications`, settle: 2500, prepare: seq(click('Confidential'), tab('Clearance'))},
   {
@@ -254,7 +255,7 @@ export const shots = [
     path: `${T}?column=started_at`,
     settle: 800,
     prepare: async (page) => {
-      await page.getByRole('button', {name: 'Add tag'}).last().click();
+      await page.getByRole('button', {name: 'Add classification'}).last().click();
       await page.waitForTimeout(600);
       await page.getByRole('dialog').getByRole('combobox').first().click();
       await page.waitForTimeout(600);
@@ -438,7 +439,8 @@ export const shots = [
       await page.getByRole('button', {name: 'Add secret'}).click();
       const d = page.getByRole('dialog');
       await d.locator('#cp-secret-name').fill('docs-api-token');
-      await d.getByRole('button', {name: 'Add key'}).click();
+      // The dialog opens with one empty key row; add one only when it does not.
+      if (!(await d.getByLabel('Key 1').count())) await d.getByRole('button', {name: 'Add key'}).click();
       await d.getByLabel('Key 1').fill('token');
     },
   },

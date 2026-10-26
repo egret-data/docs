@@ -6,7 +6,7 @@ sidebar_position: 1
 
 The **Check access** tab on a person, group or role page asks the engines a precise question: can this principal perform this action on this target? It uses the same evaluator as [Explain access](../data/explain-access.md), but lets you choose any catalog, schema, table or column and either action.
 
-![Check access for Member SSO on demo_warehouse.analytics.customers: No policy matched on docs-trino](/img/platform/admin/gov-person-check.png)
+![Check access for Member SSO on demo_warehouse.analytics.customers: refused on docs-trino because no policy allows it](/img/platform/admin/gov-person-check.png)
 
 Check access needs **policy:read**. A user with no username cannot be checked: the tab says *No username yet, so no engine knows this user.* Grant them something first so a username is allocated.
 

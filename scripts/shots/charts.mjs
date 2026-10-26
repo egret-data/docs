@@ -59,7 +59,27 @@ export const shots = [
   shot('editor-drill-menu', 'Revenue by order priority', 'Data', async (page) => { await page.waitForTimeout(3500); await page.mouse.click(940, 500); await page.waitForTimeout(700); }),
   shot('editor-export', 'Revenue by order priority', 'Data', async (page) => { await page.waitForTimeout(3000); await page.getByLabel('Export chart').click(); await page.waitForTimeout(500); }),
   shot('editor-view-sql', 'Revenue by order priority', 'Data', async (page) => { await page.waitForTimeout(3000); await click('View SQL', 1500)(page); }),
-  shot('editor-save-dialog', 'Revenue by order priority', 'Data', async (page) => { await page.waitForTimeout(3000); await page.getByRole('button', {name: 'Update'}).first().click(); await page.waitForTimeout(600); }),
+  // A saved chart's Update saves in one step; the Save chart dialog belongs to a new chart, built here from the orders dataset
+  // and never saved.
+  {id: 'charts/editor-save-dialog', path: `${ws}/datasets`, settle: 800, prepare: async (page) => {
+    await page.getByText('orders', {exact: true}).first().click();
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(1200);
+    await page.getByText('Create chart').first().click();
+    await page.waitForLoadState('networkidle');
+    await page.getByText('Bar', {exact: true}).first().click();
+    await page.waitForTimeout(2000);
+    await page.getByText('Pick a dimension…').click();
+    await page.getByText('orderpriority', {exact: true}).last().click();
+    await page.getByText('add y-axis').click();
+    await page.getByText('Revenue').last().click();
+    await page.waitForTimeout(2500);
+    await page.locator('main').getByRole('button', {name: 'Save', exact: true}).click();
+    const d = page.getByRole('dialog');
+    await d.getByPlaceholder('Chart name…').fill('Revenue per priority');
+    await d.getByPlaceholder('Optional description…').fill('Total revenue for each order priority');
+    await page.waitForTimeout(600);
+  }},
   shot('editor-change-viz', 'Revenue by order priority', 'Data', async (page) => { await page.waitForTimeout(2500); await page.getByRole('button', {name: 'Change'}).click(); await page.waitForTimeout(700); }),
   shot('editor-add-metric', 'Revenue by order priority', 'Data', async (page) => { await page.waitForTimeout(2500); await page.getByRole('button', {name: 'add y-axis'}).click(); await page.waitForTimeout(600); }),
   shot('editor-sort', 'Revenue by order priority', 'Data', seq(scroll(1000), async (page) => { await page.waitForTimeout(2500); await page.getByRole('combobox', {name: 'add a sort'}).click(); await page.waitForTimeout(500); })),

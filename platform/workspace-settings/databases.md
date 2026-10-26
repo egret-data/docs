@@ -8,7 +8,7 @@ A **connection** tells the workspace how to reach a query engine. SQL Lab, datas
 
 The workspace level says *Connections*; the Control Plane's **Engines** are the query engines themselves (see [Query engines](../control-plane/query-engines/index.md)). The REST API and some older pages still call a connection a *database* (`/api/ws/{ws}/databases`, `database_id`); the address of this page is still `…/settings/engines`.
 
-![The Engines page of the Docs sandbox workspace: the provisioned engine docs-trino and the connection trino-sandbox](/img/platform/admin/ws-engines.png)
+![The Connections page of the Docs sandbox workspace: the provisioned engine docs-trino and the connections trino-demo and trino-sandbox](/img/platform/admin/ws-engines.png)
 
 *Connections to query engines that this workspace can use in SQL Lab and charts.* The page needs workspace-admin rights; without them it says *You don't have access to this section.* with *Only a workspace admin can manage connections.* A new workspace says *No connections yet.*
 
@@ -37,7 +37,7 @@ A provisioned engine shows as a card with its name, type and a delegation badge 
 2. Fill the fields below.
 3. Press **Add connection**. Until **Name**, **Host** and **Port** are filled the button is disabled with *Fill in name, host, port*.
 
-![The Add engine connection dialog](/img/platform/admin/ws-add-connection.png)
+![The Add connection dialog](/img/platform/admin/ws-add-connection.png)
 
 The dialog is *Connect a Trino or StarRocks query engine. Egret tests the connection once it is saved.* Saving does not check that the engine is reachable; right after the save the page runs the same **Test** as the row's button, so the new row shows **Healthy** and *OK*, or **Error** and the reason, without a reload.
 

@@ -6,7 +6,7 @@ sidebar_position: 6
 
 Every run of an alert, Data API alert or report writes a row to its **run log**, whether it fired or not. The run log is the answer to "why didn't I get a message?": a schedule that wrote nothing is indistinguishable from a scheduler that never ran, so every outcome is recorded.
 
-![The run log of an alert with email, webhook and Slack destinations: an Error run whose Detail names the two failed destinations (the email went out), followed by an On grace run; the two older runs date from before platform #726, when a failed delivery was still a Success](/img/platform/alerts/run-log.png)
+![The run log of Pending orders above 100, an alert with email and webhook destinations: the newest run On grace, then Error runs whose Detail names the webhook that failed (the email went out)](/img/platform/alerts/run-log.png)
 
 ## Open the run log
 

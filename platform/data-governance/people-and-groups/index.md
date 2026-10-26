@@ -6,7 +6,7 @@ sidebar_position: 3
 
 **Governance → People & groups** answers "what reaches this person?" It lists the users, groups and roles that egret knows, and for each one shows the grants, rules, clearances and engine permissions that apply to them.
 
-![The Users tab of People and groups: twelve people with their emails and engine usernames](/img/platform/admin/gov-people-users.png)
+![The Users tab of People and groups: seventeen people with their emails and engine usernames](/img/platform/admin/gov-people-users.png)
 
 The area needs the **policy:read** permission. A steward who holds only **tag:read** is refused. Editing a grant or rule from a person's page needs **policy:update**.
 
