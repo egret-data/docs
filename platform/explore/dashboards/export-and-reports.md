@@ -62,11 +62,16 @@ What the page draws:
 - the dashboard name as the page title, then **one block per chart card**, in the dashboard's card order, each with the chart's name and the chart. A chart is drawn in a box 384 px high and cut off at its bottom edge if it is taller; a table, pivot table or object detail card gets a box as tall as its rows, so it never runs into the next card. The table itself still stops at its own maximum height (60 % of the renderer's window) and shows its *Showing N rows* line, so a long table is cut off inside its card;
 - the chart as saved, with filters set to each filter's **default value** (a report has nobody to choose values), including date windows relative to the moment of rendering;
 - nothing for heading, text, link and iframe cards, and nothing for tabs: all tabs' chart cards are stacked together;
-- the chart's name and settings, not the card's title override or visualization override.
+- the chart's name and settings, not the card's title override or visualization override. Columns are named and formatted as on the dashboard: the dataset's **Display names** and column formats apply under the chart's own settings, and a **Column title** set in the chart still wins. A chart whose dataset is outside the report's workspace is drawn with its own settings only.
+
+The size of the page depends on the format:
+
+- A **PDF** is printed on **A4** sheets. The renderer opens the page exactly as wide as the sheet (794 px), so the layout prints at full size and is not shrunk to fit. A single object gets 10 mm margins at the top and bottom; when it is taller than a sheet it continues on the next one. In a PDF of several objects each object is captured at the sheet's width and placed on a sheet of its own, and an object taller than one sheet is scaled down to fit it. A PDF ignores **Image width (px)** and **Image height (px)**.
+- A **PNG** keeps the requested width: 1200 px for a dashboard and 800 px for a chart, or **Image width (px)** when an alert attachment sets both sizes. The picture is as tall as the page's content.
 
 The page tells the renderer it is ready only when every chart has finished drawing and fonts have loaded, so images are not captured half-drawn. If a chart fails to draw or the data cannot be fetched, the page stays blank and the render is reported as failed rather than delivering a partial image.
 
-This is what a PDF of **Sales performance** (two tabs, a heading, a text card and six chart cards, filters with defaults) looked like on the demo stack: the title *Sales performance*; the cards **Revenue trend**, **Revenue by priority** and **Priority mix** on the first sheet and **Top clerks** and **Largest orders** (from the **Orders** tab) on the second; the line chart starting in January 1995 because the **Order date** filter defaults to 1995–1996; no heading or text card; and **Top clerks** under the chart's name, not the card title "Top 10 clerks". The **Largest orders** table had a sheet of its own, inside its card, with the first 26 of its 50 rows and the line *Showing 50 rows*. The whole render took about 20 seconds.
+This is what a PDF of **Sales performance** (two tabs, a heading, a text card and six chart cards, filters with defaults) looked like on the demo stack before platform #754 laid PDFs out at the sheet's width (where the sheets break and how many table rows fit has changed since): the title *Sales performance*; the cards **Revenue trend**, **Revenue by priority** and **Priority mix** on the first sheet and **Top clerks** and **Largest orders** (from the **Orders** tab) on the second; the line chart starting in January 1995 because the **Order date** filter defaults to 1995–1996; no heading or text card; and **Top clerks** under the chart's name, not the card title "Top 10 clerks". The **Largest orders** table had a sheet of its own, inside its card, with the first 26 of its 50 rows and the line *Showing 50 rows*. The whole render took about 20 seconds.
 
 ## Limits and known issues
 
@@ -75,8 +80,7 @@ This is what a PDF of **Sales performance** (two tabs, a heading, a text card an
 - The download popover's row limit text does not match the real limit (10,000 rows).
 - PNG and PDF report rendering needs the rendering service. A large dashboard takes about 20 seconds to render. Egret allows 30 seconds per dashboard plus 30 seconds for the whole render, and a page that does not finish drawing within 20 seconds fails.
 - A table card in a PNG or PDF report shows only the rows that fit the table's own maximum height; use a CSV report for every row.
-- Charts on the print page are drawn at the rendering service's screen width (1280 px), and the PDF shrinks them to fit the sheet, so labels come out small (KI-283).
-- Charts in a PNG or PDF report use the chart's own settings only: the dataset's **Display names** and column formats, which the dashboard and the chart page apply, do not apply there (KI-301).
+- A PDF is always A4: there is no choice of paper size or orientation.
 
 ## Further reading
 

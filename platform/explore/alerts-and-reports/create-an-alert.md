@@ -38,7 +38,7 @@ Creating a second alert with a name already used by another alert is refused: `a
 
 | Setting | What it does |
 |---|---|
-| **Connection** | The [connection](../../workspace-settings/databases) the query runs against. In a workspace with no connection, a red line under **SQL** asks you to add one first; it still says *database connection* and **Workspace settings → Engines** for what is now **Connections** (KI-302). |
+| **Connection** | The [connection](../../workspace-settings/databases) the query runs against. In a workspace with no connection, a red line under **SQL** says *This workspace has no connection yet. Add one under Workspace settings → Connections before creating an alert.* |
 | **SQL** | The query to run. **The first column of the first row** is the value the condition is tested against. |
 | **Condition** | What about the value makes the alert fire. |
 
