@@ -212,8 +212,11 @@ that cost time otherwise:
 - `access_control = ranger` must be in `fe.conf` **before** the front end starts. `ADMIN SET FRONTEND CONFIG
   ("access_control"="ranger")` on a running front end reports success and changes nothing, and is not persisted.
 - A literal `--` inside an XML comment crashes the front end at boot. The rendered files contain no comments.
-- StarRocks' Ranger plugin supports **resource-based policies only**. Tag-based masking and row filters are enforced on
-  Trino, and are not enforced by the StarRocks plugin.
+- StarRocks' Ranger plugin supports **resource-based policies only**: it downloads no tags. Egret therefore compiles its
+  own rules and clearances by classification into resource policies for each column or table that carries the
+  classification: masks, row filters, and for a clearance a select deny and NULL masks (on a whole table, one deny on
+  the table and a mask per column). A schema change to such a table through egret's Iceberg catalog recompiles the
+  profile at once. Hand-written tag policies are not enforced on StarRocks.
 
 ### Verify the plugin is polling
 

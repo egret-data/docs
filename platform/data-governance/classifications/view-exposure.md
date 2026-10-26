@@ -21,8 +21,9 @@ The sections need **tag:read**. They are on the **View exposure** tab of a tag's
 ### StarRocks
 
 - A column carries a clearance mask: **Nullify** for an uncleared user. A direct read returns `NULL` for that column, provided the query also reads another column the user may select.
+- A table that carries the classification as a whole gets the same mask on every column, plus a select deny on the table: an uncleared user is refused every direct read of it and reads `NULL` through a view. Egret rewrites the masks when the table's columns change (see [Clearance](./clearance.md#on-columns-or-on-a-whole-table)).
 - A base-column mask applies through plain and nested views, so an uncleared reader gets `NULL`. Through an INVOKER view the uncleared reader is refused.
-- New materialized views are denied on a StarRocks profile with a classified column, because a materialized view stores real values and a mask does not follow stored data.
+- New materialized views are denied on a StarRocks profile with a classified column or a classified table, because a materialized view stores real values and a mask does not follow stored data.
 
 ## What is not protected
 

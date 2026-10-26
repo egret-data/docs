@@ -80,6 +80,8 @@ Policies reach an engine only for the catalogs it serves. In **Control plane →
 2. Egret recompiles every profile it touches, in the same transaction. A compile that fails rolls the write back.
 3. The engine's plugin polls egret on an interval (30 seconds by default) and downloads the new policy set. Until then the engine enforces the previous one. The engine's **Plugin** tab shows the version each plugin last reported; confirmation takes two polls, about a minute.
 
+On StarRocks a table change recompiles too: a create, rename, register, undrop or column change of a table that carries a classification with a clearance on the whole table recompiles the StarRocks profiles bound to its catalog, and a change whose recompile would be refused is refused at the Iceberg commit (see [Clearance](../classifications/clearance.md#on-columns-or-on-a-whole-table)). Egret also recompiles, at every start and one profile at a time, each StarRocks profile that reaches a whole-table classification with a clearance or one selected by a row-filter rule; a refusal there keeps the profile's previous compile and shows as **Profile compile failed** on the Governance overview.
+
 Changing the profile bound to an engine recompiles both the old and the new profile. If that would leave two mask or row-filter rules deciding one column differently, egret refuses and changes nothing.
 
 ## Limits and known issues
