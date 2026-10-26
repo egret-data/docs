@@ -6,7 +6,7 @@ sidebar_position: 2
 
 A **rule** changes what a person sees in a table without denying access to it. A **mask** replaces the values of a column (hash, redact, show the last four characters). A **row filter** hides the rows that do not match an expression. Rules apply to everyone except the principals you exempt, and they are enforced in the query engine.
 
-![The Masks and filters tab of the sessions table: a row filter, a Nullify mask on revenue and a Hash mask selected by the tag Personal data (PII)](/img/platform/admin/gov-table-masks.png)
+![The Rules tab of the sessions table: a row filter, a Nullify mask on revenue and a Hash mask selected by the classification Personal data (PII)](/img/platform/admin/gov-table-masks.png)
 
 Reading rules needs **policy:read**. Creating, editing and deleting them needs **policy:update**.
 

@@ -6,7 +6,7 @@ sidebar_position: 3
 
 A report delivers a dashboard or a chart to a list of recipients on a schedule, so people who never open Egret still see the numbers. Use a report for the Monday sales summary or a daily CSV of one chart's data.
 
-![The Reports tab with six reports, one of them paused](/img/platform/alerts/reports-list.png)
+![The Reports tab with five reports, all of them active](/img/platform/alerts/reports-list.png)
 
 ## Create a report
 

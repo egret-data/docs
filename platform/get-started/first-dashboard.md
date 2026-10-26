@@ -34,7 +34,7 @@ skip this step if your workspace already lists a connection under **Manage → W
 6. Press **Add connection**. Right after the save, Egret tests the new connection: its row shows **OK** and **Healthy**, or the
    reason the test failed. **Test** on the connection's row repeats the check at any time, and **Status** follows it at once.
 
-![The Add engine connection dialog](/img/platform/ops/get-started/add-connection.png)
+![The Add connection dialog](/img/platform/ops/get-started/add-connection.png)
 
 :::warning An HTTP 406 or 502 when you save or test
 A Trino that answers *406 Not Acceptable* needs `http-server.process-forwarded=true`. See [Engine 406 and 502

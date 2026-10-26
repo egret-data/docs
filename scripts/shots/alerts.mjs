@@ -48,6 +48,9 @@ export const shots = [
     path: `${ws}/alerts/new?section=what`,
     prepare: async (page) => {
       await vp(page, 1000);
+      // The connection defaults to the first one; the query reads tpch, which trino-demo serves.
+      await page.getByRole('combobox').filter({hasText: /trino/}).first().click();
+      await page.getByRole('option', {name: 'trino-demo', exact: true}).click();
       await page.getByPlaceholder(/SELECT count/).fill("SELECT count(*) FROM tpch.tiny.orders WHERE orderstatus = 'O'");
     },
     settle: 1500,
@@ -55,7 +58,17 @@ export const shots = [
   {id: 'alerts/editor-schedule', path: `${ws}/alerts/new?section=schedule`, prepare: tall(1100), settle: 1500},
   {id: 'alerts/editor-notification', path: `${ws}/alerts/new?section=notification`, prepare: tall(1300), settle: 1500},
   {id: 'alerts/editor-dataapi', path: `${ws}/alerts/new?type=dataapi_alert&section=what`, prepare: tall(1000), settle: 2000},
-  {id: 'alerts/editor-report', path: `${ws}/alerts/new?type=report&section=what`, prepare: tall(1000), settle: 2000},
+  {
+    id: 'alerts/editor-report',
+    path: `${ws}/alerts/new?type=report&section=what`,
+    // The dashboard defaults to the first in the list; pick a demo one.
+    prepare: async (page) => {
+      await vp(page, 1000);
+      await page.locator('main').getByRole('combobox').nth(1).click();
+      await page.getByRole('option', {name: 'Executive summary', exact: true}).click();
+    },
+    settle: 2000,
+  },
   {
     id: 'alerts/run-log',
     path: `${ws}/alerts`,

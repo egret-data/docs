@@ -6,7 +6,7 @@ sidebar_position: 5
 
 **Governance → Classifications** defines the **tags** you use to classify data and BI objects, for example *Personal data (PII)* or *Finance*. A tag does three jobs: it labels an object, it can select the columns a mask or row filter applies to, and it can **gate** the objects that carry it behind a role or group.
 
-![The Classifications list: four tags with their keys, data and BI counts and clearance](/img/platform/admin/gov-classifications.png)
+![The Classifications list: four classifications with their keys, data and BI counts and clearance](/img/platform/admin/gov-classifications.png)
 
 The page needs the **tag:read** permission. Creating, editing and deleting tags needs **tag:manage**, which the built-in `data_steward` role holds.
 
@@ -46,7 +46,7 @@ The **⋯** menu on a row has **Delete**.
 
 Select a tag to open its page. The header shows the colour, name, key and description, a **Clearance** badge when a clearance is set, and **Edit** and **Delete**. **Edit** turns the header into a form for **Name**, **Color** and **Description** with **Save** and **Cancel**; *Key personal-data-pii is fixed once created.*
 
-![The tag page of Personal data (PII): the tables and columns that carry it](/img/platform/admin/gov-tag-detail.png)
+![The page of Personal data (PII), Where used tab: the tables and columns that carry it](/img/platform/admin/gov-tag-detail.png)
 
 The page has five tabs:
 
@@ -54,18 +54,18 @@ The page has five tabs:
 |---|---|
 | **Where used** | **Data**: per schema, each table that carries the tag and on which columns (for example *customers — Columns: email, name, phone*). **BI**: the datasets, charts and dashboards that carry it. |
 | **Clearance** | The roles and groups that gate objects carrying the tag. See [Clearance](./clearance.md). |
-| **Mask & filter** | The egret rules that select the tag, with **Rule**, **Kind**, **Reaches this tag** and **Exempt**. See [Tag-based policy](./tagging.md#rules-that-select-a-tag). |
-| **View exposure** | Materialized views and Trino views that could read classified data. See [View exposure](./view-exposure.md). |
-| **Hand-written** | *Hand-written tag policies whose tag matches this classification's name.* |
+| **Rules** | The egret rules that select the tag, with **Rule**, **Kind**, **Reaches this tag** and **Exempt**. See [Tag-based policy](./tagging.md#rules-that-select-a-tag). |
+| **Views** | Materialized views and Trino views that could read classified data. See [View exposure](./view-exposure.md). |
+| **Manual policies** | *Hand-written tag policies whose tag matches this classification's name.* |
 
-![The Mask & filter tab of Personal data (PII): the rule Hash personal data, exempting the group data-stewards](/img/platform/admin/gov-tag-rules.png)
+![The Rules tab of Personal data (PII): the rule Hash personal data, exempting the group data-stewards](/img/platform/admin/gov-tag-rules.png)
 
 ## Delete a tag
 
 1. Open the tag and press **Delete**, or use **⋯ → Delete** on the list.
 2. The dialog *Delete \<name\>?* says what goes with it, for example *Removes it from 0 tables and 4 columns.* and *Removes it from 0 BI objects.* Type the key to confirm.
 
-If a mask or row-filter rule still selects the tag, the dialog says so (*1 rule selects it: the delete will be refused until they are deleted or retargeted.*) and the delete is refused. Delete or retarget those rules first; the **Mask & filter** tab lists them.
+If a mask or row-filter rule still selects the tag, the dialog says so (*1 rule selects it: the delete will be refused until they are deleted or retargeted.*) and the delete is refused. Delete or retarget those rules first; the **Rules** tab lists them.
 
 ## Where tags are applied
 

@@ -42,9 +42,8 @@ The checks the server runs are:
 | Classifications without clearance | Tags that gate nothing (**Info**). |
 | Catalogs attached to no engine | No engine serves the catalog (**Info**). |
 
-On the demo stack, with the engine `docs-trino` serving `demo_warehouse`, the list held two findings:
+On the demo stack, with the engine `docs-trino` serving `demo_warehouse`, the list held one finding:
 
-- **Warning**: *egret could not compute the lineage of 1 view, so the tables it reads are not known.*, with the view and the engine's answer: `demo_warehouse.analytics.revenue_by_country — engine docs-trino: engine: Access Denied: Cannot access catalog demo_warehouse`. Egret reads view definitions through the engine as its lineage reader. That answer came from a Docker engine before platform #728, when the engine's plugin was not recognised and so did not receive the reader's access; see [Lineage](./lineage.md#how-egret-computes-lineage) for which engines do.
 - **Info**: *3 classifications have no clearance: they gate nothing.*, listing the tags.
 
 The reused-username finding states each verdict separately, for example *2 references or policies were written for a username before the person who holds it now existed. 1 more may have been. 1 egret-admin policy still gives engine ALL access to someone who is no longer an active platform admin.* Its examples name the username and the place, never an email. Names that match nobody (dead names on **Reused names**) do not raise it; such a name in a grant or rule exemption is reported as an unresolved principal reference when it widens access.
@@ -67,7 +66,7 @@ The list is paged: use the button at the bottom to load older changes. Under the
 
 A change made by an administrator acting as another user is shown as "Admin as User". A change by a deleted user is shown as *A deleted user*, and a change made by the platform itself, for example a recompile, as *egret*.
 
-![The Governance overview on the demo stack: two findings and the most recent governance changes](/img/platform/admin/gov-overview.png)
+![The Governance overview on the demo stack: one finding (three classifications without clearance) and the most recent governance changes](/img/platform/admin/gov-overview.png)
 
 ## The Governance sidebar
 

@@ -53,7 +53,7 @@ Prefer SSO for people. A local account has its own password and does not follow 
 
 Select a user to open their page. The header shows the name, status, provider and email, with **Disable** (or **Enable**) and **Delete**. A local account also has **Reset password**: *Set a new password for this local account. Their existing sessions are signed out immediately.*
 
-![The page of Farid Haddad: details, his directly granted platform role and one group](/img/platform/admin/cp-user-detail.png)
+![The page of Farid Haddad: details, his two directly granted platform roles and one group](/img/platform/admin/cp-user-detail.png)
 
 ### Details
 
@@ -92,6 +92,8 @@ You cannot disable your own account; the server answers *you cannot disable or d
 Press **Delete** in the header of the user page or in the row menu. The dialog asks *Delete "\<email\>"?* and says:
 
 > Deletes this user, their sessions, group memberships and role grants. Their engine username **\<username\>** is retired for good: nobody can be given it again, including this person if they come back, so grants and policies naming it will never apply to anyone. To stop them signing in and keep their username, grants and history, disable them instead.
+
+![The Delete dialog for Farid Haddad: his engine username farid-haddad is retired for good, with Disable instead and the typed confirmation](/img/platform/admin/cp-user-delete.png)
 
 A user who never had an engine username reads *They have no engine username yet.* instead of the second sentence. Type `delete` and press **Delete** to confirm.
 

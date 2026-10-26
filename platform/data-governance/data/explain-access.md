@@ -6,7 +6,7 @@ sidebar_position: 3
 
 **Explain access** answers the question "what does this person get when they read this?" using the policies each engine actually downloads, not the policies you think you wrote. It says, in one sentence per person and engine, whether they can read the object, which value they see in a column (the real value, hashed, NULL, …), which rows they see, and which rule, grant, clearance or group decided it. Use it to check that a rule does what you meant, for example "mask `email` for everyone except the group `data-team`".
 
-![The Who can read dialog: select is Allowed for member-sso on docs-trino, with the grant that decided it](/img/platform/admin/gov-who-can-read.png)
+![The Who can read dialog: member-sso can read sessions on docs-trino and sees only the rows the rule EU sessions only lets through](/img/platform/admin/gov-who-can-read.png)
 
 Explain needs the **policy:read** permission. There are two entry points:
 

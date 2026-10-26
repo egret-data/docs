@@ -16,7 +16,7 @@ Lineage tells you which tables a view reads and which views read a table. Egret 
 
 The working lineage view is the **Lineage** tab on a table, view or materialized view in **Governance → Data**.
 
-![The Lineage tab of the sessions table: no recorded readers, and a warning that one view's lineage could not be computed](/img/platform/admin/gov-table-lineage.png)
+![The Lineage tab of the sessions table: the view revenue_by_country reads it, found by recorded lineage](/img/platform/admin/gov-table-lineage.png)
 
 - **Reads from** lists the base tables of a view.
 - **Read by** lists the views and materialized views that read a table. An empty list says *No view or materialized view reads this table*. When a view's lineage is missing, the tab warns instead: *This list may be incomplete. 1 view in egret's catalogs has lineage egret does not know (failed or not yet computed); it may read this table* and *No reader is known.*
