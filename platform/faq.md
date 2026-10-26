@@ -156,8 +156,10 @@ by default). See [Audit log](./control-plane/audit-log).
 
 ### Does StarRocks enforce tag-based masking?
 
-Not through its Ranger plugin, which supports resource-based policies only. Tag-based masks and row filters are enforced on
-Trino. See [Engines and Ranger setup](./deploy-operate/engines-and-ranger#starrocks).
+Its Ranger plugin supports resource-based policies only, so egret compiles each rule and clearance by classification into
+resource policies for the columns and tables that carry the classification. Masks, row filters and clearances by
+classification are enforced on StarRocks this way, on a column or on a whole table; hand-written tag policies are not. See
+[Engines and Ranger setup](./deploy-operate/engines-and-ranger#starrocks) and [Clearance](./data-governance/classifications/clearance#on-columns-or-on-a-whole-table).
 
 ### Why did my StarRocks policies stop applying after a restart?
 

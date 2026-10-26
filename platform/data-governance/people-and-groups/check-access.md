@@ -36,7 +36,8 @@ The shield button at the top right of the People list (**Check access**) opens t
 |---|---|
 | **No policy matched** for someone you granted | The grant is on a catalog no engine serves, or the person's group was granted but they have no username yet. |
 | **Allowed** but the person sees masked values or fewer rows | A mask or row filter applies. Ask about the column: the sentence names the rule, or the clearance on StarRocks. |
-| A row filter or clearance you wrote does not show | The engine may not compile it for this table yet. The sentence says *does not filter on Trino here* or *is **not enforced** here*. See [Explain access](../data/explain-access.md#engine-gaps-the-answer-states). |
+| A row filter you wrote does not show | Trino does not compile a row filter by classification on a table where the classification is only on columns. The sentence says *does not filter on Trino here*. See [Explain access](../data/explain-access.md#engine-gaps-the-answer-states). |
+| A whole-table clearance shows *No NULL mask … is served here* | On StarRocks the direct read is refused, but a view over the table shows the values until egret has the table's columns: the table is not in the catalog yet, or the profile has not been recompiled since a column appeared. See [Explain access](../data/explain-access.md#clearance-on-starrocks). |
 | **Allowed** from a policy marked *Outside the permission model* | A hand-written Ranger policy decides. Egret does not manage it. |
 | **Undecidable** | The engine's super-user list, plugin version or tag assignment is not known. The reason names it. |
 

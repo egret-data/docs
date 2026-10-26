@@ -36,11 +36,26 @@ Not enforced in the engine: no group provider or usersync means a group name nev
 
 If a clearance names only groups, egret saves it but warns *Clearance saved but not enforced in any engine*.
 
-### A classification on a whole table
+### On columns or on a whole table
 
-On Trino a clearance covers every column of a table that carries the classification on the table itself. On StarRocks it does not: StarRocks applies a clearance only where the classification is on a column, and a classification on a whole table compiles no clearance there (KI-286). A later release compiles it. When the clearance requires a role, the Clearance tab says so: *Compiles to one deny tag policy in each Trino profile's tag service, and on StarRocks to a select deny and a NULL mask per tagged column. On StarRocks, a classification on a whole table compiles no clearance.*
+A clearance applies wherever the classification is: on the columns that carry it, or on every column of a table that carries it on the table itself. When the clearance requires a role, the Clearance tab says what it compiles to: *Compiles to one deny tag policy in each Trino profile's tag service. On StarRocks it compiles to a select deny and a NULL mask per tagged column, or, on a whole table, one select deny on the table and a NULL mask per column. StarRocks does not access-check a masked column, so an uncleared reader reads NULL in a classified column rather than being refused, unless the classification is on the whole table.*
 
-To gate a table on StarRocks today, put the classification on its columns. **Who can read?** states the gap for each person on a StarRocks engine: *Clearance PII is **not enforced** here: it is on the whole table, and StarRocks applies a clearance only where it is on a column.* See [Explain access](../data/explain-access.md#clearance-on-starrocks) for how a StarRocks clearance shows up there.
+What an uncleared reader who holds a grant on the table gets:
+
+| Classification is on | Trino | StarRocks |
+|---|---|---|
+| A column | Refused on a read of the column. | NULL in the column, directly and through a view. |
+| The whole table | Refused on a read of any column. | Refused on every direct read of the table, `SELECT *` and `count(*)` included. NULL in every column through a view. |
+
+A cleared reader reads the table as the rules give it to them. **Who can read?** says, for each person on a StarRocks engine, *member-sso is **refused** `email` (clearance PII, on the whole table); through a view it reads NULL*. See [Explain access](../data/explain-access.md#clearance-on-starrocks).
+
+On StarRocks the NULL masks need the table's columns, which egret reads from its catalog. So egret keeps them in step with the table:
+
+- A change to the table's columns (add, drop or rename a column), and a create, rename, register or undrop of the table, recompiles the StarRocks profiles at once. The plugin applies the new masks at its next poll (KI-305).
+- A change that would push a clearance over its ceiling is refused at the Iceberg commit with a 409 that names the table, for example *egret refused the table change: compiling the clearance on tag "PII" would expand to 501 policies on StarRocks, over the ceiling of 500: whole-table on demo_warehouse.sales.events (1 deny + 491 column masks) …*. The same check applies to a register and to an undrop from the **Recycle bin** (*egret refused the undrop: …*). A refused register is dropped again and stays in the Recycle bin (KI-306).
+- For a table that is not in the catalog yet, only the select deny is compiled, and **Who can read?** says that a view over it is not protected until the table exists (KI-307). The masks are written when the table is created.
+
+A rename or drop of the table does not move its classifications to the new name (KI-303).
 
 ## What a clearance does not do
 
@@ -54,7 +69,9 @@ A person who holds the required role only through a group is *Not cleared* in th
 
 ## A StarRocks limit
 
-A StarRocks clearance expands to one policy per tagged column, counted per profile. If more than 500 of a tag's columns are visible to one StarRocks profile, that profile's recompile fails outright rather than truncating the clearance, and every write that would recompile it fails with it, until the tag is narrowed or untagged back under the limit.
+A StarRocks clearance expands, per profile, to one policy per tagged column, and to 1 plus the column count for each table that carries the classification as a whole. Above 500 for one clearance, or above 1,000 policies for the whole profile, egret refuses the write that would cause it rather than truncating the clearance: adding the classification, a rule or clearance write, a role membership change or a table change. The Clearance tab says: *A StarRocks clearance expands, per profile, to one policy per tagged column, and 1 plus the table's column count for a classification on a whole table: if that comes to more than 500 for one StarRocks profile, the write that would cause it is refused (a classification, rule or table change), rather than truncating the clearance. Profiles that see fewer are unaffected.*
+
+The refusal names up to five of the largest whole-table tables with their column counts and ends with *Attach PII to fewer tables, or to columns*. The API answers it as a 409 with the code `expansion_ceiling` (a catalog's workspace assignment answers a 409 with the same sentence and no code).
 
 ## What the engine does
 

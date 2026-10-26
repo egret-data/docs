@@ -106,7 +106,8 @@ Expose only what clients need.
 - [ ] **Pin engine images** to the measured versions. Floating tags are not modelled, and Explain refuses for them.
 - [ ] **Turn on governance for connections whose data is sensitive** (**Governed data**) and use per-user delegation where
   the engine supports it, so row filters and masks apply per person. A shared service account bypasses them.
-- [ ] **Remember StarRocks tag masking is not enforced by its Ranger plugin**; only resource-based policies are.
+- [ ] **Remember StarRocks' Ranger plugin enforces resource-based policies only.** Egret's rules and clearances by
+  classification reach it as resource policies; hand-written tag policies do not.
 - [ ] **Re-check `access_control = ranger` after StarRocks container recreation.** It is lost silently.
 
 ## 7. Single sign-on

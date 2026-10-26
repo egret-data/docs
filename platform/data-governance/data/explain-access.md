@@ -51,7 +51,7 @@ The mask word comes from the mask type: Redact reads **redacted**, Partial mask:
 
 ### Clearance on StarRocks
 
-StarRocks does not refuse an uncleared reader of a classified column: it returns NULL. A cleared reader gets the rule's mask instead. The sentence names the rule and the clearance:
+Where the classification is on a column, StarRocks does not refuse an uncleared reader of the column: it returns NULL. A cleared reader gets the rule's mask instead. The sentence names the rule and the clearance:
 
 | Situation | Example sentence |
 |---|---|
@@ -62,7 +62,18 @@ StarRocks does not refuse an uncleared reader of a classified column: it returns
 | Cleared for several classifications on the column | … (cleared for *PII* and *Finance*) |
 | The served clearance mask is older than the rule | … (cleared for *PII*; the served clearance mask is older than the rule masks) |
 
-The mask word is always the one the engine applies (the served clearance mask), and the rule is credited only while the two agree.
+The mask word is always the one the engine applies (the served clearance mask), and the rule is credited only while the two agree. *Cleared for* names every classification with a clearance on the column, whether it is on the column or on the whole table.
+
+**A classification on the whole table.** StarRocks refuses an uncleared reader every direct read of the table, and a view over it reads NULL in every column (see [Clearance](../classifications/clearance.md#on-columns-or-on-a-whole-table)). The sentences say so:
+
+| Situation | Example sentence |
+|---|---|
+| Not cleared, a column read | member-sso is **refused** `email` (clearance *PII*, on the whole table); through a view it reads NULL |
+| Not cleared, a table read | member-sso is **refused** `sales.orders` (clearance *PII*, on the whole table) |
+| No NULL mask, because the table is not in the catalog | member-sso is **refused** `email` (clearance *PII*, on the whole table). No NULL mask for clearance *PII* is served here: egret found no table `sales.orders` in the catalog, so a view over it shows the values |
+| No NULL mask, because the column is newer than the compile | … No NULL mask for clearance *PII* is served here: the profile has not been recompiled since this column appeared, so a view over it shows the values |
+
+The last two lines name a gap that closes by itself: the masks are written when the table is created (KI-307) or when the profile is next recompiled (KI-305).
 
 **A reader with no grant.** StarRocks masks an uncleared reader's column to NULL without checking access on it, but the query still needs SELECT on the other columns it reads. When the person has no read on the table, the sentence says they are refused, not that they read NULL:
 
@@ -143,15 +154,13 @@ On StarRocks a read of a `MASK_NULL` column is not access-checked: it returns NU
 
 ## Engine gaps the answer states
 
-Some rules compile to nothing on one engine. Until a later release compiles them, the answer says so where you read it, rather than reporting a protection that is not there:
+One kind of rule compiles to nothing on Trino. Until a later release compiles it, the answer says so where you read it, rather than reporting a protection that is not there:
 
 | Engine | Rule | What the answer says |
 |---|---|---|
-| StarRocks | A classification with a clearance, on a whole table (not on its columns) | The column sentence ends with: *Clearance PII is **not enforced** here: it is on the whole table, and StarRocks applies a clearance only where it is on a column.* (KI-286) |
 | Trino | A row filter by classification, where the classification is on a column of the table, not on the table | member-sso sees **every row**: rule *US rows only* does not filter on Trino here, because PII is on a column, not on the table (KI-287) |
-| StarRocks | A row filter by classification, where the classification is on the table, not on any of its columns | member-sso sees **every row**: rule *US rows only* does not filter on StarRocks here, because PII is on the table, not on a column (KI-288) |
 
-The rule dialog warns about the two row-filter gaps before you create such a rule, see [Masks and row filters](./masks-and-filters.md#engine-gaps-for-row-filters-by-classification).
+The rule dialog warns about this gap before you create such a rule, see [Masks and row filters](./masks-and-filters.md#row-filters-by-classification-on-trino). Since platform #755 StarRocks enforces both a clearance and a row filter for a classification on a whole table, so the answer no longer states a StarRocks gap.
 
 ## What explain does not tell you
 
@@ -167,7 +176,7 @@ Explain works only for engines whose plugin version egret models: Trino with plu
 
 ## In the API
 
-`POST /api/control-plane/perm/explain` (one user) and `POST /api/control-plane/perm/explain/principal` (a group's or role's members) return the same answer. Each profile carries `effect_lines`, the sentences as structured parts (`subject`, `strong`, `code`, `rule`, `clearance`, `principal`, `policy`, `catalog`, `text`) with the joined `text`. It also carries `row_filter` (the table's row-filter decision), `other_columns_access` (on StarRocks, when the column is not access-checked), `clearance_not_enforced` and `row_filter_not_applied` (the engine gaps). A rule attribution carries the rule's `name`, and a tie's cause lists each tied policy's `outcomes`. With no profile, the response carries `effect_line`, the **Not enforced** sentence. All of these fields are optional additions; see the [REST API reference](../../reference/rest-api/perm.md).
+`POST /api/control-plane/perm/explain` (one user) and `POST /api/control-plane/perm/explain/principal` (a group's or role's members) return the same answer. Each profile carries `effect_lines`, the sentences as structured parts (`subject`, `strong`, `code`, `rule`, `clearance`, `principal`, `policy`, `catalog`, `text`) with the joined `text`. It also carries `row_filter` (the table's row-filter decision), `other_columns_access` (on StarRocks, when the column is not access-checked), `clearance_masks_missing` (on StarRocks, each clearance on the column or its table whose NULL mask is not served for the column, with `tag_id`, `tag_name` and a `reason` of `table_not_in_catalog` or `not_compiled`) and `row_filter_not_applied` (the Trino gap). Platform #755 removed `clearance_not_enforced`. A rule attribution carries the rule's `name`, and a tie's cause lists each tied policy's `outcomes`. With no profile, the response carries `effect_line`, the **Not enforced** sentence. All of these fields are optional additions; see the [REST API reference](../../reference/rest-api/perm.md).
 
 ## Troubleshooting
 

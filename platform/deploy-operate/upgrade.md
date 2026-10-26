@@ -120,6 +120,20 @@ where a deleted user's name was already given to someone else before the upgrade
 rewrites the engines' `egret-admin` policies to the active platform admins, so disabled admins lose engine all access. The
 ledger is data; see [Backup and restore](./backup-restore#the-username-ledger) before restoring data only.
 
+### StarRocks enforces whole-table classifications (platform #755)
+
+From platform #755 a classification on a whole table is enforced on StarRocks: a clearance compiles a select deny on the
+table and a NULL mask per column, and a row filter by classification filters the table (see
+[Clearance](../data-governance/classifications/clearance#on-columns-or-on-a-whole-table)). There is no migration. At its
+first start the new version recompiles each StarRocks profile that reaches such a classification, and the plugins download
+the new policies once.
+
+After the upgrade, open the Governance overview once. A profile whose recompile was refused, for example because a newly
+reached table makes two row filters by classification decide it differently, keeps its previous compile and shows as
+**Profile compile failed**, naming the rules. Edit or delete one of them. `GET /api/control-plane/perm/overlaps` lists only
+pairs that were already stored. A table change that would push a clearance over its ceiling is now refused at the Iceberg
+commit.
+
 ### StarRocks 4.1.6 enforces view privileges
 
 See [Engines and Ranger setup](./engines-and-ranger#supported-versions).

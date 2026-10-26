@@ -32,7 +32,7 @@ The checks the server runs are:
 | Unresolved principal references | A grant or rule exemption names a user, group or role egret does not know, so it cannot match anyone (see [Unmatched names](./people-and-groups/index.md)). |
 | Engine usernames reused after a delete | A grant, rule, engine permission or policy names a username that was written for someone other than the person who holds it now, or an `egret-admin` policy still names someone who is no longer an active platform admin. **Critical** when a finding is definite, otherwise **Warning**. Platform admins only; **Open** goes to [Reused names](./people-and-groups/index.md#reused-names). |
 | Plugin silent, behind or quiet | An engine's Ranger plugin has not downloaded the policy profile, downloaded an older version of it, or has been quiet for longer than expected. |
-| Profile compile failed | The last compile of a policy profile failed. Engines keep the previous compile. |
+| Profile compile failed | The last compile of a policy profile failed. Engines keep the previous compile. When the refusal names rules, for example the two rules of a new tie, the sentence ends *The refusal names rules A and B.* and each rule is listed among the examples with a link to its page. |
 | Engine failed | A provisioned engine reports a failed status. |
 | Rule overlaps | Two mask or row-filter rules decide the same column or table with the same priority (see [Policies and overlaps](./engines-and-policy/policies-and-overlaps.md)). |
 | View lineage failed | The view lineage that drives view exposure could not be read. |
