@@ -43,7 +43,7 @@ Marking a connection **Governed data** says that the data behind it is filtered 
 
 You see this in the editor before you reach Publish. On the **New endpoint** page and in the **Connection** picker of the **Query** tab, governed databases are labelled *Governed*, and picking one that is not per-user shows:
 
-> This database is governed: its row filters and column masks are applied per user at the engine. A query here would run on the shared service credential, so every consumer would read what that account can read. Running and publishing are both refused until the connection has per-user delegation (or impersonation) turned on.
+> This connection is governed: its row filters and column masks are applied per user at the engine. A query here would run on the shared service credential, so every consumer would read what that account can read. Running and publishing are both refused until the connection has per-user delegation (or impersonation) turned on.
 
 The option is still offered in the picker rather than hidden, because the same database becomes publishable the moment an administrator turns delegation on.
 

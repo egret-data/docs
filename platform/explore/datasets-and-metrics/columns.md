@@ -101,7 +101,7 @@ A format set here is a **default**. Charts and tables built on the dataset use i
 
 ### Display name
 
-A friendly label, for example *Order total* for `totalprice`. The chart editor shows it instead of the raw column name in its field lists, and it is the default **Column title** of the column on the chart page, on dashboard cards and in the dataset's **Preview**, so a table chart's header reads *Order total*. A chart that sets its own **Column title** for the column keeps it. The display name is applied when the chart is drawn and is not saved into the chart, so changing it later changes every chart that did not set its own title. PNG and PDF reports do not apply it (KI-301). Leave it empty to show the column name. A name made only of spaces is treated as empty.
+A friendly label, for example *Order total* for `totalprice`. The chart editor shows it instead of the raw column name in its field lists, and it is the default **Column title** of the column on the chart page, on dashboard cards, in PNG and PDF reports and in the dataset's **Preview**, so a table chart's header reads *Order total*. A chart that sets its own **Column title** for the column keeps it. The display name is applied when the chart is drawn and is not saved into the chart, so changing it later changes every chart that did not set its own title. Leave it empty to show the column name. A name made only of spaces is treated as empty.
 
 ### Description
 
@@ -122,7 +122,6 @@ Rows of calculated columns have two extra buttons at the right: **Edit** opens a
 ## Limits and known issues
 
 - **Dimension** and **Filter** are applied in the chart editor and in the dashboard filter mapping only, not by the server. **Category** and **Country** roles are not read anywhere.
-- PNG and PDF reports draw charts without the dataset's display names and formats (KI-301).
 - A format is stored as a small JSON text (for example `{"currency":"USD","decimals":2,"number_style":"currency"}`) that the API returns in the column's `format` field.
 - Column names cannot be renamed or hidden. Hide a column by leaving it out of the SQL of a virtual dataset.
 
