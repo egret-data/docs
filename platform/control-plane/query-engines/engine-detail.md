@@ -43,7 +43,7 @@ The engine then appears in that workspace's SQL Lab as a connection named after 
 
 ### Settings
 
-![The Settings tab with the configuration sections; Worker and Security & Exposure carry values](/img/platform/admin/cp-engine-settings.png)
+![The Settings tab with the configuration sections; Server, Coordinator, Worker and Security & Exposure carry values](/img/platform/admin/cp-engine-settings.png)
 
 *Cluster-wide, coordinator, and worker Trino config plus security and exposure. Saving re-provisions the engine.* (on the Docker provisioner: *Saving recreates the engine's containers.*) The sections are the ones of the create form (see [Provision an engine](./provision.md#the-configuration-sections-trino)).
 

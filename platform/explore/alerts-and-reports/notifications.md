@@ -90,7 +90,7 @@ For an **alert**, **Also show a chart or dashboard** attaches a rendering of a c
 | **Attachment object type** | **A dashboard** or **A chart**. |
 | **Attachment object** | Which one. |
 | **Attachment format** | **PNG image, shown here in the message** or **PDF, as a file**. |
-| **Image width (px)**, **Image height (px)** | Override the rendered size. They take effect only when both are set; leave either blank and both fall back to the default size. |
+| **Image width (px)**, **Image height (px)** | Override the size of a PNG attachment. They take effect only when both are set; leave either blank and both fall back to the default size. A PDF attachment uses neither: it is laid out on A4 sheets (see [Export, reports and print](../dashboards/export-and-reports#scheduled-report-rendering)). |
 
 A PNG attachment is shown inside the message between the opening note and the result, as in the example on [Create an alert](./create-an-alert#what-the-recipient-gets); a PDF arrives as a file. Rendering a chart or dashboard needs the rendering service and adds the render time to the run (about 25 seconds for the four-card **Order operations** dashboard on the demo stack); see [Reports](./reports#png-and-pdf-need-the-renderer).
 

@@ -6,7 +6,7 @@ sidebar_position: 3
 
 A report delivers a dashboard or a chart to a list of recipients on a schedule, so people who never open Egret still see the numbers. Use a report for the Monday sales summary or a daily CSV of one chart's data.
 
-![The Reports tab with six reports, one of them paused](/img/platform/alerts/reports-list.png)
+![The Reports tab with five reports, all of them active](/img/platform/alerts/reports-list.png)
 
 ## Create a report
 
@@ -35,7 +35,7 @@ The **General** tab is the same as for an [alert](./create-an-alert#general). A 
 | Format | What recipients get | Needs the renderer |
 |---|---|---|
 | **PNG image** | The picture inside the email body, not as a file. | Yes |
-| **PDF** | A file attached to the email and named after the report, for example `leadership-weekly-pack.pdf`. Several objects are always delivered as one PDF with one sheet per object, so the format switches to PDF when you add a second object. | Yes |
+| **PDF** | A file attached to the email and named after the report, for example `leadership-weekly-pack.pdf`. Several objects are always delivered as one PDF with one sheet per object, so the format switches to PDF when you add a second object. The sheets are A4, and the page is laid out at the sheet's width, so text and charts print at full size. | Yes |
 | **CSV data** | The data behind the chart as an attached `.csv` file with a header row. | No |
 | **Text** | The data as a plain table in the message body, one row per line, for example `F \| 1,035,681,023.49`. | No |
 
@@ -91,7 +91,6 @@ Reports ignore the grace period. A report that runs on its schedule always deliv
 ## Limits and known issues
 
 - The rendered pages show chart cards only, each under its chart's own name. Text and heading cards, card title overrides and tabs are not reproduced; see [Export, reports and print](../dashboards/export-and-reports#scheduled-report-rendering) (KI-073).
-- PNG and PDF charts use the chart's own settings only, not the dataset's **Display names** and column formats (KI-301).
 - CSV and text reports apply the table's default number format, not a column's own format settings (KI-266).
 - The opening and closing notes appear in the HTML part of the email only; the plain-text part has the result line alone (KI-170).
 - Report subjects accept the same placeholders as alerts, for example `Weekly sales overview - {{date}}`.

@@ -134,7 +134,6 @@ Iframe cards have no title, no description, no auto height and cannot host filte
 ## Limits and known issues
 
 - The card description supports plain text only.
-- The print page that PNG and PDF reports are made from draws chart cards with the chart's own settings only: the dataset's **Display names** and formats do not apply there (KI-301).
 
 ## Further reading
 

@@ -6,7 +6,7 @@ sidebar_position: 4
 
 **Governance → Engine & policy** is where data-access policy reaches the query engines. Each engine downloads one **policy profile**, a named bundle of Apache Ranger policies that egret compiles from the grants and rules you write. This page lists the engines and profiles; each engine has its own page for engine permissions, policies, overlaps, the Ranger plugin and advanced policies.
 
-![Engine and policy: the provisioned docs-trino and the external trino-demo-ext, and four profiles without an engine](/img/platform/admin/gov-engines-index.png)
+![Engine and policy: the provisioned docs-trino, the external docs-trino-ext (no profile) and trino-demo-ext, and seven profiles without an engine](/img/platform/admin/gov-engines-index.png)
 
 The area needs the **policy:read** permission. Writes are checked per control.
 

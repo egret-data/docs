@@ -31,7 +31,7 @@ A line states the row count (`3 rows.`), or *Showing the first 100 rows — ther
 What to know:
 
 - Column names are the engine's own names. **Naming** is not applied, so what you see here is not the key a consumer receives. The **Response** tab shows the published names.
-- It runs under the database connection's own identity: as you only if the connection delegates or impersonates, and otherwise as the shared service credential.
+- It runs against the connection picked above it, under that connection's own identity: as you only if the connection delegates or impersonates, and otherwise as the shared service credential.
 - It does not save, publish, spend a rate limit, fill the cache or appear in Activity.
 - For a statement built with a script, **SQL this script built** shows the template the script returned for your test values.
 - With a [response transform](./response#response-transform), the rows are the statement's own, not the transformed response.

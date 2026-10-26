@@ -6,9 +6,9 @@ sidebar_position: 3
 
 A classification's clearance stops a direct read of a classified column. A **view** reads the same data indirectly, so without more care it could read straight through the clearance. The tag page shows, per classification, the views that read classified data and what the engine does about them. This page explains those sections and what clearance does and does not protect through views.
 
-![The View exposure tab of Personal data (PII): no materialized views, and one DEFINER view whose lineage could not be computed](/img/platform/admin/gov-tag-exposure.png)
+![The Views tab of Personal data (PII): no materialized views, and one DEFINER view, revenue_by_country, whose cleared owner reads classified data](/img/platform/admin/gov-tag-exposure.png)
 
-The sections need **tag:read**. They are on the **View exposure** tab of a tag's page in **Governance → Classifications**.
+The sections need **tag:read**. They are on the **Views** tab of a tag's page in **Governance → Classifications**.
 
 ## What is protected
 

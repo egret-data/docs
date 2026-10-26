@@ -33,7 +33,7 @@ const list = [
       await page.getByLabel('Name', {exact: true}).fill('Customer spend');
       await page.getByLabel('Path', {exact: true}).fill('customers/spend');
       await page.getByLabel('Description (optional)').fill('Total spend per customer, highest first');
-      await page.getByRole('combobox', {name: 'Database'}).click();
+      await page.getByRole('combobox', {name: 'Connection'}).click();
       await page.getByRole('option', {name: /trino-demo/}).click();
       await page.locator('.monaco-editor').first().click();
       await page.keyboard.insertText('SELECT custkey, round(sum(totalprice), 2) AS spend\nFROM tpch.tiny.orders\nGROUP BY custkey\nORDER BY spend DESC\nLIMIT 20');
@@ -56,7 +56,7 @@ const list = [
     path: `${ws}/data-api/endpoints`,
     prepare: async (page) => {
       await openEndpoint('Orders by status', null, 1300)(page);
-      await page.getByText('Database and parameters').click();
+      await page.getByText('Connection and parameters').click();
       await page.waitForTimeout(500);
     },
     settle: 800,
