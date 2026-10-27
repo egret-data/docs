@@ -134,6 +134,19 @@ reached table makes two row filters by classification decide it differently, kee
 pairs that were already stored. A table change that would push a clearance over its ceiling is now refused at the Iceberg
 commit.
 
+### Classifications follow a renamed table (platform #757)
+
+From platform #757 a rename of a classified table or column through egret's Iceberg catalog moves its classifications to the
+new name, and is held until the engines serve them: up to 90 seconds, about two policy polls with StarRocks bound. An Iceberg
+client that renames tables must wait that long; Trino does. A bound engine whose plugins do not poll makes these renames fail
+with a 409, and SQL Lab stops waiting at its 60-second query limit (`engine.query_timeout_secs`) first (KI-310). Unclassified
+renames and every other request are unchanged. There is no migration.
+
+Classifications that earlier renames left on old names are not moved. After the upgrade, open the Governance overview and
+check *classifications on tables that do not exist* and *classifications on columns that do not exist*. Attach each
+classification to the new name and remove it from the old one. See
+[Renames and drops](../data-governance/classifications/tagging#renames-and-drops).
+
 ### StarRocks 4.1.6 enforces view privileges
 
 See [Engines and Ranger setup](./engines-and-ranger#supported-versions).

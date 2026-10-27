@@ -52,13 +52,26 @@ The page has five tabs:
 
 | Tab | What it shows |
 |---|---|
-| **Where used** | **Data**: per schema, each table that carries the tag and on which columns (for example *customers — Columns: email, name, phone*). **BI**: the datasets, charts and dashboards that carry it. |
+| **Where used** | **Data**: per schema, each table that carries the tag and on which columns (for example *customers — Columns: email, name, phone*), with a badge where the catalog no longer matches (see below). **BI**: the datasets, charts and dashboards that carry it. |
 | **Clearance** | The roles and groups that gate objects carrying the tag. See [Clearance](./clearance.md). |
 | **Rules** | The egret rules that select the tag, with **Rule**, **Kind**, **Reaches this tag** and **Exempt**. See [Tag-based policy](./tagging.md#rules-that-select-a-tag). |
 | **Views** | Materialized views and Trino views that could read classified data. See [View exposure](./view-exposure.md). |
 | **Manual policies** | *Hand-written tag policies whose tag matches this classification's name.* |
 
 ![The Rules tab of Personal data (PII): the rule Hash personal data, exempting the group data-stewards](/img/platform/admin/gov-tag-rules.png)
+
+### Badges in Where used
+
+In a catalog egret manages, **Where used** compares each table and column that carries the tag with the catalog and marks the ones that no longer match. A live table with all its columns shows no badge.
+
+| Badge | Beside | Means |
+|---|---|---|
+| **Not in the catalog** | The table | The catalog has no table of that name: it was renamed before egret moved classifications, it was purged, or the tag was attached before the table was created. The renamed table may be unclassified under its new name. |
+| **Dropped** | The table | The table is in the catalog's **Recycle bin**. The tag applies again if the table is undropped. |
+| **Renamed to \<column\>** | A column | The table has no column of that name, and the table's schema history shows the column now has another name, for example **Renamed to mail**. This is a suggestion: check it before you attach the tag to the new column. |
+| **Not in the table** | A column | The table has no column of that name, and no renamed column was found: it was dropped, or never existed. |
+
+To fix a row, attach the tag to the new name and remove it from the old one. The Governance overview reports the same rows. See [Renames and drops](./tagging.md#renames-and-drops).
 
 ## Delete a tag
 

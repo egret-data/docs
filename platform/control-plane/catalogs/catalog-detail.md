@@ -66,6 +66,8 @@ Assigning a catalog to a workspace also writes a grant in the data-plane model: 
 
 The table shows each role's **Consumer**, **Grants** (for example `catalog · manage` or `analytics.orders · read`) and the number of **Clients**. Provisioning an engine creates the role `engine` (*Auto-created role for query engines*) with a catalog-wide `manage` grant, and a client for the engine.
 
+A grant on one table stays on the table's old name when the table is renamed: the role loses access to the renamed table and gains it on a new table created under the old name (KI-309). Add the grant on the new name and remove the old one.
+
 ## Catalog Clients (warehouse)
 
 *Machine credentials (client id + secret) an engine or notebook uses to authenticate.*
@@ -81,6 +83,8 @@ The list shows **Name**, **Consumer**, **Role**, **Client ID** and **Revoke**. A
 ![Browsing the analytics namespace of demo_warehouse: the sessions table with its columns](/img/platform/admin/cp-catalog-browse.png)
 
 A tree of **Namespaces** (with a count) and a **Recycle bin** for dropped tables, with a search field (*Search tables & views…*). Select a table to see its **Format** version, **Columns**, **Snapshots**, **Updated** time and **Location**, with the tabs **Schema**, **Properties** and **Snapshots**. Each table and column has a tag control, which assigns a [classification tag](../../data-governance/classifications/tagging.md).
+
+A dropped table keeps its classifications in the **Recycle bin**, and **Undrop** brings it back classified. The catalog does not rename another table onto the name of a table in the Recycle bin; for a classified table egret refuses that rename at once and says so. A classified table or column renamed through the catalog is held until the engines serve its classifications under the new name. See [Renames and drops](../../data-governance/classifications/tagging.md#renames-and-drops).
 
 ## Connect (warehouse)
 

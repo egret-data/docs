@@ -98,6 +98,7 @@ Deleting a hand-written policy asks *This policy will be permanently removed fro
 
 - Egret does not check hand-written policies against grants, so they can overlap compiled rules. The **Overlaps** tab reports mask and row-filter collisions with them.
 - Migrating hand-written policies into the permission model is covered in [Migrate policies](./migrate.md).
+- A hand-written policy that names a table keeps naming it after a rename, so it no longer applies to the renamed table and applies to a new table created under the old name (KI-308).
 
 ## Further reading
 

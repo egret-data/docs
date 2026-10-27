@@ -40,6 +40,10 @@ The checks the server runs are:
 | Policy warnings | Hand-written policies carry things egret warns about. |
 | Plugin version not modelled | An engine runs a Ranger plugin version egret cannot prove migrations or explanations for. |
 | Classifications without clearance | Tags that gate nothing (**Info**). |
+| Classifications on tables that do not exist | A table carries classifications, but its catalog has no table of that name: it was renamed before egret moved classifications, purged, or classified before it was created (**Warning**). |
+| Classifications on dropped tables | A dropped table, in its catalog's **Recycle bin**, keeps its classifications (**Info**). |
+| Classifications on columns that do not exist | A classified column is not in its live table, with egret's guess at its new name when the table's schema history has one (**Warning**). |
+| Table names a rename left unclassified under a new table | A table was renamed and took its classifications with it, and a new table now holds its old name without them (**Warning**). |
 | Catalogs attached to no engine | No engine serves the catalog (**Info**). |
 
 On the demo stack, with the engine `docs-trino` serving `demo_warehouse`, the list held one finding:
@@ -47,6 +51,17 @@ On the demo stack, with the engine `docs-trino` serving `demo_warehouse`, the li
 - **Info**: *3 classifications have no clearance: they gate nothing.*, listing the tags.
 
 The reused-username finding states each verdict separately, for example *2 references or policies were written for a username before the person who holds it now existed. 1 more may have been. 1 egret-admin policy still gives engine ALL access to someone who is no longer an active platform admin.* Its examples name the username and the place, never an email. Names that match nobody (dead names on **Reused names**) do not raise it; such a name in a grant or rule exemption is reported as an unresolved principal reference when it widens access.
+
+The four classification checks compare the classifications on tables and columns of egret's catalogs with what the catalogs hold now. Each example links to the classification, except the last check's, which opens the renamed table's Data page. They read:
+
+| Check | Sentence | Example |
+|---|---|---|
+| Tables that do not exist | *1 table carries classifications but does not exist in its catalog: renamed before egret moved classifications, purged, or classified before it was created.* | `demo_warehouse.sales.ghost`, *tm-pii* |
+| Dropped tables | *1 dropped table keeps its classifications, which apply again if it is restored.* | `demo_warehouse.sales.orders_v2`, *tm-email, tm-pii* |
+| Columns that do not exist | *1 classified column is not in its table: it was renamed (egret names the new column).* With several: *4 classified columns are not in their table: 3 were renamed (egret names the new column), 1 was dropped or never existed.* | `demo_warehouse.sales.orders_v2.region`, *renamed to area* |
+| Names a rename left unclassified | *1 table name lost its classifications when its table was renamed, and a new table now holds the name without them: check whether it needs the classifications of the renamed table.* | `demo_warehouse.sales.t`, *tm-pii moved to demo_warehouse.sales.t_old by a rename* |
+
+The last one is the swap pattern: `t` renamed to `t_old`, then `t_new` renamed to `t`. The classifications followed the table to `t_old`. Attach them to the new `t` if it needs them. See [Renames and drops](./classifications/tagging.md#renames-and-drops).
 
 Before an engine serves a catalog, the finding is that the catalog is attached to no engine. When everything is in order the list reads *Nothing needs attention.*
 
@@ -58,13 +73,13 @@ Each check needs its own permissions: engine drift checks need **policy:read** a
 
 ## Recent changes
 
-**Recent changes** lists governance changes as they are recorded, newest first, with the columns **When**, **Who** and **What**, and a **View** link that opens the object concerned. The text describes each change in a sentence, for example *Administrator created a grant: allow read on demo_warehouse.finance to group finance-analysts, group data-team*, *Administrator set the clearance of classification Confidential: roles data_steward; groups none*, *Administrator created an engine grant: trino.set_system_session_property (query_max_run_time) on engine docs-trino to user member-sso* or *Administrator migrated legacy: analysts read finance_pg of profile docs-legacy-trino into egret grants and rules*. The link column reads **View**, or *(deleted)* when the object no longer exists.
+**Recent changes** lists governance changes as they are recorded, newest first, with the columns **When**, **Who** and **What**, and a **View** link that opens the object concerned. The text describes each change in a sentence, for example *Administrator created a grant: allow read on demo_warehouse.finance to group finance-analysts, group data-team*, *Administrator set the clearance of classification Confidential: roles data_steward; groups none*, *Administrator created an engine grant: trino.set_system_session_property (query_max_run_time) on engine docs-trino to user member-sso* or *Administrator migrated legacy: analysts read finance_pg of profile docs-legacy-trino into egret grants and rules*. A classified rename or a recursive namespace drop in an egret catalog reads *Catalog client engine-docs-trino moved classifications PII and Finance from sales.orders to sales.orders_v2 (table renamed)*, *… from sales.orders_v2.email to sales.orders_v2.mail (column renamed)* or *Catalog client engine-docs-trino removed 12 classification assignments with namespace sales (namespace dropped)*. These are the audit actions `tag:move` and `tag:purge`; a move links to the renamed table, a purge has no link. The link column reads **View**, or *(deleted)* when the object no longer exists.
 
 A reader who also holds **user:read** sees user deletes too, as *Administrator deleted user alice* (the username, or the email when the user had none), with no link. Without **user:read** these rows are left out, because they carry the deleted person's email.
 
 The list is paged: use the button at the bottom to load older changes. Under the list a note says *The oldest change you can see is from \<date\>*, and that changes older than 90 days are pruned. A second note warns that role assignments and catalog tags are recorded after they commit and can be missing if the audit writer was overloaded. Recording began when this version of egret was installed, so a fresh instance shows *No governance change has been recorded yet*.
 
-A change made by an administrator acting as another user is shown as "Admin as User". A change by a deleted user is shown as *A deleted user*, and a change made by the platform itself, for example a recompile, as *egret*.
+A change made by an administrator acting as another user is shown as "Admin as User". A change by a deleted user is shown as *A deleted user*, and a change made by the platform itself, for example a recompile, as *egret*. A classification move or purge made through egret's Iceberg catalog shows the catalog client that made it in **Who**, as *Catalog client engine-docs-trino*, or *Catalog client \<client id\> (deleted)* for a client deleted since. For a rename run on an engine this is the engine's client, not the person who ran the query.
 
 ![The Governance overview on the demo stack: one finding (three classifications without clearance) and the most recent governance changes](/img/platform/admin/gov-overview.png)
 

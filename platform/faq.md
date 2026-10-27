@@ -161,6 +161,13 @@ resource policies for the columns and tables that carry the classification. Mask
 classification are enforced on StarRocks this way, on a column or on a whole table; hand-written tag policies are not. See
 [Engines and Ranger setup](./deploy-operate/engines-and-ranger#starrocks) and [Clearance](./data-governance/classifications/clearance#on-columns-or-on-a-whole-table).
 
+### What happens to classifications when I rename or drop a table?
+
+A rename through egret's Iceberg catalog takes the classifications with it, on the table and on its columns. egret holds the
+rename until the engines serve them under the new name, which takes up to 90 seconds, and refuses it with a 409 if it cannot.
+A drop keeps them for an undrop, and a recursive namespace drop removes them. Grants, rules and hand-written policies written
+on the table's path do not follow (KI-308). See [Renames and drops](./data-governance/classifications/tagging#renames-and-drops).
+
 ### Why did my StarRocks policies stop applying after a restart?
 
 The activation `access_control = ranger` lives in the front end's `fe.conf`, which a recreated container regenerates, and
