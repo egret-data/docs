@@ -68,6 +68,36 @@ The table shows each role's **Consumer**, **Grants** (for example `catalog · ma
 
 A grant on one table stays on the table's old name when the table is renamed: the role loses access to the renamed table and gains it on a new table created under the old name (KI-309). Add the grant on the new name and remove the old one.
 
+### What each operation needs {#what-each-operation-needs}
+
+egret checks every Iceberg request a Catalog Client sends against its role's grants before the catalog sees it. A grant on the catalog covers every namespace and table; a grant on a namespace covers the tables and views directly in it, not those in a child namespace (a grant on `corp` does not cover `corp.fin.ledger`); a grant on a table covers that table or view only. **write** and **manage** both permit writes.
+
+| Operation | What the role needs |
+|---|---|
+| Load or list a table, view or namespace | Any grant covering it. |
+| Create a table or view, or stage a create | **write** or **manage** on the catalog, or on the namespace it is created in. A grant on a table name never creates that table. |
+| Commit to one table (`POST …/namespaces/{ns}/tables/{t}`) | **write** or **manage** covering the table the commit changes: the table named by the body's `identifier` when it has one, otherwise the table in the path. A view commit is decided on the view in its path. |
+| Commit to several tables (`POST …/transactions/commit`) | **write** or **manage** covering **every** table in the commit. One table that is not covered refuses the whole commit, and nothing is committed. |
+| Rename a table or view | On the **source**, what a drop needs: **write** or **manage** covering the source table or view. On the **destination**, what a create needs: **write** or **manage** on the catalog, or on the destination namespace. A grant on the destination table name is not enough. |
+| Drop a table or view | **write** or **manage** covering it. |
+| Drop a namespace recursively (with everything in it) | **write** or **manage** on the **catalog**. A namespace grant still drops an empty namespace, or the namespace's tables one by one. |
+| Remote S3 request signing (`…/aws/s3/sign`) | Not used by egret: refused with 403 whatever the grants. Clients read and write table files with vended credentials. |
+
+An engine's client holds `catalog · manage`, so it can do all of these. For example, a role with **write** on the namespace `sales` and on the namespace `stage` can rename `sales.orders` to `stage.orders`; a role with **write** on the table `sales.orders` and a grant on the table `stage.orders` cannot, because the destination needs a namespace grant.
+
+**Names match the way the catalog resolves them.** The catalog treats table and namespace names case-insensitively (and also equates width forms and invisible characters, but not accents), so a grant does too: a grant on `sales.Secret` covers `sales.secret` and `SALES.SECRET`, but not `sales.secrét`. Two grants that differ only in case are the same grant.
+
+**Refusals.** egret answers in the Iceberg REST error format, `{"error": {"message", "type", "code"}}`, so a client such as PyIceberg raises a typed error (`ForbiddenError` for a 403). A refusal names the side that failed and repeats only the names the client sent, so it does not tell whether a table exists:
+
+| Code | When | Example message |
+|---|---|---|
+| 403 | The grant does not cover the operation | *role 'etl' may not rename sales.orders: renaming needs write on the source, as dropping it would* |
+| 403 | A rename destination without a namespace grant | *role 'etl' may not rename into stage.orders: renaming needs write on namespace stage, as creating a table there would* |
+| 403 | A multi-table commit with an uncovered table | *role 'etl' may not commit to sales.orders: a multi-table commit needs write on every table it changes, as updating it alone would; nothing was committed* |
+| 403 | A recursive namespace drop without a catalog grant | *role 'etl' may not drop namespace corp recursively: a recursive drop deletes every child namespace and table, so it needs a catalog-level write or manage grant* |
+| 400 | A rename or commit body egret cannot read | *malformed rename request: …*, *malformed multi-table commit: …*, *malformed table commit: …* |
+| 413 | A rename body over 1 MiB, or a commit body over 16 MiB | *the body of a rename request is larger than 1048576 bytes* |
+
 ## Catalog Clients (warehouse)
 
 *Machine credentials (client id + secret) an engine or notebook uses to authenticate.*
@@ -111,6 +141,8 @@ A dropped table keeps its classifications in the **Recycle bin**, and **Undrop**
 
 - A catalog test before attaching checks only that the host answers on its port; a TPC-H catalog has no host to check.
 - Attach and detach on Trino restart the coordinator.
+- A Catalog Client with only a **read** grant receives vended S3 credentials that can also write and delete the files of the table it loads, so it can damage that table without any catalog write (KI-311). Give **read** grants only to clients you would trust with write access to those tables until this is fixed.
+- Any **write** grant lets a role create and list namespaces, and a grant on one table lets it list every table name in that namespace (KI-312).
 
 ## Further reading
 

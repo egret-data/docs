@@ -49,8 +49,18 @@ of a real failure:
 | Symptom | Cause |
 |---|---|
 | 403 on a table that exists | The client's role has no grant, or a `read` grant where the call writes. `write` and `manage` permit writes; any grant permits reads. |
+| 403 on a rename (*may not rename …* or *may not rename into …*) | A rename needs `write` covering the source table and a `catalog` or `namespace` grant on the destination namespace; a grant on the destination table name is not enough. |
+| 403 on a commit (*may not commit to …*) | A commit needs `write` covering the table it changes, the table named in the body's `identifier` when there is one. A multi-table commit needs it on every table, and one uncovered table refuses the whole commit. |
+| 403 on a recursive namespace drop | A recursive drop needs a `catalog`-level `write` or `manage` grant. |
+| 403 *remote signing is not used by egret* | The client asked the S3 request signer. egret does not sign requests; configure the client for vended credentials. |
+| 400 *malformed rename request*, *malformed multi-table commit* or *malformed table commit* | The request body is not the JSON the Iceberg REST API defines. |
+| 413 *the body of a … is larger than … bytes* | A rename body is limited to 1 MiB, and a commit body to 16 MiB. |
 | 403 on the warehouse | The token's warehouse differs from the one requested. |
 | Warehouse creation refused | A warehouse without a `key_prefix` claims the whole bucket, and the catalog rejects a location that overlaps another warehouse. Give each its own bucket or prefix. |
+
+egret's refusals use the Iceberg REST error format, `{"error": {"message", "type", "code"}}`, so the client shows the
+message above in a typed error (PyIceberg raises `ForbiddenError` for a 403). The full list of what each operation needs is
+in [What each operation needs](../../control-plane/catalogs/catalog-detail#what-each-operation-needs).
 
 ### The advertised address is wrong
 
@@ -63,6 +73,10 @@ If `issuer` or `token_endpoint` names an address clients cannot reach (`http://l
 `EGRET_IDP__ISSUER` to the address of clients outside the cluster. **Changing the issuer strands StarRocks engines already
 provisioned**, because their security integration compares the old issuer byte for byte; re-provision them. See
 [Configuration](../configuration#address-settings-that-people-confuse).
+
+Behind the demo stack's edge on a port other than 80, `GET /catalog/v1/config` advertises its `uri` without the port (for
+example `http://egret.localtest.me/catalog` on port 18780). PyIceberg follows that address and fails with *connection
+refused* (KI-314). A client that reaches egret directly on the stack's network is not affected.
 
 ## The bucket does not exist
 

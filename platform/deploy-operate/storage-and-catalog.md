@@ -89,8 +89,8 @@ s3.path-style-access=true
 ```
 
 With `vended-credentials-enabled`, engines get credentials scoped to the table they load and the static `s3.aws-*` keys are
-not needed. A warehouse is provisioned with STS enabled and remote signing off, because the embedded mount exposes no
-signer endpoint.
+not needed. A warehouse is provisioned with STS enabled and remote signing off, and egret refuses every S3 signer request
+(`…/aws/s3/sign`) with 403, whatever the client's grants.
 
 ### Setting it up in the app
 
@@ -98,7 +98,8 @@ signer endpoint.
 2. **Control Plane → Catalogs → New catalog**: create an *egret warehouse* over that storage connection. This creates the
    warehouse in the embedded catalog.
 3. Open the catalog. On **Roles & grants**, add a role and give it a `write` grant (`write` and `manage` permit writes; any
-   grant permits reads).
+   grant permits reads). Creating a table, renaming into a namespace and dropping a namespace recursively need more than a
+   table grant; see [What each operation needs](../control-plane/catalogs/catalog-detail#what-each-operation-needs).
 4. On **Catalog Clients**, add a client bound to that role and copy the client id and secret. The secret is shown once.
 5. The **Connect** tab shows the catalog URI, warehouse name and OAuth token URL for this deployment, with ready-made
    snippets for PyIceberg, Trino and StarRocks.
