@@ -56,6 +56,7 @@ of a real failure:
 | 400 *malformed rename request*, *malformed multi-table commit* or *malformed table commit* | The request body is not the JSON the Iceberg REST API defines. |
 | 413 *the body of a … is larger than … bytes* | A rename body is limited to 1 MiB, and a commit body to 16 MiB. |
 | 403 on the warehouse | The token's warehouse differs from the one requested. |
+| A write fails at the object store with *access denied* (PyIceberg: `ACCESS_DENIED during CreateMultipartUpload`), while reads of the same table work | The client's role has only a `read` grant covering the table, so the catalog vended read-only storage credentials. Give the role `write` on the table, its namespace or the catalog. Nothing was committed. See [Storage credentials follow the grant](../../control-plane/catalogs/catalog-detail#storage-credentials-follow-the-grant). |
 | Warehouse creation refused | A warehouse without a `key_prefix` claims the whole bucket, and the catalog rejects a location that overlaps another warehouse. Give each its own bucket or prefix. |
 
 egret's refusals use the Iceberg REST error format, `{"error": {"message", "type", "code"}}`, so the client shows the
@@ -106,6 +107,10 @@ The Helm chart's `egret-rustfs-bucket` job does this for the bundled RustFS.
 The catalog hands engines short-lived, table-scoped credentials by calling STS `AssumeRole` on the object store. A store
 without STS support cannot serve them. RustFS supports it; MinIO's current public images are no longer available. Without
 vended credentials, engines need static `s3.*` keys in their catalog configuration.
+
+Vended credentials follow the client's grant: `read` vends read-only credentials, `write` and `manage` read-write-delete.
+A write by a read-only client fails at the object store, not in the catalog (see the table above). Credentials already
+handed out stay valid for up to about an hour after a grant is revoked or narrowed (KI-315).
 
 ## Storage connections in the app
 

@@ -89,7 +89,10 @@ s3.path-style-access=true
 ```
 
 With `vended-credentials-enabled`, engines get credentials scoped to the table they load and the static `s3.aws-*` keys are
-not needed. A warehouse is provisioned with STS enabled and remote signing off, and egret refuses every S3 signer request
+not needed. The credentials follow the client's grant: a role with only `read` on the table gets read-only credentials, and
+`write` or `manage` gets read, write and delete, so an engine whose client holds only `read` grants cannot write (see
+[Storage credentials follow the grant](../control-plane/catalogs/catalog-detail#storage-credentials-follow-the-grant)).
+A warehouse is provisioned with STS enabled and remote signing off, and egret refuses every S3 signer request
 (`…/aws/s3/sign`) with 403, whatever the client's grants.
 
 ### Setting it up in the app
@@ -107,7 +110,9 @@ not needed. A warehouse is provisioned with STS enabled and remote signing off, 
 
 :::caution One warehouse, one prefix
 A warehouse without a `key_prefix` claims the whole bucket, and the catalog rejects a warehouse whose location overlaps an
-existing one. Give each warehouse its own bucket or key prefix.
+existing one. Give each warehouse its own bucket or key prefix. The overlap check compares the storage connections' endpoints
+as written, so `http://rustfs:9000` and `http://rustfs:9000/`, or two host names for one store, are not seen as the same
+store (KI-316).
 :::
 
 ### Check it
