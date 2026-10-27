@@ -147,6 +147,24 @@ check *classifications on tables that do not exist* and *classifications on colu
 classification to the new name and remove it from the old one. See
 [Renames and drops](../data-governance/classifications/tagging#renames-and-drops).
 
+### Catalog renames and commits are authorized by their tables (platform #758)
+
+From platform #758 egret's Iceberg catalog decides a rename, a commit and a recursive namespace drop on the tables they
+change. There is no migration and no API change. Engines provisioned by egret hold `catalog · manage` and are not affected;
+Trino's creates, writes, renames and drops were checked. A Catalog Client with narrower grants may now be refused calls it
+could make before:
+
+- a rename needs `write` on the source table and a `catalog` or `namespace` grant on the destination namespace (a grant on
+  the destination table name no longer suffices);
+- a multi-table commit needs `write` on every table in it;
+- a recursive namespace drop needs a `catalog`-level `write` or `manage` grant;
+- remote S3 signing is refused with 403.
+
+Grants now match names case-insensitively, as the catalog does, so two grants that differ only in case are the same grant.
+A role reaches no table it could not already reach by spelling the name as its grant does. Refusals are Iceberg JSON errors, and rename and commit bodies are
+limited to 1 MiB and 16 MiB (413). See
+[What each operation needs](../control-plane/catalogs/catalog-detail#what-each-operation-needs).
+
 ### StarRocks 4.1.6 enforces view privileges
 
 See [Engines and Ranger setup](./engines-and-ranger#supported-versions).
