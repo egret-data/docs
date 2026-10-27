@@ -38,6 +38,8 @@ The shield button at the top right of the People list (**Check access**) opens t
 | **Allowed** but the person sees masked values or fewer rows | A mask or row filter applies. Ask about the column: the sentence names the rule, or the clearance on StarRocks. |
 | A row filter you wrote does not show | Trino does not compile a row filter by classification on a table where the classification is only on columns. The sentence says *does not filter on Trino here*. See [Explain access](../data/explain-access.md#engine-gaps-the-answer-states). |
 | A whole-table clearance shows *No NULL mask … is served here* | On StarRocks the direct read is refused, but a view over the table shows the values until egret has the table's columns: the table is not in the catalog yet, or the profile has not been recompiled since a column appeared. See [Explain access](../data/explain-access.md#clearance-on-starrocks). |
+| A renamed table is **Allowed** where a deny or a path mask applied before the rename | Grants, masks and row filters written on the table's path, and hand-written policies, stay on the old name; only classifications follow a rename (KI-308). Write them on the new name. See [Renames and drops](../classifications/tagging.md#what-does-not-follow-a-rename). |
+| A table renamed before this version has no clearance or tag mask | Its classifications are still on the old name. The Governance overview reports them as *classifications on tables that do not exist*. Attach them to the new name. |
 | **Allowed** from a policy marked *Outside the permission model* | A hand-written Ranger policy decides. Egret does not manage it. |
 | **Undecidable** | The engine's super-user list, plugin version or tag assignment is not known. The reason names it. |
 

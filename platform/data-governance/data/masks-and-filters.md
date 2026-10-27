@@ -129,6 +129,7 @@ The local platform admin `admin@egret.local` got the same masked values: platfor
 - A mask on a column whose type the mask cannot apply to can return an error from the engine rather than a masked value.
 - A row filter by classification filters nothing on Trino where the classification is only on columns (KI-287).
 - A second row filter on a table that already has one is refused by the preview, and the refusal links the new rule to a page that does not exist (KI-289).
+- A rule that selects by path stays on the old name when the table or column is renamed, so it stops masking or filtering the renamed table (KI-308). A rule that selects by tag follows the table, because classifications follow a rename; see [Renames and drops](../classifications/tagging.md#renames-and-drops).
 
 ## Further reading
 

@@ -51,11 +51,12 @@ A cleared reader reads the table as the rules give it to them. **Who can read?**
 
 On StarRocks the NULL masks need the table's columns, which egret reads from its catalog. So egret keeps them in step with the table:
 
-- A change to the table's columns (add, drop or rename a column), and a create, rename, register or undrop of the table, recompiles the StarRocks profiles at once. The plugin applies the new masks at its next poll (KI-305).
+- A change to the table's columns (add or drop a column), and a create, register or undrop of the table, recompiles the StarRocks profiles at once. The plugin applies the new masks at its next poll (KI-305).
+- A rename of the table, or of one of its columns, is held until every StarRocks plugin serves the masks under the new name, so a view over the renamed table reads NULL from its first read. See [Renames and drops](./tagging.md#renames-and-drops).
 - A change that would push a clearance over its ceiling is refused at the Iceberg commit with a 409 that names the table, for example *egret refused the table change: compiling the clearance on tag "PII" would expand to 501 policies on StarRocks, over the ceiling of 500: whole-table on demo_warehouse.sales.events (1 deny + 491 column masks) …*. The same check applies to a register and to an undrop from the **Recycle bin** (*egret refused the undrop: …*). A refused register is dropped again and stays in the Recycle bin (KI-306).
 - For a table that is not in the catalog yet, only the select deny is compiled, and **Who can read?** says that a view over it is not protected until the table exists (KI-307). The masks are written when the table is created.
 
-A rename or drop of the table does not move its classifications to the new name (KI-303).
+The classifications follow a rename of the table or of a column, and a dropped table keeps them for an undrop. See [Renames and drops](./tagging.md#renames-and-drops).
 
 ## What a clearance does not do
 

@@ -88,6 +88,7 @@ A grant on a catalog that no engine serves compiles into a profile no engine dow
 
 - The grant dialog offers kinds **user**, **group** and **role** only. The fourth kind that exists internally (workspace members) is written by egret itself.
 - A grant whose principals include nobody is refused, both by the form and by the API, so an edit can never silently revoke a grant.
+- A grant on a table or column path stays on the old name when the table or column is renamed; a deny then no longer applies to the renamed table (KI-308). Classifications follow a rename; see [Renames and drops](../classifications/tagging.md#renames-and-drops).
 
 ## Further reading
 
