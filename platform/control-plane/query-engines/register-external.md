@@ -52,6 +52,8 @@ A Trino profile created in the console has no tag service and cannot be bound. U
 
 *Declare which registry catalogs this engine serves, so grants on them reach its profile. egret does not create these catalogs on your engine — create them there with the same names.* Without **catalog_registry:read** the list is replaced by *Listing catalogs needs the catalog_registry:read permission, which your account does not have. You can register the engine now and declare catalogs later.*
 
+For an egret warehouse, you create the catalog on your engine yourself with a Catalog Client from the catalog's **Connect** tab. The client's role decides what the engine may do: with only **read** grants, the storage credentials the catalog vends are read-only, so the engine can query the tables but its writes fail at the object store with *access denied*. Give the role **write** or **manage** if the engine writes. See [Storage credentials follow the grant](../catalogs/catalog-detail.md#storage-credentials-follow-the-grant).
+
 ## After you register
 
 A dialog, *Engine registered: save its Ranger credential*, shows the engine's Ranger credential once: *Copy it now: egret shows this password once.* Its button depends on the profile:

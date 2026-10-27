@@ -70,7 +70,7 @@ A StarRocks engine has its own configuration screen with sections such as **Repl
 ## What happens next
 
 1. Egret starts the cluster, creates a **policy profile** with the engine's name (for example `docs-trino`, with the tag service `docs-trino_tag`) and binds it.
-2. The attached catalogs are applied to the engine (state **Applied** on the **Catalogs** tab).
+2. The attached catalogs are applied to the engine (state **Applied** on the **Catalogs** tab). For an egret warehouse, egret creates a Catalog Client for the engine under the warehouse's `engine` role, which holds `catalog · manage`, so the engine reads and writes every table.
 3. Assign the engine to a workspace on its **Workspaces** tab. It then appears in the workspace's SQL Lab as a connection with the engine's name, and in **Workspace settings → Connections** under **Provisioned by egret**.
 4. The Governance area lists the engine under **Engine & policy**, and grants on its catalogs reach it.
 
@@ -97,6 +97,7 @@ The demo's Docker provisioner only starts images from `trinodb/trino`, with no p
 
 - A Trino catalog attach or detach restarts the coordinator, so queries in flight are lost.
 - The Ingress section is offered on the Docker provisioner, which refuses any ingress (KI-264).
+- egret reuses an existing role named `engine` on the warehouse without checking its grants. If that role was narrowed to **read**, the engine can query but its writes fail at the object store with *access denied*, because the catalog vends read-only storage credentials (see [Storage credentials follow the grant](../catalogs/catalog-detail.md#storage-credentials-follow-the-grant)).
 
 ## Further reading
 

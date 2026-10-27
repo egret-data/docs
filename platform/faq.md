@@ -176,6 +176,14 @@ table name is not enough. A commit needs `write` on the table its body names, an
 A recursive namespace drop needs a `catalog`-level grant. Grants match names case-insensitively, as the catalog does. See
 [What each operation needs](./control-plane/catalogs/catalog-detail#what-each-operation-needs).
 
+### Why can a catalog client read a table but not write to it, with *access denied* from the object store?
+
+The storage credentials the catalog vends follow the client's grant. A role with only `read` on the table (or on its
+namespace or the catalog) gets read-only credentials, so it can scan the table but its writes fail at the object store
+when it uploads the first file; PyIceberg reports `ACCESS_DENIED during CreateMultipartUpload`. Give the role `write` on the
+table, its namespace or the catalog. Engines provisioned by egret hold `catalog · manage` and are not affected. See
+[Storage credentials follow the grant](./control-plane/catalogs/catalog-detail#storage-credentials-follow-the-grant).
+
 ### Why did my StarRocks policies stop applying after a restart?
 
 The activation `access_control = ranger` lives in the front end's `fe.conf`, which a recreated container regenerates, and

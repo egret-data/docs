@@ -165,6 +165,27 @@ A role reaches no table it could not already reach by spelling the name as its g
 limited to 1 MiB and 16 MiB (413). See
 [What each operation needs](../control-plane/catalogs/catalog-detail#what-each-operation-needs).
 
+### Vended credentials follow catalog grants (platform #760)
+
+From platform #760 the S3 credentials egret's Iceberg catalog vends on a table load follow the client's grant. There is no
+migration and no API change.
+
+- A role with only a `read` grant covering the table (on the table, its namespace or the catalog) gets read-only credentials
+  (`s3:GetObject`, `s3:GetObjectVersion`). Before, every client that could load a table got read-write-delete credentials on
+  its files, even without the `X-Iceberg-Access-Delegation` header (KI-311).
+- `write` and `manage` still get read-write-delete. The same rule applies on `…/tables/{t}/credentials`. View loads stay
+  read-only.
+- **Behaviour change:** an engine or client that uses a Catalog Client with only `read` grants can still read, but it can no
+  longer write or delete table files. Its writes now fail at the object store with *access denied* (PyIceberg:
+  `ACCESS_DENIED during CreateMultipartUpload`) instead of reaching the catalog. If such an engine is meant to write, give its
+  role `write` or `manage`.
+- Engines provisioned by egret hold `catalog · manage` and are not affected; Trino's creates, inserts, updates, deletes,
+  renames and drops were checked.
+- Credentials vended before the upgrade, read-write-delete ones handed to readers included, stay valid until they expire,
+  about an hour after they were issued (KI-315).
+
+See [Storage credentials follow the grant](../control-plane/catalogs/catalog-detail#storage-credentials-follow-the-grant).
+
 ### StarRocks 4.1.6 enforces view privileges
 
 See [Engines and Ranger setup](./engines-and-ranger#supported-versions).

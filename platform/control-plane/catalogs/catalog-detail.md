@@ -98,6 +98,22 @@ An engine's client holds `catalog · manage`, so it can do all of these. For exa
 | 400 | A rename or commit body egret cannot read | *malformed rename request: …*, *malformed multi-table commit: …*, *malformed table commit: …* |
 | 413 | A rename body over 1 MiB, or a commit body over 16 MiB | *the body of a rename request is larger than 1048576 bytes* |
 
+### Storage credentials follow the grant {#storage-credentials-follow-the-grant}
+
+When a client loads a table, the catalog hands it short-lived S3 credentials scoped to that table's location, so it can read the table's files without static object-store keys. What those credentials allow depends on the role's grant on the table:
+
+| The role's grant covering the table | Vended credentials |
+|---|---|
+| **read** (on the catalog, the namespace or the table) | Read-only: `s3:GetObject` and `s3:GetObjectVersion` on the table's location. The client can scan the table but cannot write, overwrite or delete any of its files. |
+| **write** or **manage** | Read, write and delete on the table's location. |
+| None | No credentials: the load itself is refused with 403. |
+
+The same rule applies with the `X-Iceberg-Access-Delegation: vended-credentials` header, without the header, and on `GET …/tables/{t}/credentials`. Only `X-Iceberg-Access-Delegation: client-managed` asks for no credentials. A role with several grants gets the widest one that covers the table: **read** on the namespace `sales` plus **write** on `sales.orders` vends read-write-delete on `sales.orders` and read-only on every other table in `sales`. Creating or staging a table (which needs **write** on the namespace) vends read-write-delete on the new table's location. A view load vends read-only credentials on the view's metadata location.
+
+An engine or client with only **read** grants can therefore read but not write. Its writes fail at the object store with *access denied* when it uploads the first data file, before anything reaches the catalog. PyIceberg, for example, raises `OSError: … AWS Error ACCESS_DENIED during CreateMultipartUpload operation: Access Denied` on an append. Engines provisioned by egret hold `catalog · manage` and write as before.
+
+The credentials stay valid for about an hour, and the catalog reuses one key for every caller with the same permission on the same table. Revoking or narrowing a grant stops new credentials at once, but does not cancel the ones already handed out (KI-315).
+
 ## Catalog Clients (warehouse)
 
 *Machine credentials (client id + secret) an engine or notebook uses to authenticate.*
@@ -120,7 +136,7 @@ A dropped table keeps its classifications in the **Recycle bin**, and **Undrop**
 
 ![The Connect tab of demo_warehouse with the REST catalog URI and the PyIceberg snippet](/img/platform/admin/cp-catalog-connect.png)
 
-*egret exposes this warehouse as an Iceberg REST catalog. Point any Iceberg-compatible engine at it using a Catalog Client's credentials.* The tab shows the **CATALOG URI**, **WAREHOUSE** and **OAUTH TOKEN URL**, and ready-made snippets for **PyIceberg**, **Trino** and **StarRocks**. Replace the `<CLIENT_ID>:<CLIENT_SECRET>` placeholders with a client's values, and the example table `demo_ns.events` with one of yours. If the engine runs in Docker, use the egret host reachable from that container instead of the public address. On the demo stack the snippet's `s3.endpoint` is `http://rustfs:9000`, an address that resolves only inside the Docker network. The snippets ask egret to vend short-lived, table-scoped S3 credentials, so no static object-store keys are needed.
+*egret exposes this warehouse as an Iceberg REST catalog. Point any Iceberg-compatible engine at it using a Catalog Client's credentials.* The tab shows the **CATALOG URI**, **WAREHOUSE** and **OAUTH TOKEN URL**, and ready-made snippets for **PyIceberg**, **Trino** and **StarRocks**. Replace the `<CLIENT_ID>:<CLIENT_SECRET>` placeholders with a client's values, and the example table `demo_ns.events` with one of yours. If the engine runs in Docker, use the egret host reachable from that container instead of the public address. On the demo stack the snippet's `s3.endpoint` is `http://rustfs:9000`, an address that resolves only inside the Docker network. The snippets ask egret to vend short-lived, table-scoped S3 credentials, so no static object-store keys are needed. A client whose role holds only **read** grants gets read-only credentials; see [Storage credentials follow the grant](#storage-credentials-follow-the-grant).
 
 ## Settings (warehouse) {#settings-warehouse}
 
@@ -141,7 +157,8 @@ A dropped table keeps its classifications in the **Recycle bin**, and **Undrop**
 
 - A catalog test before attaching checks only that the host answers on its port; a TPC-H catalog has no host to check.
 - Attach and detach on Trino restart the coordinator.
-- A Catalog Client with only a **read** grant receives vended S3 credentials that can also write and delete the files of the table it loads, so it can damage that table without any catalog write (KI-311). Give **read** grants only to clients you would trust with write access to those tables until this is fixed.
+- Vended credentials outlive a revoked or narrowed grant by up to about an hour, and callers with the same permission on a table share one key (KI-315).
+- Two warehouses that share a location can let a namespace writer in one of them obtain read-write credentials on a table of the other, when their storage connections write the same endpoint differently (KI-316). Give each warehouse its own bucket or key prefix.
 - Any **write** grant lets a role create and list namespaces, and a grant on one table lets it list every table name in that namespace (KI-312).
 
 ## Further reading
