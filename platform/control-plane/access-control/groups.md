@@ -42,7 +42,7 @@ The dialog says *Create a local group.* After creating it, open the group to add
 | **Members** | For a local group: *Users in this group. Search to add someone, or remove with ×.*, a **User** search with **Add**, and the **Member** and **Email** of each member with a remove button. For a synced group: *Members are synced from your identity provider.* |
 | **Roles** | *Roles granted to every member of this group.* Choose **Scope** (**Platform** or **Workspace**) and **Role**, then **Add**. |
 
-When a group holds a role, every member gets it. In the platform a role held through a group works as expected. In the query engine, however, a group name never reaches Trino or StarRocks: engines count only roles a user holds directly, which the **Applied on engines** column of [People & groups](../../data-governance/people-and-groups/index.md) shows as *egret only — not applied on engines: held through a group*.
+When a group holds a role, every member gets it, in the platform and on the query engines: egret writes the group's members into the engine's policy for that role. A group's workspace membership is different: the query engines do not apply it, and the **Applied on engines** column of [People & groups](../../data-governance/people-and-groups/index.md) shows it as *egret only — not applied on engines: held through a group*.
 
 :::warning
 A platform role assigned to a group does not give its members engine permissions. If someone needs a role in the engine, give it to them directly.

@@ -64,9 +64,9 @@ The classifications follow a rename of the table or of a column, and a dropped t
 - **Views.** Trino views in egret's catalogs carry the classification, so a user without clearance is refused through them. On StarRocks, a reader who holds the grant reads NULL through a plain or nested view, and an INVOKER view is refused. Existing StarRocks materialized views, and views of other connectors, are not covered. On Trino an uncleared owner's DEFINER view blocks everybody, the cleared included. See [View exposure](./view-exposure.md).
 - **Materialized views.** With a role clearance, users not cleared for every classification on an engine cannot create any materialized view on that engine, even over unclassified data.
 
-## Roles held through a group do not count in the engine
+## Roles held through a group count in the engine
 
-A person who holds the required role only through a group is *Not cleared* in the engine: *the required role is held through a group, and engines count only roles held directly*. Give the role to the user directly. An expired role assignment is *Not cleared* too, though engines may apply it until the next recompile. Each person's clearances are listed on their [People & groups](../people-and-groups/index.md#clearances) page.
+A person who holds the required role through a group is *Cleared* in the engine, the same as one who holds it directly: egret writes the group's members into the engine's policy. An expired role assignment is *Not cleared* though engines may apply it until the next recompile. A workspace membership held through a group is still not applied on engines. Each person's clearances are listed on their [People & groups](../people-and-groups/index.md#clearances) page.
 
 ## A StarRocks limit
 
