@@ -82,6 +82,17 @@ The principals the rule does not apply to. The picker offers **user** and **grou
 
 Like grants, a rule needs a current **Preview** before **Create**. For a tag rule the preview text warns: *A tag rule is catalog-unscoped, so this can recompile every Trino profile in the installation — see which, here, before committing.* A result reads, for example, *Would recompile docs-trino. created 1 · updated 0 · deleted 0 · unchanged 12*.
 
+## Masks on StarRocks tables
+
+A StarRocks table has two hidden columns, `_file` (the object-store path of each data file) and `_pos`. When a table has a
+mask, egret refuses them to a reader who does not see the real value in every masked column of the table. That reader's
+`SELECT *` on the table fails with error 5204 on `_file`. Name the columns you need, or read through a view over the table:
+a view shows the masked values and no path. A reader who sees the real value in every masked column can still use
+`SELECT *`.
+
+A change to the masks takes effect on the next compile of the profile. To apply it at once, compile the profile with
+`POST /api/control-plane/perm/compile/{profile_id}`.
+
 ## Row filters by classification on Trino
 
 A row filter by classification filters a table where the classification is on the table, on both engines. Where it is on a column, StarRocks filters the table and Trino does not yet:
@@ -128,6 +139,7 @@ The local platform admin `admin@egret.local` got the same masked values: platfor
 - On a Trino profile without a tag service, tag rules compile to nothing. Egret refuses to bind such a profile to an engine.
 - A mask on a column whose type the mask cannot apply to can return an error from the engine rather than a masked value.
 - A row filter by classification filters nothing on Trino where the classification is only on columns (KI-287).
+- On StarRocks, a mask on a table selected by a wildcard or an excluded name gets no hidden-column deny, so `SELECT *` shows `_file` to an uncleared reader of that table (KI-304).
 - A second row filter on a table that already has one is refused by the preview, and the refusal links the new rule to a page that does not exist (KI-289).
 - A rule that selects by path stays on the old name when the table or column is renamed, so it stops masking or filtering the renamed table (KI-308). A rule that selects by tag follows the table, because classifications follow a rename; see [Renames and drops](../classifications/tagging.md#renames-and-drops).
 

@@ -190,6 +190,17 @@ See [Storage credentials follow the grant](../control-plane/catalogs/catalog-det
 
 See [Engines and Ranger setup](./engines-and-ranger#supported-versions).
 
+### StarRocks refuses SELECT * on masked tables (platform #766)
+
+From platform #766 a StarRocks table with a mask refuses `SELECT *` to a reader who does not see the real value in every
+masked column, because the table's hidden `_file` column would show the object-store path of each data file (KI-304).
+
+- **Behaviour change:** that reader gets error 5204 on `_file` instead of the rows. Name the columns, or read through a view,
+  which shows no path.
+- There is no migration and no API change. An existing masked table gets its deny on the next compile of its profile. To
+  apply it at once, run `POST /api/control-plane/perm/compile/{profile_id}`.
+- A mask on a table selected by a wildcard or an excluded name gets no deny. That gap stays open (KI-304).
+
 ## Rolling back
 
 There is no supported in-place rollback. Restore the database from the backup taken in step 2, then start the previous
