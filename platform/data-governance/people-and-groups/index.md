@@ -111,7 +111,7 @@ A user, a group and a role each have these tabs. A role has no **Masks & filters
 - **Group**: **Members** (name and username; a member without one reads *No username yet: a grant naming this group allocates one at compile*), **Roles held** and **Workspaces held**, each with **Scope**, **Expires** and **Applied on engines**.
 - **Role**: **Holders** and **Groups holding this role**.
 
-**Applied on engines** says whether the engines see the relationship. *egret only — not applied on engines: held through a group* means egret knows the person holds the role through their group, but engines count only roles held directly, so grants naming the role do not reach them through that group.
+**Applied on engines** says whether the engines see the relationship. A role held through a group is applied on engines, like a direct one. *egret only — not applied on engines: held through a group* now applies only to a workspace membership held through a group: engines see the group's roles, not its workspace memberships, so a grant on that workspace does not reach its members through the group.
 
 ### Permissions
 
@@ -128,7 +128,6 @@ Rules that **exempt** the principal. *No egret rule exempts Member SSO* is follo
 For each gated classification, whether the principal is cleared. Without any gated tag the tab says *No classification is gated*. The table columns are **Classification**, **Gate requires**, and two verdicts: **Engines** (what the query engines enforce) and **egret objects** (what egret enforces on datasets, charts and dashboards). A verdict is **Cleared** (for example *Cleared through role data_steward*), *Cleared through public*, or **Not cleared** with a reason, such as:
 
 - *no username yet*
-- *the required role is held through a group, and engines count only roles held directly*
 - *the required role has expired. Engines may apply it until the next recompile.*
 - *engines enforce only the gate's roles, not its groups*
 
