@@ -27,6 +27,8 @@ A tag applied to a table reaches its columns for policy purposes: engines roll t
 
 When you add a classification to a whole table, the dialog says: *On a whole table, this classification counts for clearance on every column. A rule that masks by classification needs it on columns, not on the table.* Trino and StarRocks both enforce the [clearance](./clearance.md#on-columns-or-on-a-whole-table) and a classification row filter for a table-level classification. A Trino engine does not apply a classification row filter for a column-level one (KI-287).
 
+A mask rule that names a classification already on a whole table is refused. The refusal names that table and lists the other tables the classification is on, up to 49; past that it says the list is cut short.
+
 On a catalog egret does not manage the button is disabled with *Tags can be added to egret-managed catalogs only*.
 
 ## Tag a BI object
