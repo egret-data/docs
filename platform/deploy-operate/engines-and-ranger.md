@@ -160,6 +160,10 @@ curl -s -o ranger-check.json -w '%{http_code} %{content_type}\n' \
 A running plugin that is refused keeps enforcing the policies it holds in memory and retries every poll interval; a plugin
 that starts with no cached policies and is refused denies everything.
 
+### Binding an engine to a profile of its type
+
+An engine can be bound only to a policy profile of its own type: a Trino engine to a Trino profile, a StarRocks engine to a StarRocks profile. Egret refuses any other bind. A binding made before that check makes every write to the profile fail with *policy profile … has type trino, but engine … is a starrocks engine; bind a profile of the same type*. Bind the engine to a profile of its type, or create one under **Governance → Engine & policy**.
+
 ## The plugin configuration Egret serves
 
 Egret renders the plugin files in one place, so the files it mounts into engines it provisions are the same files it gives

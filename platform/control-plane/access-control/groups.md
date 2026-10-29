@@ -22,7 +22,7 @@ The strip counts **groups** and **members**. **Source** filters the list: **All*
 
 ## Synced groups
 
-Groups synced from OIDC are created at sign-in from the groups claim of the identity provider. Their name and membership are managed in the provider and cannot be changed in egret. The group page says *This group is synced from your identity provider — its name and membership are managed there and can't be changed here. You can still assign roles to it.* Membership changes when a member next signs in.
+Groups synced from OIDC are created at sign-in from the groups claim of the identity provider. Their name and membership are managed in the provider and cannot be changed in egret. The group page says *This group is synced from your identity provider — its name and membership are managed there and can't be changed here. You can still assign roles to it.* Membership changes when a member next signs in. A member who has not signed in for 7 days loses the synced groups, and with them the roles and workspaces they hold through those groups, until they sign in again. egret cannot see a rename or removal in the provider before then.
 
 ## Create a local group
 
@@ -42,11 +42,7 @@ The dialog says *Create a local group.* After creating it, open the group to add
 | **Members** | For a local group: *Users in this group. Search to add someone, or remove with ×.*, a **User** search with **Add**, and the **Member** and **Email** of each member with a remove button. For a synced group: *Members are synced from your identity provider.* |
 | **Roles** | *Roles granted to every member of this group.* Choose **Scope** (**Platform** or **Workspace**) and **Role**, then **Add**. |
 
-When a group holds a role, every member gets it, in the platform and on the query engines: egret writes the group's members into the engine's policy for that role. A group's workspace membership is different: the query engines do not apply it, and the **Applied on engines** column of [People & groups](../../data-governance/people-and-groups/index.md) shows it as *egret only — not applied on engines: held through a group*.
-
-:::warning
-A platform role assigned to a group does not give its members engine permissions. If someone needs a role in the engine, give it to them directly.
-:::
+When a group holds a role or a workspace, every member gets it, in the platform and on the query engines: egret writes the group's members into the engine's policy. The **Applied on engines** column of [People & groups](../../data-governance/people-and-groups/index.md) shows the membership as applied.
 
 ## Give a group access to a workspace
 

@@ -111,7 +111,7 @@ A user, a group and a role each have these tabs. A role has no **Masks & filters
 - **Group**: **Members** (name and username; a member without one reads *No username yet: a grant naming this group allocates one at compile*), **Roles held** and **Workspaces held**, each with **Scope**, **Expires** and **Applied on engines**.
 - **Role**: **Holders** and **Groups holding this role**.
 
-**Applied on engines** says whether the engines see the relationship. A role held through a group is applied on engines, like a direct one. *egret only — not applied on engines: held through a group* now applies only to a workspace membership held through a group: engines see the group's roles, not its workspace memberships, so a grant on that workspace does not reach its members through the group.
+**Applied on engines** says whether the engines see the relationship. A role or workspace held through a group is applied on engines, like a direct one. A membership is not applied on engines when it has expired (engines may still apply it until the next recompile) or when the user has no username yet.
 
 ### Permissions
 
