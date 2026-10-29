@@ -22,7 +22,7 @@ The strip counts **groups** and **members**. **Source** filters the list: **All*
 
 ## Synced groups
 
-Groups synced from OIDC are created at sign-in from the groups claim of the identity provider. Their name and membership are managed in the provider and cannot be changed in egret. The group page says *This group is synced from your identity provider — its name and membership are managed there and can't be changed here. You can still assign roles to it.* Membership changes when a member next signs in. A member who has not signed in for 7 days loses the synced groups, and with them the roles and workspaces they hold through those groups, until they sign in again. egret cannot see a rename or removal in the provider before then.
+Groups synced from OIDC are created at sign-in from the groups claim of the identity provider. Their name and membership are managed in the provider and cannot be changed in egret. The group page says *This group is synced from your identity provider — its name and membership are managed there and can't be changed here. You can still assign roles to it.* Membership changes when a member next signs in. A member who has not signed in for 7 days loses the synced groups, and with them the roles and workspaces they hold through those groups, until they sign in again. egret cannot see a rename or removal in the provider before then. A role or workspace that lapses is also re-applied to the engines within an hour: egret recompiles the profiles it reached every hour, so an expired grant stops applying on the engines without waiting for an unrelated change.
 
 ## Create a local group
 
