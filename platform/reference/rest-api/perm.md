@@ -542,7 +542,7 @@ Operation id: `read_group`. Auth: Session cookie. Forbidden (403): Missing polic
 
 | Status | Meaning |
 |---|---|
-| 200 | The group: source, direct members (as the compiler reads them; service accounts included), the roles and workspaces it holds (egret only), `standsFor` and clearances. `public` answers `isPublic: true` with no members |
+| 200 | The group: source, direct members (as the compiler reads them; service accounts included), the roles and workspaces it holds (its members get them on engines too), `standsFor` and clearances. `public` answers `isPublic: true` with no... |
 | 401 | Not authenticated |
 | 403 | Missing policy:read permission |
 | 404 | No group has this name |
@@ -564,13 +564,13 @@ Operation id: `read_role`. Auth: Session cookie. Forbidden (403): Missing policy
 | `scopes` | string[] | yes | Every scope defining the name, sorted. |
 | `holders` | MemberRef[] | yes | Live allow holders that are users, as the compiler reads them. |
 | `serviceAccounts` | integer (int64) | yes | How many of `holders` are service accounts. |
-| `holderGroups` | GroupRef[] | yes | Groups holding the role, unexpired (egret only). |
+| `holderGroups` | GroupRef[] | yes | Groups holding the role, unexpired. Their members get it on engines too. |
 | `standsFor` | StandsFor[] | yes |  |
 | `clearances` | ClearanceFact[] | yes |  |
 
 | Status | Meaning |
 |---|---|
-| 200 | The role: scopes, live holders that are users (as the compiler reads them; service accounts included), groups holding it (egret only), `standsFor` and clearances |
+| 200 | The role: scopes, live holders that are users (as the compiler reads them; service accounts included), groups holding it (their members get it on engines too), `standsFor` and clearances |
 | 401 | Not authenticated |
 | 403 | Missing policy:read permission |
 | 404 | No role has this name |
