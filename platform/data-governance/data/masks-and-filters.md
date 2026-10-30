@@ -139,7 +139,6 @@ The local platform admin `admin@egret.local` got the same masked values: platfor
 - On a Trino profile without a tag service, tag rules compile to nothing. Egret refuses to bind such a profile to an engine.
 - A mask on a column whose type the mask cannot apply to can return an error from the engine rather than a masked value.
 - A row filter by classification filters nothing on Trino where the classification is only on columns (KI-287).
-- On StarRocks, a mask on a table selected by a wildcard or an excluded name gets no hidden-column deny, so `SELECT *` shows `_file` to an uncleared reader of that table (KI-304).
 - A rule that selects by path stays on the old name when the table or column is renamed, so it stops masking or filtering the renamed table (KI-308). A rule that selects by tag follows the table, because classifications follow a rename; see [Renames and drops](../classifications/tagging.md#renames-and-drops).
 
 ## Further reading
