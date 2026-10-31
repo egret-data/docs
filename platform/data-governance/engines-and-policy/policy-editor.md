@@ -98,7 +98,8 @@ Deleting a hand-written policy asks *This policy will be permanently removed fro
 
 - Egret does not check hand-written policies against grants, so they can overlap compiled rules. The **Overlaps** tab reports mask and row-filter collisions with them.
 - Migrating hand-written policies into the permission model is covered in [Migrate policies](./migrate.md).
-- A hand-written policy that names a table keeps naming it after a rename, so it no longer applies to the renamed table and applies to a new table created under the old name (KI-308).
+- egret never rewrites a hand-written policy. A rename of a table that an enabled hand-written policy names literally with a deny, a mask, a row filter or an exclusion list is refused with a 409 naming the policy (*hand-written Ranger policies name sales.orders with a deny, mask, row filter or exclusion list: …; egret does not rewrite hand-written policies: edit or migrate them first.*). Edit the policy, or [migrate it](./migrate.md) into grants and rules, which follow renames, and rename again. A policy that only allows the table by its literal name does not refuse the rename: it keeps naming the old name, and **Recent changes** records *… hand-written policy lake-trino/orders-read still names sales.orders*. See [Renames and drops](../data/grants.md#renames-and-drops).
+- A hand-written policy that reaches a table only through a pattern is not checked at a rename (KI-320).
 
 ## Further reading
 

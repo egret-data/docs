@@ -66,7 +66,9 @@ Assigning a catalog to a workspace also writes a grant in the data-plane model: 
 
 The table shows each role's **Consumer**, **Grants** (for example `catalog · manage` or `analytics.orders · read`) and the number of **Clients**. Provisioning an engine creates the role `engine` (*Auto-created role for query engines*) with a catalog-wide `manage` grant, and a client for the engine.
 
-A grant on one table stays on the table's old name when the table is renamed: the role loses access to the renamed table and gains it on a new table created under the old name (KI-309). Add the grant on the new name and remove the old one.
+A grant on one table follows the table when it is renamed through the catalog, for example `analytics.orders · read` becomes `analytics.orders_v2 · read`, in the same or another namespace, at any namespace depth. egret moves it right after the catalog commits the rename, with no wait, because egret reads the role's grants on every request; the vended credentials follow with it. If the role already holds the same privilege on the new name, the two are merged. A client that then loads the old name gets 403, not 404, since no grant covers it and a refusal does not tell whether a table exists. A grant on a namespace or on the whole catalog stays where it is. A rename that changes only upper and lower case moves nothing, because grants already match both spellings. **Recent changes** on the Governance overview records each move, for example *Catalog client engine-docs-trino moved catalog grant read of role analysts from analytics.orders to analytics.orders_v2 (table renamed)*, for a reader who also holds **catalog_registry:read**.
+
+A recursive drop of a namespace deletes the table grants in it and in its child namespaces (*… removed catalog grant read of role analysts on analytics.orders (namespace dropped)*); namespace grants stay. A grant on a view stays on the old name when the view is renamed (KI-319). Grants that renames before this version left on old names, and grants on tables that were never created, are reported on the Governance overview as *catalog grants on tables that do not exist*. See [Renames and drops](../../data-governance/data/grants.md#renames-and-drops).
 
 ### What each operation needs {#what-each-operation-needs}
 
@@ -159,6 +161,7 @@ A dropped table keeps its classifications in the **Recycle bin**, and **Undrop**
 - Attach and detach on Trino restart the coordinator.
 - Vended credentials outlive a revoked or narrowed grant by up to about an hour, and callers with the same permission on a table share one key (KI-315).
 - Two warehouses that share a location can let a namespace writer in one of them obtain read-write credentials on a table of the other, when their storage connections write the same endpoint differently (KI-316). Give each warehouse its own bucket or key prefix.
+- Adding or deleting a grant here records no entry in the Governance overview's **Recent changes**; only the moves and removals that renames and namespace drops make do.
 - Any **write** grant lets a role create and list namespaces, and a grant on one table lets it list every table name in that namespace (KI-312).
 
 ## Further reading

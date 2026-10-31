@@ -85,6 +85,8 @@ egret holds only renames that need it:
 | A rename that changes only upper and lower case | No |
 | A rename of an unclassified table or column, an append, any other change | No |
 
+A rename of a table or column that carries a deny grant, a mask or a row filter written on its path is held the same way, whether or not it is classified, and egret then also waits for Trino's policy version. See [Renames and drops](../data/grants.md#renames-and-drops) on the Grants page.
+
 A table renamed onto a name that still carries classifications, for example one a steward attached before the table existed, keeps both sets.
 
 While a rename is held:
@@ -105,7 +107,7 @@ A refused rename answers the Iceberg client with a 409 (`CommitFailedException`)
 | Another rename of the same name is being held | *another change to this table or its new name is being held; retry when it has finished (at most 90 s)* |
 | egret is already holding 8 renames | *egret is holding 8 classified table changes already, its maximum; retry in a minute* |
 
-The compile and recycle-bin refusals come at once. The engine refusal comes after 90 seconds. Run from SQL Lab, the rename stops earlier, at SQL Lab's 60-second query limit, and shows a timeout instead of egret's reason; egret still refuses it and removes the copy (KI-310).
+The compile and recycle-bin refusals come at once. The engine refusal comes after 90 seconds. Run from SQL Lab, the rename stops earlier, at SQL Lab's 60-second query limit, and shows a timeout instead of egret's reason; egret still refuses it and removes the copy (KI-310). A hold that succeeds after more than 60 seconds shows the same timeout in SQL Lab, but the rename went through: check **Recent changes** or list the tables (KI-318).
 
 ### Drop a table or a namespace
 
@@ -126,13 +128,14 @@ A common way to replace a table is to rename it away and rename a new table into
 Classify `orders_new` before you rename it to `orders`. Its classifications then follow it into place, and the table name is never unclassified.
 :::
 
-### What does not follow a rename
+### What else a rename carries
 
-Only classifications follow a table. These stay on the old name:
+Grants, masks and row filters written on the table's path follow a rename too, by their own rules: restrictions are copied to the new name and also stay on the old one, allow grants move, and catalog grants move. A restriction written with a pattern the new name escapes, or a hand-written Ranger policy that names the table, can refuse the rename. See [Renames and drops](../data/grants.md#renames-and-drops) on the Grants page.
 
-- grants, masks and row filters written on the table's path or its columns, and hand-written Ranger policies (KI-308). A deny, path mask or row filter then no longer applies to the renamed table. Select by a classification instead where you can;
-- catalog grants on the table under **Roles & grants** (KI-309);
-- view definitions, datasets, charts and Data API SQL that name the old table: they fail until you change them.
+These do not follow a rename:
+
+- view definitions, datasets, charts and Data API SQL that name the old table: they fail until you change them;
+- grants, rules and catalog grants on a renamed **view** (KI-319).
 
 **Recent changes** names the engine's catalog client as the one who moved the classifications, for example *Catalog client engine-docs-trino*, not the person whose query renamed the table: an engine reaches the catalog with its own client.
 
@@ -146,8 +149,7 @@ Only classifications follow a table. These stay on the old name:
 - The tag page counts tagged BI objects only; data tags are visible on the Data page.
 - A mask by tag on a column type the mask cannot apply to returns an engine error rather than a masked value.
 - On Trino, a row filter by a classification that is only on columns filters nothing (KI-287).
-- Classifications follow a renamed table or column, but path-selector grants and rules, hand-written Ranger policies (KI-308) and catalog grants (KI-309) do not.
-- A classified rename is held for up to 90 seconds, and a silent bound engine makes it fail (KI-310).
+- A classified rename is held for up to 90 seconds, and a silent bound engine makes it fail (KI-310). Run from SQL Lab, a hold longer than 60 seconds shows a timeout although the rename went through (KI-318).
 - Adding a classification with a clearance to a table that is not in the catalog yet does not say that a StarRocks view over it is unprotected until the table exists; **Who can read?** does (KI-307).
 
 ## Further reading
