@@ -186,6 +186,30 @@ migration and no API change.
 
 See [Storage credentials follow the grant](../control-plane/catalogs/catalog-detail#storage-credentials-follow-the-grant).
 
+### Grants, rules and catalog grants follow a renamed table (platform #764)
+
+From platform #764 a rename of a table or column through egret's Iceberg catalog carries its permissions. There is no
+migration and no API change.
+
+- Deny grants, path masks and path row filters are copied to the new name before the commit, and the originals stay on the
+  old name on purpose. Such renames are held like classified ones, now waiting for Trino's policy version too: 54 to 57
+  seconds were measured with both engines bound, at most 90 seconds (KI-310). An Iceberg client that renames these tables
+  must wait that long; from SQL Lab a hold over 60 seconds shows a timeout although the rename goes through (KI-318).
+- Allow grants move to the new name after the commit. A holder can be refused on the new name until the engines' next policy
+  polls (KI-317).
+- Catalog grants on the table move to the new name after the commit, for every rename.
+- **Behaviour change:** a rename is refused with a 409 that names the rows when a deny, mask or row filter written with a
+  pattern covers the old name and not the new one, or when an enabled hand-written policy names the table with a deny, mask,
+  row filter or exclusion list. Change the pattern or add the restriction on the new name, or edit the policy, then rename.
+- A grant or rule write on a table name that a rename is holding is refused with 409 `table_change_held`; retry it.
+- A recursive namespace drop now also deletes the allow grants on its tables and the catalog grants on tables under it.
+
+Grants, rules and catalog grants that earlier renames left on old names are not moved. After the upgrade, open the
+Governance overview and check *permissions on tables that do not exist*, *permissions on columns that do not exist* and
+*catalog grants on tables that do not exist*. Write each row on the new name and delete the old one. The overview also lists
+the restrictions renames now keep on old names on purpose; remove those you no longer need. See
+[Renames and drops](../data-governance/data/grants#renames-and-drops).
+
 ### StarRocks 4.1.6 enforces view privileges
 
 See [Engines and Ranger setup](./engines-and-ranger#supported-versions).

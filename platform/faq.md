@@ -165,8 +165,16 @@ classification are enforced on StarRocks this way, on a column or on a whole tab
 
 A rename through egret's Iceberg catalog takes the classifications with it, on the table and on its columns. egret holds the
 rename until the engines serve them under the new name, which takes up to 90 seconds, and refuses it with a 409 if it cannot.
-A drop keeps them for an undrop, and a recursive namespace drop removes them. Grants, rules and hand-written policies written
-on the table's path do not follow (KI-308). See [Renames and drops](./data-governance/classifications/tagging#renames-and-drops).
+A drop keeps them for an undrop, and a recursive namespace drop removes them. See [Renames and drops](./data-governance/classifications/tagging#renames-and-drops).
+
+### What happens to grants and rules when I rename a table?
+
+A rename through egret's Iceberg catalog copies the table's deny grants, masks and row filters to the new name before the
+catalog commits it, and keeps the originals on the old name, so a new table there is still restricted. Allow grants and catalog
+grants move to the new name after the commit; for up to about two policy polls an allow holder can be refused on the new name
+(KI-317). A restriction written with a pattern that the new name escapes, or a hand-written policy that names the table with a
+deny, mask, row filter or exclusion list, makes the rename fail with a 409 that names it. Grants on views do not follow
+(KI-319). See [Renames and drops](./data-governance/data/grants#renames-and-drops).
 
 ### Why is a catalog client refused a rename or a commit that its grant seems to allow?
 

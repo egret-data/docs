@@ -139,7 +139,8 @@ The local platform admin `admin@egret.local` got the same masked values: platfor
 - On a Trino profile without a tag service, tag rules compile to nothing. Egret refuses to bind such a profile to an engine.
 - A mask on a column whose type the mask cannot apply to can return an error from the engine rather than a masked value.
 - A row filter by classification filters nothing on Trino where the classification is only on columns (KI-287).
-- A rule that selects by path stays on the old name when the table or column is renamed, so it stops masking or filtering the renamed table (KI-308). A rule that selects by tag follows the table, because classifications follow a rename; see [Renames and drops](../classifications/tagging.md#renames-and-drops).
+- A rule that selects by path is copied to the new name when its table or column is renamed, and the original stays on the old name; a rule that selects by tag follows because classifications do. A rule that selects by a pattern the new name escapes refuses the rename. See [Renames and drops](./grants.md#renames-and-drops).
+- A row filter or custom mask expression that names a renamed column is not rewritten (KI-321).
 
 ## Further reading
 
