@@ -93,5 +93,6 @@ Operation id: `set_platform_roles`. Auth: Session cookie and `X-Egret-CSRF` head
 | 200 | Platform roles replaced |
 | 401 | Not authenticated |
 | 403 | Not a platform admin (role assignment is not delegatable) |
+| 409 | Would remove the last active platform admin |
 | 500 | Internal error |
 

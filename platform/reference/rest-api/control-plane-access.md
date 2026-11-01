@@ -368,7 +368,7 @@ Operation id: `delete_group`. Auth: Session cookie and `X-Egret-CSRF` header. Fo
 | 204 | Group deleted |
 | 401 | Not authenticated |
 | 403 | Missing group:delete permission |
-| 409 | Cannot delete an OIDC-synced group; or grants or rule exemptions still name the group (the message lists them to a caller with policy:read, and otherwise gives only their count; remove them first) |
+| 409 | Cannot delete an OIDC-synced group; or grants or rule exemptions still name the group (the message lists them to a caller with policy:read, and otherwise gives only their count; remove them first); or the delete would remove the last active... |
 | 500 | Internal error |
 
 ## GET `/api/control-plane/groups/{id}/members`
@@ -433,6 +433,7 @@ Operation id: `remove_group_member`. Auth: Session cookie and `X-Egret-CSRF` hea
 | 204 | User removed from the group |
 | 401 | Not authenticated |
 | 403 | Requires platform_admin |
+| 409 | Would remove the last active platform admin (the user holds platform_admin only through this group) |
 | 500 | Internal error |
 
 ## POST `/api/control-plane/groups/{id}/roles`
@@ -508,7 +509,8 @@ Operation id: `list_users`. Auth: Session cookie. Forbidden (403): Missing user:
 | `name` | string | yes |  |
 | `provider` | string | yes |  |
 | `status` | string | yes |  |
-| `roles` | string[] | yes |  |
+| `roles` | string[] | yes | Platform roles granted to the user directly — the ones the Roles editor can unassign. |
+| `effectiveRoles` | ControlPlaneEffectiveRoleDto[] | yes | Every platform role the user holds, directly or through a group, each with where it comes from (KI-260): what decides their access, and what the last-admin guard counts. |
 | `groups` | string[] | yes |  |
 | `username` | string, nullable | no | The engine username, `null` until one is minted. Read-only: a delete retires it for good (username-takeover spec 2026-10-23 §4.4), so the delete dialog names it. |
 
@@ -540,7 +542,8 @@ Operation id: `create_user`. Auth: Session cookie and `X-Egret-CSRF` header. For
 | `name` | string | yes |  |
 | `provider` | string | yes |  |
 | `status` | string | yes |  |
-| `roles` | string[] | yes |  |
+| `roles` | string[] | yes | Platform roles granted to the user directly — the ones the Roles editor can unassign. |
+| `effectiveRoles` | ControlPlaneEffectiveRoleDto[] | yes | Every platform role the user holds, directly or through a group, each with where it comes from (KI-260): what decides their access, and what the last-admin guard counts. |
 | `groups` | string[] | yes |  |
 | `username` | string, nullable | no | The engine username, `null` until one is minted. Read-only: a delete retires it for good (username-takeover spec 2026-10-23 §4.4), so the delete dialog names it. |
 
@@ -577,7 +580,8 @@ Operation id: `update_user`. Auth: Session cookie and `X-Egret-CSRF` header. For
 | `name` | string | yes |  |
 | `provider` | string | yes |  |
 | `status` | string | yes |  |
-| `roles` | string[] | yes |  |
+| `roles` | string[] | yes | Platform roles granted to the user directly — the ones the Roles editor can unassign. |
+| `effectiveRoles` | ControlPlaneEffectiveRoleDto[] | yes | Every platform role the user holds, directly or through a group, each with where it comes from (KI-260): what decides their access, and what the last-admin guard counts. |
 | `groups` | string[] | yes |  |
 | `username` | string, nullable | no | The engine username, `null` until one is minted. Read-only: a delete retires it for good (username-takeover spec 2026-10-23 §4.4), so the delete dialog names it. |
 
@@ -595,7 +599,7 @@ Operation id: `update_user`. Auth: Session cookie and `X-Egret-CSRF` header. For
 
 Operation id: `delete_user`. Auth: Session cookie and `X-Egret-CSRF` header. Forbidden (403): Missing user:delete permission.
 
-`DELETE /users/\{id\}` — hard-delete a user (Task 4). Guards: not yourself, not the last active platform admin (`guard_not_last_admin`, shared with the disable branch of `update_user`). Cleans up the user's sessions, group memberships, and platform role/permission grants, then removes the row itself, in one transaction (`UserRepo::hard_delete`).
+`DELETE /users/\{id\}` — hard-delete a user (Task 4). Guards: not yourself, not the last active platform admin (the last-admin guard inside `UserRepo::hard_delete`, KI-284). Cleans up the user's sessions, group memberships, and platform role/permission grants, then removes the row itself, in one transaction (`UserRepo::hard_delete`).
 
 | Parameter | In | Type | Required | Description |
 |---|---|---|---|---|
