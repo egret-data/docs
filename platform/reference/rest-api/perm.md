@@ -959,7 +959,6 @@ What a STORED rule does — the same [`crate::effect::RuleEffect`] a preview ret
 | `exemptEveryone` | boolean | yes | `exempt.include` names the `public` group: nobody is masked. |
 | `alreadyMasked` | ExistingMask[] | yes | Other mask rules that reach a column this rule reaches (at most 20). |
 | `truncated` | boolean | yes | `alreadyMasked` may be incomplete: a cap cut the columns examined (50), the classifications read (1000) or the entries listed (20). |
-| `trinoColumnOnly` | TrinoColumnOnly | no |  |
 
 | Status | Meaning |
 |---|---|

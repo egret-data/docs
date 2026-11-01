@@ -44,7 +44,7 @@ Each row shows the rule **Name**, the path or tag it selects, its **Kind** (for 
 | **Mask a column** | Replaces the column's values for every non-exempt reader. |
 | **Filter rows** | Keeps only rows for which the expression is true. |
 
-With **Applies to** set to **Classification** and **Filter rows** chosen, a hint under **Kind** reads: *On Trino, a row filter by classification applies only where the classification is on the whole table.* See [Row filters by classification on Trino](#row-filters-by-classification-on-trino).
+With **Applies to** set to **Classification** and **Filter rows** chosen, a hint under **Kind** reads: *A row filter by classification filters every table that carries the classification, on the whole table or on any of its columns, on Trino and on StarRocks.* See [Row filters by classification](#row-filters-by-classification).
 
 A new rule's suggested name follows **Kind** until you edit it: a name seeded as *Mask PII Data* becomes *Filter rows PII Data* when you switch to **Filter rows**.
 
@@ -93,20 +93,20 @@ a view shows the masked values and no path. A reader who sees the real value in 
 A change to the masks takes effect on the next compile of the profile. To apply it at once, compile the profile with
 `POST /api/control-plane/perm/compile/{profile_id}`.
 
-## Row filters by classification on Trino
+## Row filters by classification
 
-A row filter by classification filters a table where the classification is on the table, on both engines. Where it is on a column, StarRocks filters the table and Trino does not yet:
+A row filter by classification filters every table that carries the classification, on the whole table or on any of its columns, on Trino and on StarRocks (since platform #818):
 
-- **Trino** filters by a classification only where the classification is on the **whole table**. On a table where it is only on columns, the row filter filters nothing on Trino (KI-287).
-- **StarRocks** filters every table that carries the classification, on the table or on any of its columns, with one row-filter policy per table.
+- **Trino**: a table that carries the classification on the table is filtered by the rule's tag policy. For each table where the classification is only on columns, egret also writes one row-filter policy on that table, named `perm-rule-<id>-<catalog>.<schema>.<table>`. A table is never filtered twice by one rule.
+- **StarRocks**: one row-filter policy per table that carries the classification, at either level.
 
-A later release compiles the Trino case. Until then the preview counts the affected tables and shows a warning, for example:
+Attaching or removing the classification, and a rename the classification follows, recompile the Trino and StarRocks profiles, so the per-table policies follow the classification. These tables count toward the rule's expansion ceiling on both engines. An install upgraded from an earlier version recompiles the affected Trino profiles when the server starts.
 
-> On Trino this row filter filters nothing on 3 tables in demo_warehouse: *Personal data (PII)* is on their columns, not on the table. StarRocks filters them. Attach *Personal data (PII)* to the table to filter on Trino.
+The preview asks for no tick for this kind of rule. **Who can read?** names the rule that filters the table, for example *member-sso sees rows where region = 'us' (rule Filter rows PII P7)*.
 
-**Create** stays disabled until you tick **Create anyway: I understand this row filter filters nothing on Trino on these tables**; while it waits, its reason reads *Tick 'Create anyway' to create a row filter that filters nothing on Trino on these tables.* When editing a rule the words are **Save anyway** and *save*. Every new preview clears the tick. To filter on both engines, attach the classification to the table.
-
-**Who can read?** states the same gap for a person: *member-sso sees **every row**: rule US rows only does not filter on Trino here, because PII is on a column, not on the table*.
+:::note
+On Trino, a table that carries classification A on a column and classification B on the whole table, each with a row-filter rule, is filtered by B's rule only: Ranger lets a tag policy decide before a resource policy of the same priority. **Who can read?** answers what Trino does.
+:::
 
 ## Edit and delete
 
@@ -138,7 +138,6 @@ The local platform admin `admin@egret.local` got the same masked values: platfor
 
 - On a Trino profile without a tag service, tag rules compile to nothing. Egret refuses to bind such a profile to an engine.
 - A mask on a column whose type the mask cannot apply to can return an error from the engine rather than a masked value.
-- A row filter by classification filters nothing on Trino where the classification is only on columns (KI-287).
 - A rule that selects by path is copied to the new name when its table or column is renamed, and the original stays on the old name; a rule that selects by tag follows because classifications do. A rule that selects by a pattern the new name escapes refuses the rename. See [Renames and drops](./grants.md#renames-and-drops).
 - A row filter or custom mask expression that names a renamed column is not rewritten (KI-321).
 
