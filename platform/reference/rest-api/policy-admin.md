@@ -8,7 +8,7 @@ description: REST endpoints in the policy-admin group.
 
 Data-governance policy console: access/masking/row-filter policy CRUD, profiles, and the principal picker.
 
-This page lists 14 endpoints (OpenAPI tag `policy-admin`). It is generated from `openapi.json`; see the [REST API overview](../rest-api) for authentication, CSRF and error conventions.
+This page lists 15 endpoints (OpenAPI tag `policy-admin`). It is generated from `openapi.json`; see the [REST API overview](../rest-api) for authentication, CSRF and error conventions.
 
 | Method | Path | Operation id | Notes |
 |---|---|---|---|
@@ -20,6 +20,7 @@ This page lists 14 endpoints (OpenAPI tag `policy-admin`). It is generated from 
 | POST | `/api/control-plane/policies/services` | `create_profile` | POST /policies/services — create a policy profile (a Ranger service instance) of the given type. |
 | DELETE | `/api/control-plane/policies/services/{service}` | `delete_profile` | DELETE /policies/services/\{service\} — delete a policy profile (Ranger service) and, via `ON DELETE CASCADE`, every policy under it. |
 | POST | `/api/control-plane/policies/services/{service}/seed-defaults` | `seed_defaults` | POST /policies/services/\{service\}/seed-defaults — seed default "admin has all access" policies (one per Trino resource hierarchy) for a profile, mirroring Ra... |
+| PUT | `/api/control-plane/policies/services/{service}/tag-service` | `set_tag_service` | PUT /policies/services/\{service\}/tag-service — set, change or remove the `config.tagService` of an existing profile (#786). |
 | GET | `/api/control-plane/policies/services/{service}/trino-config` | `trino_config` | GET /policies/services/\{service\}/trino-config — the two files a Trino coordinator needs to enforce this profile via the native ranger plugin. |
 | GET | `/api/control-plane/policies/{id}` | `get_policy` | GET /policies/\{id\} — the raw stored Ranger body (with id + isEnabled), for detail. |
 | PUT | `/api/control-plane/policies/{id}` | `update_policy` | PUT /policies/\{id\} — replace a policy's body (any kind). |
@@ -177,7 +178,7 @@ POST /policies/services — create a policy profile (a Ranger service instance) 
 | Field | Type | Required | Description |
 |---|---|---|---|
 | `name` | string | yes | Ranger service (profile) name. |
-| `type` | string | yes | Ranger service type: `"trino"` or `"starrocks"`. |
+| `type` | string | yes | Ranger service type: `"trino"`, `"starrocks"` or `"tag"`. |
 | `config` | object | no | Optional service config (e.g. StarRocks JDBC coordinates). Stored verbatim. |
 
 **Response 200 (application/json)**: `CreatedProfile`
@@ -244,6 +245,41 @@ POST /policies/services/\{service\}/seed-defaults — seed default "admin has al
 | 409 | The profile is compiled by the SP4a permission model (generated) and cannot be hand-edited |
 | 500 | Internal error |
 
+## PUT `/api/control-plane/policies/services/{service}/tag-service`
+
+Operation id: `set_tag_service`. Auth: Session cookie and `X-Egret-CSRF` header. Forbidden (403): Missing policy:update permission.
+
+PUT /policies/services/\{service\}/tag-service — set, change or remove the `config.tagService` of an existing profile (#786).
+
+A Trino profile made by the console (name and type) had no way to acquire a tag service, so no engine could ever be bound to it ("has no usable tag service"). This is that way, with every guard the create path has (only a `trino` profile may carry one, the value is a non-empty string, it names an existing `tag` profile; see `egret_policy::store::set_tag_service_via`).
+
+| Parameter | In | Type | Required | Description |
+|---|---|---|---|---|
+| `service` | path | string | yes | Policy profile (Ranger service) name |
+
+**Request body (application/json)**: `SetTagServiceBody`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `tagService` | string, nullable | no | The `tag` profile to name, or `null` to remove the tag service. |
+
+**Response 200 (application/json)**: `ProfileTagService`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `name` | string | yes |  |
+| `tagService` | string, nullable | no | The profile's tag service after the write; `null` when it has none. |
+
+| Status | Meaning |
+|---|---|
+| 200 | The profile's tag service after the write. Setting the value it already has writes nothing |
+| 400 | The profile is not of type `trino`; the value is not a non-empty string or `null`; or it names a profile that is missing or not of type `tag`. Nothing is written |
+| 401 | Not authenticated |
+| 403 | Missing policy:update permission |
+| 404 | No such policy profile |
+| 409 | An engine downloads the profile (unbind it first), or egret compiles it (`generated`) |
+| 500 | Internal error |
+
 ## GET `/api/control-plane/policies/services/{service}/trino-config`
 
 Operation id: `trino_config`. Auth: Session cookie. Forbidden (403): Missing policy:read permission.
@@ -256,16 +292,16 @@ Rendered by `egret_engine_mgmt_api::ranger_config::ranger_plugin_files`, the sam
 |---|---|---|---|---|
 | `service` | path | string | yes | Policy profile (Ranger service) name |
 
-**Response 200 (application/json)**: array of `ConfigFile`
+**Response 200 (application/json)**: `TrinoConfigResponse`
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `name` | string | yes |  |
-| `content` | string | yes |  |
+| `files` | ConfigFile[] | yes |  |
+| `warnings` | string[] | yes | The same download-URL warning the external engine's plugin configuration gives (`egret_engine_mgmt_api::ranger_config::download_url_warning`): a loopback or unparseable URL no engine can reach. Empty when none. |
 
 | Status | Meaning |
 |---|---|
-| 200 | The Trino coordinator config files for this profile's native ranger plugin, from the same renderer that writes the files egret mounts into its own engines (`access-control.properties` and `ranger-trino-security.xml`). Since SP4d-4 the... |
+| 200 | The Trino coordinator config files for this profile's native ranger plugin, from the same renderer that writes the files egret mounts into its own engines (`access-control.properties` and `ranger-trino-security.xml`), and `warnings`: the... |
 | 401 | Not authenticated |
 | 403 | Missing policy:read permission |
 | 404 | No such policy profile |
