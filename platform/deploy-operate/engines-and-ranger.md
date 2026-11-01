@@ -119,6 +119,14 @@ policies of every engine in the same database transaction, and the policy versio
 not in them. At every start the server also repairs `egret-admin` policies written before this behaviour existed
 (one transaction per profile; a failure is logged and does not stop the start).
 
+At every start the server also recompiles each profile whose grants or rules name a role, so a policy an older version
+wrote without a role holder who had no engine username yet names them now. An unchanged profile writes nothing. This runs
+in the background and never delays the start. A failure is retried after 5 seconds, 30 seconds and 2 minutes (four
+attempts in all). Each failed attempt logs a warning, *the boot recompile of role-referencing profiles failed; retrying*,
+with `attempt`, `attempts` and `retry_in_secs`. After the fourth it logs an error, *the boot recompile of role-referencing
+profiles failed on every attempt: the policy profiles whose model names a role were NOT recompiled, …*: those profiles
+are recompiled at the next restart or at the next write that recompiles them.
+
 A change reaches an engine at the plugin's next download. Engine tokens already issued to a disabled or deleted user stay
 valid until they expire (at most 15 minutes), but a disabled admin's tokens no longer carry all access once the new
 policies are downloaded.
