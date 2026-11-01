@@ -24,10 +24,10 @@ A summary strip counts **users**, **active** and **disabled**. Two filters narro
 | **User** | Avatar, display name and email. |
 | **Provider** | `local` for accounts created in egret, `oidc` for people who sign in through SSO. |
 | **Status** | **Active** or **Disabled**. A disabled user cannot sign in. |
-| **Roles** | Platform roles granted to the user directly, or a dash. A role the user holds through a group is not shown (KI-260). |
+| **Roles** | Every platform role the user holds, directly or through a group, or a dash. A role held only through groups names them, for example `platform_admin · via group platform-admins`; hover a role to see all its sources. Two roles are shown, and a **+N** badge lists the rest. |
 | **Groups** | How many groups the user belongs to. |
 
-The **⋯** menu on a row offers **View access** (the [Access Explorer](./access-explorer.md) for that person), **Assign roles**, **Edit**, **Reset password** (local accounts), **Impersonate**, **Disable** (or **Enable** for a disabled user) and **Delete**. **Disable** and **Enable** are shown to platform admins only. On your own row **Disable** stays listed but cannot be chosen, and reads *You cannot disable your own account*.
+The **⋯** menu on a row offers **View access** (the [Access Explorer](./access-explorer.md) for that person), **Assign roles**, **Edit**, **Reset password** (local accounts), **Impersonate** (not offered for a platform admin, directly or through a group), **Disable** (or **Enable** for a disabled user) and **Delete**. **Disable** and **Enable** are shown to platform admins only. On your own row **Disable** stays listed but cannot be chosen, and reads *You cannot disable your own account*.
 
 ## Create a local account
 
@@ -61,13 +61,15 @@ Select a user to open their page. The header shows the name, status, provider an
 
 ### Roles
 
-*Platform-wide roles this user holds. Workspace roles are assigned per workspace.* Only roles granted to the user directly are listed; roles granted to one of the user's groups are on the group's page.
+*Platform-wide roles assigned to this user. Workspace roles are assigned per workspace.* The editor lists the roles granted to the user directly; the **Through groups** table below lists the others.
 
 1. Under **Scope**, choose **Platform** or **Workspace**.
 2. For **Platform**, choose a **Role** (for example `data_steward` or `platform_admin`). For **Workspace**, pick the workspace first.
 3. Press **Add**.
 
 The table lists **Role** and **Scope** with a remove button. With none it reads *No roles assigned yet. Pick a scope above to grant one.* Platform admins can do anything everywhere, so grant `platform_admin` sparingly; the Access overview flags a high share.
+
+**Through groups** (*Platform roles this user holds as a member of a group. Change them on the group's page.*) lists the **Role** and the **Group** of each platform role the user holds through a group, or *No platform role through a group.* It is read-only. A role held both directly and through a group appears in both tables.
 
 ### Groups
 
@@ -79,7 +81,7 @@ Egret's grants, rule exemptions, engine permissions and hand-written engine poli
 
 ### Disable or enable a user
 
-Press **Disable** in the header of the user page, or choose **Disable** in the row's **⋯** menu. Egret asks first: *Disable \<email\>?*, with the text *They are signed out at once and cannot sign in until the account is enabled again. Their memberships and role grants are kept. Their engine username stays theirs.* For a user who holds `platform_admin` directly, it adds *While disabled they lose all-access on engines.* Press **Disable user** to confirm, or **Cancel**. The status becomes **Disabled**.
+Press **Disable** in the header of the user page, or choose **Disable** in the row's **⋯** menu. Egret asks first: *Disable \<email\>?*, with the text *They are signed out at once and cannot sign in until the account is enabled again. Their memberships and role grants are kept. Their engine username stays theirs.* For a user who holds `platform_admin`, directly or through a group, it adds *While disabled they lose all-access on engines.* Press **Disable user** to confirm, or **Cancel**. The status becomes **Disabled**.
 
 Disabling a platform admin removes them from the engines' `egret-admin` policies in the same step, so they lose all access on every engine as soon as the engines' plugins download the new policy version. Their other grants, rules and memberships stay and still name them.
 
@@ -97,7 +99,7 @@ Press **Delete** in the header of the user page or in the row menu. The dialog a
 
 A user who never had an engine username reads *They have no engine username yet.* instead of the second sentence. Type `delete` and press **Delete** to confirm.
 
-For an active user, and when you may disable users, the dialog ends with the last sentence above and offers **Disable instead**; otherwise both are left out. It closes the delete dialog and opens the disable confirmation above. When the user is the last active platform admin, **Disable instead** cannot be pressed and says *No other active user holds platform_admin directly, and the last active platform admin cannot be disabled.*
+For an active user, and when you may disable users, the dialog ends with the last sentence above and offers **Disable instead**; otherwise both are left out. It closes the delete dialog and opens the disable confirmation above. When the user is the last active platform admin, **Disable instead** cannot be pressed and says *No other active user holds platform_admin, and the last active platform admin cannot be disabled.*
 
 You cannot delete your own account: **Delete** is greyed out on your own row and page.
 
@@ -115,15 +117,21 @@ Delete only accounts that should never come back, such as test accounts. To take
 
 ### The last active platform admin
 
-There must always be one active platform admin. Egret refuses to disable or delete the last active platform admin, or to remove `platform_admin` from them (on the user's **Roles** section or a group's roles), with *Cannot remove the last active platform admin* (HTTP 409). A disabled platform admin does not count as active.
+There must always be one active platform admin: an active user who holds `platform_admin` directly or through a group. A disabled platform admin does not count as active. Egret refuses every change that would leave none, with *Cannot remove the last active platform admin* (HTTP 409), and changes nothing:
 
-**Disable instead** in the delete dialog checks this before asking the server, from the roles granted to users directly. Someone who is a platform admin only through a group is not counted there, so the server's answer is the one that holds (KI-285). Some other ways of removing the last active admin are not guarded yet (KI-284).
+- disabling or deleting the user;
+- removing `platform_admin` from the user, or from a group they hold it through;
+- removing them from such a group, or deleting the group (see [Groups](./groups.md));
+- `PUT /api/admin/users/{id}/platform-roles` with a set that drops `platform_admin`.
+
+Two such changes made at the same moment are checked one after the other, so they cannot both pass. **Disable instead** in the delete dialog checks the same rule before asking the server; the server's answer is the one that holds.
+
+The OIDC group sync cannot refuse, because it runs at sign-in. When the groups claim drops the group that is the last active admin's only hold on `platform_admin`, the sync keeps that membership, logs a warning, and applies the rest. Make another user a platform admin; the next sync then drops it.
 
 ## Limits and known issues
 
 - Roles are assigned here at platform or workspace scope. Workspace membership itself is managed on the workspace's **Members** page.
-- The last active platform admin can still lose the role by being removed from an admin group, by that group being deleted, or through `PUT /api/admin/users/{id}/platform-roles` (KI-284).
-- The disable dialog says *While disabled they lose all-access on engines.* only for a user who holds `platform_admin` directly, not for one who holds it through a group, although both lose it (KI-285).
+- The engines' admin set and the last-admin check do not read a grant's expiry; no API writes an expiry on a platform role (KI-322).
 - Bulk **Disable** acts at once, without the disable dialog (KI-262).
 
 ## Further reading

@@ -107,7 +107,7 @@ A refused rename answers the Iceberg client with a 409 (`CommitFailedException`)
 | Another rename of the same name is being held | *another change to this table or its new name is being held; retry when it has finished (at most 90 s)* |
 | egret is already holding 8 renames | *egret is holding 8 classified table changes already, its maximum; retry in a minute* |
 
-The compile and recycle-bin refusals come at once. The engine refusal comes after 90 seconds. Run from SQL Lab, the rename stops earlier, at SQL Lab's 60-second query limit, and shows a timeout instead of egret's reason; egret still refuses it and removes the copy (KI-310). A hold that succeeds after more than 60 seconds shows the same timeout in SQL Lab, but the rename went through: check **Recent changes** or list the tables (KI-318).
+The compile and recycle-bin refusals come at once. The engine refusal comes after 90 seconds. Run from SQL Lab, the rename stops earlier, at SQL Lab's 60-second query limit, and shows a timeout instead of egret's reason; egret still refuses it and removes the copy (KI-310). A hold that succeeds after more than 60 seconds shows the same timeout in SQL Lab, but the rename went through. For a rename, SQL Lab's timeout message says so: *This is a schema change: SQL Lab stopped waiting for it, but the engine may still complete it …*; check **Recent changes** or list the tables before you run it again.
 
 ### Drop a table or a namespace
 
@@ -149,7 +149,7 @@ These do not follow a rename:
 - The tag page counts tagged BI objects only; data tags are visible on the Data page.
 - A mask by tag on a column type the mask cannot apply to returns an engine error rather than a masked value.
 - On Trino, a row filter by a classification that is only on columns filters nothing (KI-287).
-- A classified rename is held for up to 90 seconds, and a silent bound engine makes it fail (KI-310). Run from SQL Lab, a hold longer than 60 seconds shows a timeout although the rename went through (KI-318).
+- A classified rename is held for up to 90 seconds, and a silent bound engine makes it fail (KI-310). Run from SQL Lab, a hold longer than 60 seconds shows a timeout, which says that the rename may still complete.
 - Adding a classification with a clearance to a table that is not in the catalog yet does not say that a StarRocks view over it is unprotected until the table exists; **Who can read?** does (KI-307).
 
 ## Further reading

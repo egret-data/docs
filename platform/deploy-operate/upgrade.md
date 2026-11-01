@@ -194,7 +194,8 @@ migration and no API change.
 - Deny grants, path masks and path row filters are copied to the new name before the commit, and the originals stay on the
   old name on purpose. Such renames are held like classified ones, now waiting for Trino's policy version too: 54 to 57
   seconds were measured with both engines bound, at most 90 seconds (KI-310). An Iceberg client that renames these tables
-  must wait that long; from SQL Lab a hold over 60 seconds shows a timeout although the rename goes through (KI-318).
+  must wait that long; from SQL Lab a hold over 60 seconds shows a timeout although the rename goes through (since platform
+  #805 the timeout message says so).
 - Allow grants move to the new name after the commit. A holder can be refused on the new name until the engines' next policy
   polls (KI-317).
 - Catalog grants on the table move to the new name after the commit, for every rename.
@@ -224,6 +225,44 @@ masked column, because the table's hidden `_file` column would show the object-s
 - There is no migration and no API change. An existing masked table gets its deny on the next compile of its profile. To
   apply it at once, run `POST /api/control-plane/perm/compile/{profile_id}`.
 - A mask on a table selected by a wildcard or an excluded name gets no deny. That gap stays open (KI-304).
+
+### Profiles get a tag service from the console (platform #805)
+
+From platform #805 a Trino policy profile can be given a tag service in the console, at creation or later on its
+**Advanced** tab, through `PUT /api/control-plane/policies/services/{service}/tag-service`. There is no migration.
+
+- **API change:** `GET /api/control-plane/policies/services/{service}/trino-config` answers `{"files": [...], "warnings":
+  [...]}` instead of a bare array of files. A script that read the array must read `files`.
+- The engine pickers no longer offer a Trino profile with no tag service. Give such a profile one before you bind it.
+- A SQL Lab timeout on a schema change says that the change may still complete (KI-318).
+
+### Namespace creates, listings and body deadline in the Iceberg catalog (platform #806)
+
+From platform #806 egret's Iceberg catalog decides a namespace create on its parent, cuts listings to what the role can
+see, and limits the time a request body may take. There is no migration and no API change. Engines provisioned by egret
+hold `catalog · manage` and are not affected. A Catalog Client with narrower grants may now see:
+
+- a 403 creating a namespace: it needs `write` or `manage` on the parent namespace, or a `catalog`-level grant for a
+  top-level namespace (before, any `write` grant created any namespace);
+- shorter answers from `GET …/namespaces`, `…/namespaces/{ns}/tables` and `…/views`: only what the role can see. A page
+  can be short or empty while `next-page-token` still points on; Iceberg clients follow the token;
+- a 408 when a request body has not fully arrived 30 seconds after the request;
+- a 409 creating a warehouse whose S3 storage overlaps an existing one, even when the endpoint is written differently
+  (KI-316).
+
+### Platform admins held through groups (platform #807)
+
+From platform #807 the last active platform admin is guarded on every path, and the console shows roles held through a
+group. There is no migration.
+
+- **Behaviour change:** removing a member from a group, deleting a group and `PUT /api/admin/users/{id}/platform-roles` now
+  answer 409 *Cannot remove the last active platform admin* when they would leave no active platform admin.
+- The OIDC group sync keeps a membership that is the last active platform admin's only hold on `platform_admin`, and logs a
+  warning (*kept the OIDC group membership that is the last active platform admin's only hold on platform_admin; make
+  another user a platform admin, then the next sync drops it*). Make someone else a platform admin, and the next sync drops
+  it.
+- **API addition:** the Control Plane user list carries `effectiveRoles` (`[{"name", "group"}]`, `group` null for a direct
+  grant); `roles` stays the directly granted set.
 
 ## Rolling back
 

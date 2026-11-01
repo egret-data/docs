@@ -42,7 +42,9 @@ The dialog says *Create a local group.* After creating it, open the group to add
 | **Members** | For a local group: *Users in this group. Search to add someone, or remove with ×.*, a **User** search with **Add**, and the **Member** and **Email** of each member with a remove button. For a synced group: *Members are synced from your identity provider.* |
 | **Roles** | *Roles granted to every member of this group.* Choose **Scope** (**Platform** or **Workspace**) and **Role**, then **Add**. |
 
-When a group holds a role or a workspace, every member gets it, in the platform and on the query engines: egret writes the group's members into the engine's policy. The **Applied on engines** column of [People & groups](../../data-governance/people-and-groups/index.md) shows the membership as applied.
+When a group holds a role or a workspace, every member gets it, in the platform and on the query engines: egret writes the group's members into the engine's policy. The **Applied on engines** column of [People & groups](../../data-governance/people-and-groups/index.md) shows the membership as applied. A member's page lists the platform roles they hold through groups under **Through groups**, and the Users list names the group beside the role.
+
+When the group holds `platform_admin`, removing a member, removing the role from the group, or deleting the group is refused with *Cannot remove the last active platform admin* (HTTP 409) if it would leave no active platform admin (see [The last active platform admin](./users.md#the-last-active-platform-admin)). For a synced group, the sign-in sync keeps such a membership with a warning instead.
 
 ## Give a group access to a workspace
 
@@ -52,6 +54,7 @@ Add the group as a member of the workspace with a workspace role (see [Members](
 
 - Synced groups cannot be renamed, emptied or deleted here.
 - Empty groups are allowed; a grant naming one matches nobody.
+- Deleting a local group leaves its role grants behind as rows that name no group; they give nobody access (KI-324).
 
 ## Further reading
 

@@ -66,7 +66,7 @@ The catalog page opens. Before you attach it, **Engines → Test** only checks t
 ## Limits and known issues
 
 - The form checks the rules egret knows; the engine validates the rest when the catalog is applied.
-- Creating an egret warehouse needs a workspace and a storage connection that egret can reach. Two warehouses cannot share a storage location: on the demo stack a second warehouse on the seeded bucket was refused with *Storage profile overlaps with existing warehouse demo-warehouse*, also with another key prefix.
+- Creating an egret warehouse needs a workspace and a storage connection that egret can reach. Two warehouses cannot share a storage location: on the demo stack a second warehouse on the seeded bucket was refused with *Storage profile overlaps with existing warehouse demo-warehouse*, also with another key prefix. egret checks this itself first, so a storage connection that writes the same store differently (`http://RUSTFS:9000/`, `https://rustfs:9000`, another region) is refused too, with *the storage overlaps warehouse 'demo-warehouse': the same bucket '…' on the same store, with key prefixes that contain one another; give each warehouse its own bucket or key prefix*. Two host names, or a host name and an IP address, for one store are not detected (KI-316).
 
 ## Further reading
 

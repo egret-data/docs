@@ -76,7 +76,9 @@ egret checks every Iceberg request a Catalog Client sends against its role's gra
 
 | Operation | What the role needs |
 |---|---|
-| Load or list a table, view or namespace | Any grant covering it. |
+| Load a table, view or namespace | Any grant covering it. |
+| List namespaces, tables or views | Any grant. The answer is cut to what the role can see: a namespace with a grant on it, above it or under it (a table grant shows its table's namespace and the ones above, not the namespaces beside it), and a table or view the role could load. A catalog grant lists everything. A page can come back short or empty while it still has a `next-page-token`; Iceberg clients follow the token. |
+| Create a namespace | **write** or **manage** on its **parent** namespace (a grant on exactly the parent, or on the catalog). A top-level namespace needs a catalog-level **write** or **manage** grant. A grant on the namespace itself does not create it. |
 | Create a table or view, or stage a create | **write** or **manage** on the catalog, or on the namespace it is created in. A grant on a table name never creates that table. |
 | Commit to one table (`POST …/namespaces/{ns}/tables/{t}`) | **write** or **manage** covering the table the commit changes: the table named by the body's `identifier` when it has one, otherwise the table in the path. A view commit is decided on the view in its path. |
 | Commit to several tables (`POST …/transactions/commit`) | **write** or **manage** covering **every** table in the commit. One table that is not covered refuses the whole commit, and nothing is committed. |
@@ -96,9 +98,11 @@ An engine's client holds `catalog · manage`, so it can do all of these. For exa
 | 403 | The grant does not cover the operation | *role 'etl' may not rename sales.orders: renaming needs write on the source, as dropping it would* |
 | 403 | A rename destination without a namespace grant | *role 'etl' may not rename into stage.orders: renaming needs write on namespace stage, as creating a table there would* |
 | 403 | A multi-table commit with an uncovered table | *role 'etl' may not commit to sales.orders: a multi-table commit needs write on every table it changes, as updating it alone would; nothing was committed* |
+| 403 | A namespace create without write on its parent | *role 'etl' may not create namespace stage.child: it needs write on namespace stage, its parent*, or for a top-level namespace *… a top-level namespace needs a catalog-level write or manage grant* |
 | 403 | A recursive namespace drop without a catalog grant | *role 'etl' may not drop namespace corp recursively: a recursive drop deletes every child namespace and table, so it needs a catalog-level write or manage grant* |
-| 400 | A rename or commit body egret cannot read | *malformed rename request: …*, *malformed multi-table commit: …*, *malformed table commit: …* |
-| 413 | A rename body over 1 MiB, or a commit body over 16 MiB | *the body of a rename request is larger than 1048576 bytes* |
+| 400 | A rename, commit or namespace create body egret cannot read | *malformed rename request: …*, *malformed multi-table commit: …*, *malformed table commit: …*, *malformed namespace create: …* |
+| 408 | A request body that has not fully arrived 30 seconds after the request, however slowly it trickles in | *the body of the rename request did not arrive within 30 s; nothing was changed* |
+| 413 | A rename or namespace create body over 1 MiB, or a commit body over 16 MiB | *the body of a rename request is larger than 1048576 bytes* |
 
 ### Storage credentials follow the grant {#storage-credentials-follow-the-grant}
 
@@ -160,9 +164,8 @@ A dropped table keeps its classifications in the **Recycle bin**, and **Undrop**
 - A catalog test before attaching checks only that the host answers on its port; a TPC-H catalog has no host to check.
 - Attach and detach on Trino restart the coordinator.
 - Vended credentials outlive a revoked or narrowed grant by up to about an hour, and callers with the same permission on a table share one key (KI-315).
-- Two warehouses that share a location can let a namespace writer in one of them obtain read-write credentials on a table of the other, when their storage connections write the same endpoint differently (KI-316). Give each warehouse its own bucket or key prefix.
+- Two warehouses that share a location can let a namespace writer in one of them obtain read-write credentials on a table of the other. egret refuses a new warehouse that overlaps an existing one, but cannot tell that two host names, or a host name and an IP address, are the same store (KI-316). Give each warehouse its own bucket or key prefix.
 - Adding or deleting a grant here records no entry in the Governance overview's **Recent changes**; only the moves and removals that renames and namespace drops make do.
-- Any **write** grant lets a role create and list namespaces, and a grant on one table lets it list every table name in that namespace (KI-312).
 
 ## Further reading
 

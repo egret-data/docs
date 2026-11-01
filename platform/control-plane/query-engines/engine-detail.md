@@ -143,11 +143,11 @@ The installation files and warnings for the Ranger plugin: **Ranger service name
 | **Host** | A host name or IP address: no scheme, port or path. |
 | **Port** | The engine's port. |
 | **Plugin version** | The Ranger plugin version (**2.5.0**, **2.8.0** or **Other…**). |
-| **Policy profile** | The profile the engine downloads, or **No profile**. Profiles bound elsewhere are marked, for example *docs-trino — bound to docs-trino*. |
+| **Policy profile** | The profile the engine downloads, or **No profile**. Profiles bound elsewhere are marked, for example *docs-trino — bound to docs-trino*, and a Trino profile with no tag service is listed disabled, with *— no tag service: give it one on its Advanced tab*. |
 
 Changing or removing the profile recompiles both the old and the new profile. If that would leave two mask or row-filter rules deciding one column differently, egret refuses and changes nothing. **Save changes** applies; before any edit the form says *Nothing has changed yet.*
 
-A Trino profile without a tag service is refused: *policy profile … has no usable tag service … so every tag-based column mask and row filter would silently compile to nothing; give the profile a tag service, or bind one created by engine provisioning.* See [Engines and policy](../../data-governance/engines-and-policy/index.md#create-a-policy-profile).
+A Trino profile without a tag service cannot be chosen; through the API the bind is refused with *policy profile … has no usable tag service … so every tag-based column mask and row filter would silently compile to nothing; give the profile a tag service, or bind one created by engine provisioning.* Give the profile a tag service on its **Advanced** tab first (see [Hand-written policies](../../data-governance/engines-and-policy/policy-editor.md#tag-service)). While the engine downloads the profile, its tag service cannot be changed: unbind, change it, and bind again.
 
 ### Remove the record
 
