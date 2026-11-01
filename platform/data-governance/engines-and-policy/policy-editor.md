@@ -82,6 +82,8 @@ The text above the fields says *The resource this policy applies to. Use \* for 
 - **By resource**: set the levels **Catalog**, **Schema**, **Table** and **Column**. The first level is required, and the help says *Name a catalog. It is required: \* here would cover every catalog this profile serves.* Type a value or `*` and press Enter to add it; a level can hold several values. The icon beside each level adds include or exclude and recursive options. **Add resource** adds another resource to the policy. The resource shown above the fields is the compact path, for example `catalog.*.*.*`.
 - **By tag**: pick a classification tag (*Select a tag…*). The help says *The classification tag this policy applies to. Ranger resolves the tag service from this profile automatically.*
 
+A tag policy whose tag value holds a wildcard, for example one written through the API, applies to more tags than the pattern reads: the engines pick tag policies by the text before the first `*`, `?` or `{`, so `*i` applies to every tag and `p*x` to every tag that starts with `p`. A recursive or exclude tag value widens it too. A classification's **Manual policies** tab lists such a policy with **Wider than its pattern** (see [Manual policies](../classifications/index.md#manual-policies)).
+
 ### Permissions
 
 For an access policy:
@@ -122,6 +124,7 @@ Deleting a hand-written policy asks *This policy will be permanently removed fro
 - Migrating hand-written policies into the permission model is covered in [Migrate policies](./migrate.md).
 - egret never rewrites a hand-written policy. A rename of a table that an enabled hand-written policy names literally with a deny, a mask, a row filter or an exclusion list is refused with a 409 naming the policy (*hand-written Ranger policies name sales.orders with a deny, mask, row filter or exclusion list: …; egret does not rewrite hand-written policies: edit or migrate them first.*). Edit the policy, or [migrate it](./migrate.md) into grants and rules, which follow renames, and rename again. A policy that only allows the table by its literal name does not refuse the rename: it keeps naming the old name, and **Recent changes** records *… hand-written policy lake-trino/orders-read still names sales.orders*. See [Renames and drops](../data/grants.md#renames-and-drops).
 - A hand-written policy that reaches a table only through a pattern is not checked at a rename (KI-320).
+- A hand-written tag policy with a wildcard, recursive or exclude value applies to every tag that starts with the text before its first wildcard (every tag for a leading wildcard or an exclude). This is how Ranger looks up tag policies, not an egret limit. See [How the engines pick tag policies](../classifications/index.md#how-the-engines-pick-tag-policies).
 
 ## Further reading
 

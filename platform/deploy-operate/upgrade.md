@@ -264,6 +264,34 @@ group. There is no migration.
 - **API addition:** the Control Plane user list carries `effectiveRoles` (`[{"name", "group"}]`, `group` null for a direct
   grant); `roles` stays the directly granted set.
 
+### Manual tag policies the engines apply (platform #809)
+
+From platform #809 a classification's **Manual policies** tab lists every hand-written tag policy the engines apply to
+the classification's name, including one whose pattern does not match it: Ranger picks tag policies by the text before
+the first `*`, `?` or `{`, so `*i` applies to every tag. Such a row carries **Wider than its pattern** (see
+[Manual policies](../data-governance/classifications/index.md#manual-policies)). There is no migration and nothing changes
+on the engines: they applied these policies before too.
+
+- **API addition:** each row of `GET /api/control-plane/classifications/{id}/handwritten` carries
+  `widenedByEngine` and `engineTagPrefix` (`""` means every tag).
+
+### Permission follow-ups (platform #810)
+
+From platform #810 there is no migration, and no request or response shape changes.
+
+- The start-up recompile of profiles that name a role is retried after 5 s, 30 s and 2 min, and logs an error when every
+  attempt fails (see [Platform admins on the engines](./engines-and-ranger.md#platform-admins-on-the-engines)).
+- Renaming or deleting a local group checks **policy:read** only when the change is refused because something names the
+  group. A change that nothing refuses no longer depends on that check.
+- Editing a grant or a rule while someone else edits the same one answers 409 less often: egret re-reads the row once it
+  holds the locks, and refuses only when the change no longer fits.
+- `PATCH` and `DELETE` on `/api/control-plane/perm/grants/{id}` and `/perm/rules/{id}`, and
+  `GET /api/control-plane/perm/rules/{id}/effect`, answer 404 for a grant or rule outside the caller's workspace, the
+  same answer as for an id that does not exist.
+- A platform-scope `platform_admin` grant that has expired, or whose effect is `deny`, no longer counts for the engines'
+  `egret-admin` policies or the last-admin guard (KI-322), and a `deny` grant no longer gives the session its role
+  (KI-323). No API writes such grants, so existing installs see no change.
+
 ## Rolling back
 
 There is no supported in-place rollback. Restore the database from the backup taken in step 2, then start the previous
