@@ -176,7 +176,7 @@ Operation id: `delete_tag`. Auth: Session cookie and `X-Egret-CSRF` header. Forb
 | 204 | Tag deleted |
 | 401 | Not authenticated |
 | 403 | Missing tag:manage permission |
-| 409 | `code` is `tag_in_use`: `rules` lists the rules that still select this classification |
+| 409 | `code` is `tag_in_use`: `rules` lists the rules that still select this classification. Or `code: "profile_set_changed"` with `retryable: true`: an engine was bound, or a policy profile created, while this write ran, so a profile it... |
 | 500 | Internal error |
 
 ## PUT `/api/control-plane/tags/{id}/access-policy`
@@ -206,6 +206,7 @@ Operation id: `set_access_policy`. Auth: Session cookie and `X-Egret-CSRF` heade
 | 200 | Classification access policy set |
 | 401 | Not authenticated |
 | 403 | Missing tag:manage permission |
+| 409 | `code` is `expansion_ceiling` or `rule_overlap` (the gate cannot be compiled), or `profile_set_changed` with `retryable: true`: an engine was bound, or a policy profile created, while this write ran (#792); nothing was written, and the same... |
 | 500 | Internal error |
 
 ## DELETE `/api/control-plane/tags/{id}/access-policy`

@@ -130,12 +130,11 @@ Classify `orders_new` before you rename it to `orders`. Its classifications then
 
 ### What else a rename carries
 
-Grants, masks and row filters written on the table's path follow a rename too, by their own rules: restrictions are copied to the new name and also stay on the old one, allow grants move, and catalog grants move. A restriction written with a pattern the new name escapes, or a hand-written Ranger policy that names the table, can refuse the rename. See [Renames and drops](../data/grants.md#renames-and-drops) on the Grants page.
+Grants, masks and row filters written on the table's path follow a rename too, by their own rules: restrictions are copied to the new name and also stay on the old one, allow grants move, and catalog grants move. A restriction written with a pattern the new name escapes, or a hand-written Ranger policy with a deny, mask, row filter or exclusion list that names the table or reaches it through a pattern the new name escapes, can refuse the rename. A view rename carries the view's grants, rules and catalog grants the same way. See [Renames and drops](../data/grants.md#renames-and-drops) on the Grants page.
 
 These do not follow a rename:
 
-- view definitions, datasets, charts and Data API SQL that name the old table: they fail until you change them;
-- grants, rules and catalog grants on a renamed **view** (KI-319).
+- view definitions, datasets, charts and Data API SQL that name the old table: they fail until you change them.
 
 **Recent changes** names the engine's catalog client as the one who moved the classifications, for example *Catalog client engine-docs-trino*, not the person whose query renamed the table: an engine reaches the catalog with its own client.
 

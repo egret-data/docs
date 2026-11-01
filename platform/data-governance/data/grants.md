@@ -86,7 +86,7 @@ A grant on a catalog that no engine serves compiles into a profile no engine dow
 
 ## Renames and drops
 
-Grants and rules are stored on the names they cover. When a table or column is renamed through egret's Iceberg catalog, the catalog Trino, StarRocks, Spark and PyIceberg use for an egret warehouse, egret carries them to the new name. A restriction never leaves a name, and access follows the table.
+Grants and rules are stored on the names they cover. When a table, a view or a column is renamed through egret's Iceberg catalog, the catalog Trino, StarRocks, Spark and PyIceberg use for an egret warehouse, egret carries them to the new name. A restriction never leaves a name, and access follows the table.
 
 ### What a rename carries
 
@@ -128,6 +128,7 @@ A refused rename answers the Iceberg client with a 409 whose message starts *egr
 |---|---|
 | A deny grant, mask or row filter covers the old name through a pattern, or through a schema when the table moves to another schema, and does not cover the new name | *1 restriction covers sales.orders through a name pattern and would not cover sales.archive: deny grant 7c1e… (sales.ord\*) — sales.archive lacks a deny of read for group:contractors. egret does not rewrite patterns: add it for the new name, change the patterns, or choose a name they cover.* Up to ten restrictions are listed. |
 | A hand-written Ranger policy names the table literally with a deny, a mask, a row filter or an exclusion list | *hand-written Ranger policies name sales.orders with a deny, mask, row filter or exclusion list: lake-trino/orders-mask (412); egret does not rewrite hand-written policies: edit or migrate them first.* See [Hand-written policies](../engines-and-policy/policy-editor.md). |
+| A hand-written Ranger policy with a deny, a mask, a row filter or an exclusion list reaches the old name through a pattern and not the new name, or has an exclusion list and would newly reach the new name | *hand-written Ranger policies with a deny, mask, row filter or exclusion list reach sales.orders through a name pattern and would not reach sales.archive the same way: lake-trino/ord-deny (415); egret does not rewrite hand-written policies: edit or migrate them first, or choose a name they cover.* |
 | A restriction would follow the table into a namespace of more than one level | *sales.orders carries restrictions that cannot follow it into corp.fin.orders, whose namespace has more than one level, which no grant or rule can name: …; use a single-level schema* |
 | The copies cannot be compiled on the new name, for example a ceiling, or a copied mask that collides with a different mask already on the new name | *the table's permissions cannot move to sales.orders_v2: \<the compiler's reason\>.* For a classified table the message says *classifications*. |
 | A bound engine did not confirm within 90 seconds, for example it is stopped | *engines did not confirm the copied restrictions within 90 s: \<plugin ids\>; check that the engines are running and polling egret's Ranger endpoint, then retry.* egret removes the copies. |
@@ -140,7 +141,9 @@ A pattern restriction does not refuse the rename when the new name is already co
 
 Expressions are compared as written, and principals as stored: a deny on a group does not cover a deny on one of its members. egret does not write the cover for you. Add the restriction on the new name first, then rename.
 
-A pattern **allow** grant that stops covering the table, and a hand-written policy that allows the table by its literal name, do not refuse the rename. The table loses that access, and **Recent changes** records it, for example *Catalog client engine-docs-trino renamed sales.tmp_a to sales.a; allow grant on sales.tmp_\* no longer covers it*. A hand-written policy that names the table only through a pattern is not checked (KI-320).
+A pattern **allow** grant that stops covering the table, and a hand-written policy that only allows the table, by its literal name or through a pattern, do not refuse the rename. The table loses that access, and **Recent changes** records it, for example *Catalog client engine-docs-trino renamed sales.tmp_a to sales.a; allow grant on sales.tmp_\* no longer covers it*.
+
+egret decides whether a hand-written policy reaches a name with Ranger's own matching for the profile's engine, over every resource set of the policy. On StarRocks, a view rename also checks the policies written on the `view` level.
 
 The rename's other refusals, a held name, the cap of 8 holds and a name in the **Recycle bin**, are listed under [When a rename is refused](../classifications/tagging.md#when-a-rename-is-refused) for classifications.
 
@@ -163,7 +166,11 @@ When you rename `orders` to `orders_old` and then `orders_new` to `orders`, the 
 Grant access to `orders_new` before you rename it to `orders`. Its grants then follow it into place.
 :::
 
-Views are not covered: a grant, rule or catalog grant on a view stays on the old name when the view is renamed (KI-319).
+### Rename a view
+
+A view rename (`ALTER VIEW sales.v RENAME TO sales.v2`) carries the view's grants, rules and catalog grants by the same rules as a table: deny grants, masks and row filters are copied to the new name and stay on the old one, allow grants and catalog grants move after the commit, and a pattern restriction or hand-written policy that the new name escapes refuses the rename. The refusal starts *egret refused the view:* instead of *egret refused the table change:*. The rename is held in the same way, at most 90 seconds, together with the view's classifications.
+
+Iceberg has no column rename for a view: a view's columns change only with a new view version, so grants on a view's columns have nothing to follow. Grants that view renames before this version of egret left on old names do not move by themselves.
 
 ## Limits and known issues
 
@@ -171,7 +178,6 @@ Views are not covered: a grant, rule or catalog grant on a view stays on the old
 - A grant whose principals include nobody is refused, both by the form and by the API, so an edit can never silently revoke a grant.
 - After a rename, a person who reads the table through an allow grant can be refused on the new name for up to about two policy polls, until the engines apply the moved grant (KI-317).
 - A rename that copies a restriction is held for up to 90 seconds; run from SQL Lab, a hold longer than 60 seconds shows a timeout, which says that the rename may still complete (KI-310).
-- Grants, rules and catalog grants on a **view** stay on the old name when the view is renamed (KI-319).
 
 ## Further reading
 

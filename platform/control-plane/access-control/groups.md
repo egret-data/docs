@@ -46,6 +46,8 @@ When a group holds a role or a workspace, every member gets it, in the platform 
 
 When the group holds `platform_admin`, removing a member, removing the role from the group, or deleting the group is refused with *Cannot remove the last active platform admin* (HTTP 409) if it would leave no active platform admin (see [The last active platform admin](./users.md#the-last-active-platform-admin)). For a synced group, the sign-in sync keeps such a membership with a warning instead.
 
+Deleting a local group also deletes every grant that names the group, in the same step: its platform and workspace roles and its grants on objects. Its members lose what they held through it.
+
 ## Give a group access to a workspace
 
 Add the group as a member of the workspace with a workspace role (see [Members](../../workspace-settings/members.md)). Everyone in the group gets that role in the workspace. You can also share individual objects with a group.
@@ -54,7 +56,6 @@ Add the group as a member of the workspace with a workspace role (see [Members](
 
 - Synced groups cannot be renamed, emptied or deleted here.
 - Empty groups are allowed; a grant naming one matches nobody.
-- Deleting a local group leaves its role grants behind as rows that name no group; they give nobody access (KI-324).
 
 ## Further reading
 

@@ -129,6 +129,7 @@ The embedded Iceberg REST catalog. See [Storage and catalog setup](../deploy-ope
 | `auth_token` | `EGRET_CATALOG__AUTH_TOKEN` | empty (required with `enabled`) | Static token for catalog administration. |
 | `public_url` | `EGRET_CATALOG__PUBLIC_URL` | `http://localhost:<server.port>` (an unset or blank value follows `server.port`) | Base origin of this server, without `/catalog`, advertised to catalog clients. Engines in a cluster resolve it, so in Kubernetes it is a Service DNS name. It is also the fallback for `idp.issuer`. |
 | `system_user` | `EGRET_CATALOG__SYSTEM_USER` | `egret-system` | Stable name of the in-process principal that bootstraps the catalog's default project. Keep it stable across deploys; changing it creates a different system administrator. |
+| `sts_token_validity_seconds` | `EGRET_CATALOG__STS_TOKEN_VALIDITY_SECONDS` | `900` | How long the S3 credentials the catalog vends on a table load stay valid, in seconds: 900 (the STS minimum) to 43200 (the STS maximum). egret writes it into every S3 warehouse at creation, and into the existing ones at every start (log line `vended credential lifetime seconds=900 warehouses_changed=N`). A credential outlives a revoked grant by up to this long (KI-315). See [Storage credentials follow the grant](../control-plane/catalogs/catalog-detail#storage-credentials-follow-the-grant). |
 
 ## storage
 
@@ -339,6 +340,7 @@ same check. A failure prints one line and exits. These are the rules:
 | `oidc.enabled` needs an issuer and a client id | `oidc.enabled requires issuer_url and client_id` |
 | `catalog.enabled` needs a warehouse and a token | `catalog.enabled requires warehouse and auth_token` |
 | `catalog.enabled` needs the storage credentials | `catalog.enabled requires storage access_key/secret_key/bucket` |
+| Always: `catalog.sts_token_validity_seconds` is 900 to 43200 | `catalog.sts_token_validity_seconds must be between 900 and 43200, got ...` |
 | `secrets.master_key`, when set, must decode to 32 bytes or more | `secrets.master_key must be base64 of >=32 bytes` |
 | Always: `storage.bucket`, `access_key` and `secret_key` | `the apps API requires [storage] bucket, access_key, secret_key ...` |
 | `engine.max_rows` and `query_timeout_secs` are at least 1; `preview_rows` is at most `max_rows` | `engine.max_rows and engine.query_timeout_secs must be >= 1` |

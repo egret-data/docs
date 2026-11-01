@@ -292,6 +292,66 @@ From platform #810 there is no migration, and no request or response shape chang
   `egret-admin` policies or the last-admin guard (KI-322), and a `deny` grant no longer gives the session its role
   (KI-323). No API writes such grants, so existing installs see no change.
 
+### Deny and expired grants give no role (platform #811)
+
+From platform #811 every check that asks whether a grant gives its role counts only a live `allow` grant: one with no
+expiry, or an expiry in the future. There is no migration and no API shape change.
+
+- A principal whose only grant in a workspace is a `deny` is refused there (403) and the workspace switcher does not list
+  it. Before, it was admitted.
+- **Behaviour change:** removing or demoting a workspace's last admin answers 409 *the workspace must keep at least one
+  admin* when the only other `ws_admin` rows have lapsed or are `deny`. Before, those rows counted as admins.
+- The member list's platform-admin badge, the console's effective platform roles and `egret init`'s check that an admin
+  exists count only live `allow` grants (KI-329 to KI-331).
+
+### Vended credentials last 15 minutes (platform #812)
+
+From platform #812 the S3 credentials egret's Iceberg catalog vends are valid for 15 minutes instead of an hour. There is
+no migration.
+
+- **New key:** `catalog.sts_token_validity_seconds` (`EGRET_CATALOG__STS_TOKEN_VALIDITY_SECONDS`), default 900, from 900
+  to 43200. A value outside that range stops the server at start. See
+  [Configuration keys](../reference/configuration-keys#catalog).
+- At start, egret writes the lifetime into every S3 warehouse the catalog already holds, and logs it:
+
+```text
+vended credential lifetime seconds=900 warehouses_changed=1
+```
+
+- Credentials handed out before the upgrade stay valid until their own expiry, up to an hour (KI-315).
+- An engine that loads a table again gets fresh credentials. Trino was checked reading and writing past the 15 minutes;
+  StarRocks was not checked.
+
+### Writes refused when the profile set grows (platform #813)
+
+From platform #813 a write that recompiles policy profiles is refused, and writes nothing, when an engine is bound to
+another profile while it runs. There is no migration.
+
+- **API change:** a clearance change, a classification added to or removed from a catalog object, a classification
+  delete, and grant and rule writes under `/api/control-plane/perm` can answer 409 with `"code": "profile_set_changed"` and
+  `"retryable": true`. Before, the same race could end in a database deadlock. Retry the write. See
+  [Errors](../reference/rest-api/index.md#errors).
+- A table rename that meets the same race is refused with the rename hold's existing busy message, to retry.
+- A write whose profiles include no Trino or StarRocks profile, and no `egret-admin` set, no longer gives out engine
+  usernames before it compiles, nor takes the lock that step needs.
+
+### Views follow renames (platform #814)
+
+From platform #814 a view rename through egret's Iceberg catalog carries the view's grants, rules and catalog grants, as a
+table rename does, and a hand-written policy that reaches a table or view through a pattern is checked at a rename. There
+is no migration and no API change.
+
+- A view rename that copies a restriction is held until the engines serve it, at most 90 seconds.
+- **Behaviour change:** a rename is refused with a 409 naming the policy when an enabled hand-written policy with a deny, a
+  mask, a row filter or an exclusion list reaches the old name through a pattern and not the new one (KI-320). Edit or
+  [migrate](../data-governance/engines-and-policy/migrate) the policy, or choose a name it covers.
+- Grants that earlier view renames left on old names are not moved. Write them on the new name, then delete the old ones.
+
+### Group delete removes its grants (migration 0212, platform #815)
+
+From platform #815 deleting a local group deletes the grants that name it. Migration 0212 deletes the group grants that
+earlier deletes left behind (KI-324). They gave nobody access, so nobody's access changes.
+
 ## Rolling back
 
 There is no supported in-place rollback. Restore the database from the backup taken in step 2, then start the previous

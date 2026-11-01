@@ -59,6 +59,8 @@ The email is listed under **Waiting for first sign-in** below the member table, 
 
 Use the dropdown in the **Role** column. A toast says *Role updated*. The last admin of a workspace cannot be demoted: the dropdown is disabled with the tooltip *Last admin — role can't be changed*.
 
+Through the API, demoting or removing the workspace's last admin is refused with 409 *the workspace must keep at least one admin*. Only an admin grant in force counts: an expired grant, or one whose effect is `deny`, makes nobody an admin. The same rule decides membership: a principal whose only grant in the workspace is a `deny` is not a member, is refused there (403) and does not see the workspace in the switcher. The members API writes only `allow` grants.
+
 ## Remove a member
 
 Open the **⋯** menu on the row (**Actions for \<member\>**) and choose **Remove from workspace**. The dialog **Remove from workspace?** asks you to confirm, and a toast says *Removed from workspace*. The person keeps their account and any access they have through other workspaces or groups.
