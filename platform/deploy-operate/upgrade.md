@@ -352,6 +352,21 @@ is no migration and no API change.
 From platform #815 deleting a local group deletes the grants that name it. Migration 0212 deletes the group grants that
 earlier deletes left behind (KI-324). They gave nobody access, so nobody's access changes.
 
+### Row filters by a column classification on Trino, and the attach notice (platform #818)
+
+From platform #818 there is no migration.
+
+- **Behaviour change:** on Trino a row filter by classification now filters every table where the classification is only
+  on columns, as StarRocks already did, through one row-filter policy per such table. At start, egret recompiles the
+  Trino profiles this reaches, so a rule written before the upgrade starts filtering those tables without another write
+  (KI-287). People who read every row of such a table on Trino before
+  the upgrade see only the filtered rows after it; **Who can read?** shows the rule.
+- **API change:** `PUT /api/control-plane/warehouses/{warehouse_id}/resource-tags` answers `{"ok": true, "notices": [...]}`.
+  Each notice has a `code` and a `message`; the one code today is `clearance_masks_pending_table` (KI-307). See
+  [Control plane: catalog](../reference/rest-api/control-plane-catalog.md).
+- **API change:** the rule effect no longer carries `trinoColumnOnly`, and explain no longer carries
+  `row_filter_not_applied`.
+
 ## Rolling back
 
 There is no supported in-place rollback. Restore the database from the backup taken in step 2, then start the previous

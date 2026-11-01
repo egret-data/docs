@@ -13,9 +13,11 @@ A tag does nothing until it is applied. This page covers how to apply a tag to t
 Tags attach to tables and columns in egret-managed catalogs (Iceberg warehouses). Tagging needs the permission to update catalogs (**catalog_registry:update**) and **tag:read** to list the tags.
 
 1. Open **Governance → Data** and select the table.
-2. To tag the table, press **Add tag** in the header. To tag a column, select the column in **Columns** and press **Add tag** in the column panel.
-3. In **Add tag**, open **Tag** and choose a tag. Tags already on the object are not offered; if there are none left the dialog says *Every tag is already on this table* (or *column*). With no tags defined it says *No tags are defined yet.*
-4. Press **Add tag**. A toast says *Tag added.*
+2. To tag the table, press **Add classification** in the header. To tag a column, select the column in **Columns** and press **Add classification** in the column panel.
+3. In **Add classification**, open **Classification** and choose one. Classifications already on the object are not offered; if there are none left the dialog says *Every classification is already on this table.* (or *column*). With none defined it says *No classifications are defined yet.*
+4. Press **Add classification**. A toast says *Classification attached.*
+
+When the attach needs your attention, a warning toast takes the place of the success toast. Today there is one such case: a classification with a [clearance](./clearance.md#on-columns-or-on-a-whole-table) attached to a whole table that a StarRocks engine serves but the catalog does not have yet (an unknown name, a view, or a table not created yet). The attach succeeds, and the warning says that a direct read is refused but a view over the table shows the values until the table exists in the catalog, when egret writes the column masks. The tag control under **Browse** shows the same warning.
 
 ![The Data page for the sessions table: header, engine docs-trino, and the Columns list with classifications and rules](/img/platform/admin/gov-table-overview.png)
 
@@ -25,7 +27,7 @@ The tag then appears in the **Tags** column of the table's **Columns** list, in 
 A tag applied to a table reaches its columns for policy purposes: engines roll tags up the resource hierarchy. A tag applied to a column does not show up when you explain access for the table. Ask about the column.
 :::
 
-When you add a classification to a whole table, the dialog says: *On a whole table, this classification counts for clearance on every column. A rule that masks by classification needs it on columns, not on the table.* Trino and StarRocks both enforce the [clearance](./clearance.md#on-columns-or-on-a-whole-table) and a classification row filter for a table-level classification. A Trino engine does not apply a classification row filter for a column-level one (KI-287).
+When you add a classification to a whole table, the dialog says: *On a whole table, this classification counts for clearance on every column. A rule that masks by classification needs it on columns, not on the table.* Trino and StarRocks both enforce the [clearance](./clearance.md#on-columns-or-on-a-whole-table) and a classification row filter for a table-level classification. A row filter by classification also filters a table where the classification is only on columns, on both engines (since platform #818; see [Masks and row filters](../data/masks-and-filters.md#row-filters-by-classification)).
 
 A mask rule that names a classification already on a whole table is refused. The refusal names that table and lists the other tables the classification is on, up to 49; past that it says the list is cut short.
 
@@ -147,9 +149,8 @@ These do not follow a rename:
 
 - The tag page counts tagged BI objects only; data tags are visible on the Data page.
 - A mask by tag on a column type the mask cannot apply to returns an engine error rather than a masked value.
-- On Trino, a row filter by a classification that is only on columns filters nothing (KI-287).
 - A classified rename is held for up to 90 seconds, and a silent bound engine makes it fail (KI-310). Run from SQL Lab, a hold longer than 60 seconds shows a timeout, which says that the rename may still complete.
-- Adding a classification with a clearance to a table that is not in the catalog yet does not say that a StarRocks view over it is unprotected until the table exists; **Who can read?** does (KI-307).
+- A classification with a clearance attached to a table that is not in the catalog yet leaves a StarRocks view over it unprotected until the table exists. The attach warns about it (since platform #818), and **Who can read?** says so on the table's columns. The warning is given at the attach only, not when a clearance is added later to a classification already on such a table.
 
 ## Further reading
 

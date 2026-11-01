@@ -59,7 +59,7 @@ The delegation modes:
 | **Auto — JWT, else impersonate (recommended)** | The default. Egret uses a per-user JWT when the coordinator can verify it, and otherwise falls back to impersonation. |
 | **JWT (per-user)** | Each query carries the caller's own short-lived JWT. No shared credential. OIDC users only. |
 | **Impersonate (service user)** | Egret connects as a trusted service account and runs the query as the caller. Works for any signed-in user. |
-| **None (open engine)** | Every query runs with the connection's own credential. |
+| **None (open engine)** | Every query runs with the connection's own credential. On an engine bound to a policy profile every query currently fails with *Principal … cannot become user …* (KI-333). |
 
 On the demo stack the default mode ran queries as the signed-in person in both cases: an SSO user (`member-sso`) and the local `admin@egret.local` account. `SELECT current_user` returned `member-sso` for the SSO user, and the grants, masks and row filters written in Governance applied to each of them (see [Masks and row filters](../../data-governance/data/masks-and-filters.md)).
 
