@@ -172,7 +172,7 @@ you for an external engine. Fetch them with:
 | Engine | Request |
 |---|---|
 | Any external engine | `GET /api/control-plane/engines/{id}/ranger-plugin-config`: the download URL, the auth mode, the plugin version, warnings and the files |
-| Trino policy profile | `GET /api/control-plane/policies/services/{service}/trino-config` (needs `policy:read`) |
+| Trino policy profile | `GET /api/control-plane/policies/services/{service}/trino-config` (needs `policy:read`): `{files, warnings}`, the files and the warning about an unreachable download URL |
 
 ### Trino
 
@@ -204,7 +204,9 @@ ranger.plugin.config.resource=/etc/trino/ranger-trino-security.xml
 `policy.rest.url` is Egret's base URL as the engine sees it, followed by `/ranger` (the plugin appends
 `/service/plugins/...` itself). The username and password lines carry the engine's credential; for an external engine the
 password is a placeholder you replace with the one shown at registration. The example above follows what the API returns; on a fresh install it says `http://localhost:8080`, taken from
-`catalog.public_url`, which is not reachable from an engine in a cluster. Set `catalog.public_url` first.
+`catalog.public_url`, which is not reachable from an engine in a cluster. Set `catalog.public_url` first. Both routes then
+answer with a warning in `warnings`: *The download URL (http://localhost:8080) is a loopback or unspecified address: no
+engine can reach it. …*
 
 ### StarRocks
 

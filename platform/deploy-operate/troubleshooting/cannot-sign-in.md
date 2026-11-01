@@ -92,8 +92,8 @@ email, then press **Check again**.
 Someone who belongs to a workspace but opens a page they have no access to gets *403 — Forbidden* and *You don't have access to this page.* inside the app, with the reason when the app knows it (for example *This workspace does not exist, or you are not a member of it.*), **Go back** and a link to a workspace they belong to.
 
 - Check the user under **Control Plane → Users** and the groups under **Control Plane → Groups**: is the group there, and does
-  it have a platform role or a workspace membership? The Users list shows only roles granted to the user directly, so read
-  the group's own page for a role it holds.
+  it have a platform role or a workspace membership? The Users list shows a platform role held through a group with the
+  group's name (`platform_admin · via group platform-admins`); workspace memberships are on the group's own page.
 - A group synced from the identity provider, such as `platform-admins`, holds no role by itself: an administrator grants it
   one. The development stack's seed (`deploy/seed-sso-test-rbac.sql`) makes that grant; the Docker demo stack does not, so
   `admin-sso` signs in there with no platform role.

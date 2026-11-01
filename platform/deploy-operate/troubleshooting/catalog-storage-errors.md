@@ -52,12 +52,15 @@ of a real failure:
 | 403 on a rename (*may not rename …* or *may not rename into …*) | A rename needs `write` covering the source table and a `catalog` or `namespace` grant on the destination namespace; a grant on the destination table name is not enough. |
 | 403 on a commit (*may not commit to …*) | A commit needs `write` covering the table it changes, the table named in the body's `identifier` when there is one. A multi-table commit needs it on every table, and one uncovered table refuses the whole commit. |
 | 403 on a recursive namespace drop | A recursive drop needs a `catalog`-level `write` or `manage` grant. |
+| 403 on a namespace create (*may not create namespace …*) | Creating a namespace needs `write` or `manage` on its parent namespace, or a `catalog`-level grant for a top-level namespace. A grant on the new namespace itself, or on a table, is not enough. |
+| A namespace, table or view is missing from a listing, but loads by name | Listings show only what the role can see. A table grant shows its table and its namespace, not the other tables beside it. |
 | 403 *remote signing is not used by egret* | The client asked the S3 request signer. egret does not sign requests; configure the client for vended credentials. |
-| 400 *malformed rename request*, *malformed multi-table commit* or *malformed table commit* | The request body is not the JSON the Iceberg REST API defines. |
-| 413 *the body of a … is larger than … bytes* | A rename body is limited to 1 MiB, and a commit body to 16 MiB. |
+| 400 *malformed rename request*, *malformed multi-table commit*, *malformed table commit* or *malformed namespace create* | The request body is not the JSON the Iceberg REST API defines. |
+| 408 *the body of the … did not arrive within 30 s; nothing was changed* | The client declared a body and did not send all of it within 30 seconds of the request. Check the client's network path; nothing was written. |
+| 413 *the body of a … is larger than … bytes* | A rename or namespace create body is limited to 1 MiB, and a commit body to 16 MiB. |
 | 403 on the warehouse | The token's warehouse differs from the one requested. |
 | A write fails at the object store with *access denied* (PyIceberg: `ACCESS_DENIED during CreateMultipartUpload`), while reads of the same table work | The client's role has only a `read` grant covering the table, so the catalog vended read-only storage credentials. Give the role `write` on the table, its namespace or the catalog. Nothing was committed. See [Storage credentials follow the grant](../../control-plane/catalogs/catalog-detail#storage-credentials-follow-the-grant). |
-| Warehouse creation refused | A warehouse without a `key_prefix` claims the whole bucket, and the catalog rejects a location that overlaps another warehouse. Give each its own bucket or prefix. |
+| Warehouse creation refused (*the storage overlaps warehouse '…'* or *Storage profile overlaps with existing warehouse …*) | A warehouse without a `key_prefix` claims the whole bucket, and a location that overlaps another warehouse is refused, however the endpoint is written. Give each its own bucket or prefix. |
 
 egret's refusals use the Iceberg REST error format, `{"error": {"message", "type", "code"}}`, so the client shows the
 message above in a typed error (PyIceberg raises `ForbiddenError` for a 403). The full list of what each operation needs is

@@ -40,16 +40,19 @@ Provisioned engines get their profile automatically: provisioning `docs-trino` c
 
 1. Press **New profile**.
 2. Enter a **Name**, for example `starrocks-prod`.
-3. Choose the **Type**: **Trino** or **StarRocks**.
-4. Press **Create profile**.
+3. Choose the **Type**: **Trino**, **StarRocks** or **Tag**. A Tag profile holds a Trino profile's tag-based policies; no engine is bound to it.
+4. For a Trino profile, choose its **Tag service**: one of the existing Tag profiles, or **None**. The dialog says *An engine can be bound to a Trino profile only once it names a tag service: the tag profile its classification masks and row filters live in.*
+5. Press **Create profile**.
+
+To create the Tag profile at the same time, press **New tag profile** beside the picker. The dialog switches to a Tag profile named `<name>_tag` (for `lake-trino`, `lake-trino_tag`). Press **Create profile**: the dialog says *Tag profile lake-trino_tag created.* and comes back to the Trino profile with the new Tag profile picked, and a second **Create profile** creates it. These are two separate creates, so a refusal never leaves half a pair.
 
 The profile appears under **Profiles without an engine**, with origin **Manual**. Bind it to an engine on the engine's **Settings** tab in the Control Plane (see [Register an external engine](../../control-plane/query-engines/register-external.md)).
 
 ![The unbound profile docs-external-policy with the 13 policies added by Seed default policies](/img/platform/admin/gov-profile.png)
 
-:::warning
-A profile you create here cannot be bound to a Trino engine: egret refuses with *policy profile … has no usable tag service … so every tag-based column mask and row filter would silently compile to nothing*. A Trino profile needs a tag service, which the console cannot set. Use a profile created by provisioning, or create the profile pair through the API: a profile of type `tag` and a Trino profile whose `config` names it in `tagService`.
-:::
+### Give a profile a tag service
+
+A Trino profile with no tag service cannot be bound to an engine: egret refuses with *policy profile … has no usable tag service … so every tag-based column mask and row filter would silently compile to nothing*, and the engine pickers list such a profile disabled. To give an existing profile one, open it and use the **Tag service** section of its **Advanced** tab (see [Hand-written policies](./policy-editor.md#tag-service)). Only an unbound profile you created can be changed there; for a profile an engine downloads, unbind the engine first.
 
 ## The engine page
 
@@ -63,7 +66,7 @@ The tabs are:
 | **Policies** | Every policy in the profile, by source. | [Policies and overlaps](./policies-and-overlaps.md) |
 | **Overlaps** | Mask and row-filter rules that collide. | [Policies and overlaps](./policies-and-overlaps.md#the-overlaps-tab) |
 | **Plugin** | Files and settings to install the Ranger plugin. | [Ranger plugin](./ranger-plugin.md) |
-| **Advanced** | Hand-written policies and default policies. | [Hand-written policies](./policy-editor.md) |
+| **Advanced** | Hand-written policies, default policies and, for a Trino profile, its tag service. | [Hand-written policies](./policy-editor.md) |
 | **Migrate** | Move hand-written policies into the permission model. | [Migrate policies](./migrate.md) |
 
 **Migrate** appears only while the profile holds a hand-written policy. An unbound profile has its own page with the frame of an engine page, but without **Engine permissions** and **Plugin**. A bound profile has no page of its own: its URL redirects to its engine.

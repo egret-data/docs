@@ -170,7 +170,7 @@ Views are not covered: a grant, rule or catalog grant on a view stays on the old
 - The grant dialog offers kinds **user**, **group** and **role** only. The fourth kind that exists internally (workspace members) is written by egret itself.
 - A grant whose principals include nobody is refused, both by the form and by the API, so an edit can never silently revoke a grant.
 - After a rename, a person who reads the table through an allow grant can be refused on the new name for up to about two policy polls, until the engines apply the moved grant (KI-317).
-- A rename that copies a restriction is held for up to 90 seconds; run from SQL Lab, a hold longer than 60 seconds shows a timeout although the rename went through (KI-310, KI-318).
+- A rename that copies a restriction is held for up to 90 seconds; run from SQL Lab, a hold longer than 60 seconds shows a timeout, which says that the rename may still complete (KI-310).
 - Grants, rules and catalog grants on a **view** stay on the old name when the view is renamed (KI-319).
 
 ## Further reading

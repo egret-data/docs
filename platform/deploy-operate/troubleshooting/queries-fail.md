@@ -53,7 +53,10 @@ See [Engine 406 and 502 errors](./engine-406-502).
 
 The per-query timeout is `engine.query_timeout_secs` (default 60 seconds). In SQL Lab a query that runs longer fails with
 *timeout: the query ran longer than the 60 s limit for SQL Lab queries and was stopped. The limit is the server setting
-`engine.query_timeout_secs`.* (or with Trino's *exceeded maximum time limit* and the same hint). Data Apps have their own limit
+`engine.query_timeout_secs`.* (or with Trino's *exceeded maximum time limit* and the same hint). A schema change (a statement
+that starts with `ALTER`, `CREATE`, `DROP`, `RENAME` or `TRUNCATE`) adds *This is a schema change: SQL Lab stopped waiting
+for it, but the engine may still complete it …*: a held rename can still commit, so check **Recent changes** on the
+Governance overview, or list the tables, before you run it again. Data Apps have their own limit
 (`apps.timeout_secs`, 60). Raise the key if long queries are legitimate, or make the query cheaper. The key must stay at
 least 1.
 

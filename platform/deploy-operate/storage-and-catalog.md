@@ -110,9 +110,9 @@ A warehouse is provisioned with STS enabled and remote signing off, and egret re
 
 :::caution One warehouse, one prefix
 A warehouse without a `key_prefix` claims the whole bucket, and the catalog rejects a warehouse whose location overlaps an
-existing one. Give each warehouse its own bucket or key prefix. The overlap check compares the storage connections' endpoints
-as written, so `http://rustfs:9000` and `http://rustfs:9000/`, or two host names for one store, are not seen as the same
-store (KI-316).
+existing one. Give each warehouse its own bucket or key prefix. The overlap check reads the endpoint as a URL, so host case,
+a trailing slash or dot, an explicit default port, the scheme and the region do not hide an overlap. Two host names, or a host
+name and an IP address, for one store are not seen as the same store, because egret does not resolve names (KI-316).
 :::
 
 ### Check it

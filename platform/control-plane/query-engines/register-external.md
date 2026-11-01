@@ -42,10 +42,10 @@ Egret proves migrations and explains access only for Trino with plugin 2.5.0 or 
 
 ### Policy profile
 
-*Bind a Trino profile now, or leave it and bind one later from the engine's Settings tab. A profile can belong to one engine.* The list shows **No profile yet**, then each Trino profile, marking those already taken (for example *docs-trino — bound to docs-trino*). It does not say which profiles have a tag service, so a profile you created with **New profile** is offered although it cannot be bound. A profile already bound to another engine cannot be chosen again. If binding would make two mask or row-filter rules decide one column differently, egret refuses and changes nothing, and the form says *Nothing was changed. Resolve one of the two, then try again.*
+*Bind a Trino profile now, or leave it and bind one later from the engine's Settings tab. A profile can belong to one engine.* The list shows **No profile yet**, then each Trino profile, marking those already taken (for example *docs-trino — bound to docs-trino*). A Trino profile with no tag service is listed but cannot be chosen, marked *… — no tag service: give it one on its Advanced tab*, because egret would refuse to bind it. A profile already bound to another engine cannot be chosen again. If binding would make two mask or row-filter rules decide one column differently, egret refuses and changes nothing, and the form says *Nothing was changed. Resolve one of the two, then try again.*
 
 :::note
-A Trino profile created in the console has no tag service and cannot be bound. Use a profile with a tag service (see [Engines and policy](../../data-governance/engines-and-policy/index.md#create-a-policy-profile)).
+A Trino profile needs a tag service to be bound. Pick one when you create the profile with **New profile**, or set it later on the profile's **Advanced** tab (see [Engines and policy](../../data-governance/engines-and-policy/index.md#create-a-policy-profile)).
 :::
 
 ### Catalogs
@@ -78,7 +78,7 @@ On the Docker demo stack the seeded Trino (`trino-demo`, port `8080`) can be reg
 2. **Plugin version** `2.8.0`, **Policy profile** **No profile yet**, tick `tpch_bench` under **Catalogs**.
 3. **Register engine**.
 
-Binding the console-created Trino profile `docs-external-policy` at this point fails with *bad request: policy profile 5 (docs-external-policy) has no usable tag service …*, so the example binds a profile pair created through the API (a `tag` profile and a Trino profile whose `config.tagService` names it) afterwards on **Settings**. The demo Trino has no Ranger plugin installed, so the record is for policy authoring only: nothing is enforced on that engine.
+Bind a Trino profile that has a tag service afterwards on **Settings**, for example one created with **New profile** and **New tag profile**. A profile with no tag service, such as `docs-external-policy`, is listed disabled with *— no tag service: give it one on its Advanced tab* until you give it one on its **Advanced** tab. The demo Trino has no Ranger plugin installed, so the record is for policy authoring only: nothing is enforced on that engine.
 
 ## Limits and known issues
 

@@ -30,7 +30,7 @@ Under the counts, **Needs attention** and, below it, **How access works** take t
 | **USERS** | Total accounts, with how many are active. |
 | **GROUPS** | Total groups, split into *local* and *synced* (from the identity provider). |
 | **ROLES** | Total roles, split into platform and workspace roles. |
-| **PLATFORM ADMINS** | Users holding the `platform_admin` role, and their share of all users (for example *15% of users — review*). |
+| **PLATFORM ADMINS** | Users holding the `platform_admin` role, directly or through a group, and their share of all users (for example *15% of users — review*). |
 
 ### Needs attention
 
