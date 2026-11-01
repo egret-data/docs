@@ -803,6 +803,6 @@ Operation id: `unassign_resource_tag`. Auth: Session cookie and `X-Egret-CSRF` h
 | 401 | Not authenticated |
 | 403 | Missing catalog_registry:update permission |
 | 404 | `code` is `warehouse_not_found` or `tag_not_found`, as for the assignment |
-| 409 | A rule overlap that the unassignment does not remove: a profile it recompiles already holds two mask (or two row-filter) rules that decide one request differently. Same body as the assignment's 409 |
+| 409 | A rule overlap that the unassignment does not remove: a profile it recompiles already holds two mask (or two row-filter) rules that decide one request differently. Same body as the assignment's 409. Or `code: "profile_set_changed"` with... |
 | 500 | Internal error |
 

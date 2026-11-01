@@ -79,7 +79,7 @@ An error answers with the matching HTTP status and a JSON body with one field:
 | `401` | No valid session or token. `{"error":"unauthorized"}` |
 | `403` | Authenticated, but the permission is missing, or the CSRF header is absent (`csrf check failed`, plain text). |
 | `404` | The object does not exist. |
-| `409` | A conflict, for example a name that is already taken: `conflict: a chart with that name already exists`. |
+| `409` | A conflict, for example a name that is already taken: `conflict: a chart with that name already exists`. A write that recompiles policy profiles (a classification's clearance, a classification added to or removed from a catalog object, a classification deleted, a grant or rule write under `/api/control-plane/perm`) answers `{"error": "the policy profiles this write recompiles changed while it ran (profile(s) 12 were bound or created meanwhile); nothing was written, retry", "code": "profile_set_changed", "retryable": true}` when an engine was bound to another profile while it ran. Nothing was written: send it again. |
 | `422` | The JSON body does not match the schema; the text names the field, for example ``source.kind: unknown variant `table`, expected `physical` or `virtual` ``. |
 | `429` | Rate limited: `{"error":"too many requests"}`. |
 | `500` | An internal error. The body is generic; the server log has the detail. |

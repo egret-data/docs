@@ -68,7 +68,7 @@ The table shows each role's **Consumer**, **Grants** (for example `catalog · ma
 
 A grant on one table follows the table when it is renamed through the catalog, for example `analytics.orders · read` becomes `analytics.orders_v2 · read`, in the same or another namespace, at any namespace depth. egret moves it right after the catalog commits the rename, with no wait, because egret reads the role's grants on every request; the vended credentials follow with it. If the role already holds the same privilege on the new name, the two are merged. A client that then loads the old name gets 403, not 404, since no grant covers it and a refusal does not tell whether a table exists. A grant on a namespace or on the whole catalog stays where it is. A rename that changes only upper and lower case moves nothing, because grants already match both spellings. **Recent changes** on the Governance overview records each move, for example *Catalog client engine-docs-trino moved catalog grant read of role analysts from analytics.orders to analytics.orders_v2 (table renamed)*, for a reader who also holds **catalog_registry:read**.
 
-A recursive drop of a namespace deletes the table grants in it and in its child namespaces (*… removed catalog grant read of role analysts on analytics.orders (namespace dropped)*); namespace grants stay. A grant on a view stays on the old name when the view is renamed (KI-319). Grants that renames before this version left on old names, and grants on tables that were never created, are reported on the Governance overview as *catalog grants on tables that do not exist*. See [Renames and drops](../../data-governance/data/grants.md#renames-and-drops).
+A recursive drop of a namespace deletes the table grants in it and in its child namespaces (*… removed catalog grant read of role analysts on analytics.orders (namespace dropped)*); namespace grants stay. A grant on a view (a table grant with the view's name) follows a view rename the same way. Grants that renames before this version left on old names, and grants on tables that were never created, are reported on the Governance overview as *catalog grants on tables that do not exist*. See [Renames and drops](../../data-governance/data/grants.md#renames-and-drops).
 
 ### What each operation needs {#what-each-operation-needs}
 
@@ -118,7 +118,7 @@ The same rule applies with the `X-Iceberg-Access-Delegation: vended-credentials`
 
 An engine or client with only **read** grants can therefore read but not write. Its writes fail at the object store with *access denied* when it uploads the first data file, before anything reaches the catalog. PyIceberg, for example, raises `OSError: … AWS Error ACCESS_DENIED during CreateMultipartUpload operation: Access Denied` on an append. Engines provisioned by egret hold `catalog · manage` and write as before.
 
-The credentials stay valid for about an hour, and the catalog reuses one key for every caller with the same permission on the same table. Revoking or narrowing a grant stops new credentials at once, but does not cancel the ones already handed out (KI-315).
+The credentials stay valid for 15 minutes, set by the configuration key [`catalog.sts_token_validity_seconds`](../../reference/configuration-keys#catalog) (default 900, from 900 to 43200). egret writes the lifetime into every S3 warehouse when it creates it, and into the existing ones each time it starts. The catalog reuses one key for every caller with the same permission on the same table, for at most half its lifetime, so a key is handed out with at least about 7.5 minutes left. Revoking or narrowing a grant stops new credentials at once, but does not cancel the ones already handed out: they keep working for up to 15 minutes (KI-315). Trino loads fresh credentials with each table load, and was checked to keep reading and writing past the lifetime; StarRocks was not checked.
 
 ## Catalog Clients (warehouse)
 
@@ -163,7 +163,7 @@ A dropped table keeps its classifications in the **Recycle bin**, and **Undrop**
 
 - A catalog test before attaching checks only that the host answers on its port; a TPC-H catalog has no host to check.
 - Attach and detach on Trino restart the coordinator.
-- Vended credentials outlive a revoked or narrowed grant by up to about an hour, and callers with the same permission on a table share one key (KI-315).
+- Vended credentials outlive a revoked or narrowed grant by up to 15 minutes, and callers with the same permission on a table share one key (KI-315).
 - Two warehouses that share a location can let a namespace writer in one of them obtain read-write credentials on a table of the other. egret refuses a new warehouse that overlaps an existing one, but cannot tell that two host names, or a host name and an IP address, are the same store (KI-316). Give each warehouse its own bucket or key prefix.
 - Adding or deleting a grant here records no entry in the Governance overview's **Recent changes**; only the moves and removals that renames and namespace drops make do.
 

@@ -19,6 +19,8 @@ Add several rows to require "any of these". To lift the gate, remove all rows. T
 
 The table lists each requirement with its **Type** and **Name** and a remove button.
 
+A clearance change recompiles the policy profiles the classification reaches. If an engine is bound to another profile while the change runs, so that the set of profiles grows, egret refuses the change and stores nothing. The tab shows the reason, as an alert and a toast: *the policy profiles this write recompiles changed while it ran (profile(s) 12 were bound or created meanwhile); nothing was written, retry*. Press **Add** or remove the row again. The API answers 409 with `"code": "profile_set_changed"` and `"retryable": true`; see [Errors](../../reference/rest-api/index.md#errors).
+
 ## How a clearance is enforced
 
 A clearance is enforced in two places, which behave differently:

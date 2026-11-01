@@ -113,7 +113,8 @@ vended credentials, engines need static `s3.*` keys in their catalog configurati
 
 Vended credentials follow the client's grant: `read` vends read-only credentials, `write` and `manage` read-write-delete.
 A write by a read-only client fails at the object store, not in the catalog (see the table above). Credentials already
-handed out stay valid for up to about an hour after a grant is revoked or narrowed (KI-315).
+handed out stay valid for up to 15 minutes after a grant is revoked or narrowed (KI-315), or as long as
+`catalog.sts_token_validity_seconds` sets.
 
 ## Storage connections in the app
 
