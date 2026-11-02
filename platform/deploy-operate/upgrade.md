@@ -422,6 +422,26 @@ From platform #823 there is no migration and no API shape change.
   grant principal or rule exemption already uses is left without one, and the server logs a warning; allocate theirs by
   hand from a grant dialog, which answers 409 naming those rows until they are resolved.
 
+### StarRocks engines default to `egret-starrocks-fe` `4.1.7-egret.3` (platform #827)
+
+From platform #827 there is no migration and no API change.
+
+- **Behaviour change:** a new provisioned StarRocks engine runs `ghcr.io/egret-data/egret-starrocks-fe:4.1.7-egret.3`
+  (pinned by digest) instead of `4.1.7-egret.1`; the compute nodes stay on the official `starrocks/cn-ubuntu:4.1.7`. It
+  also fixes KI-337 (`_file` and `_pos` in `SELECT *` under a row filter), KI-346 (no masks or row filters through the
+  HTTP SQL API and Arrow Flight SQL), KI-347 (`FILES()` with no privilege), KI-348 (materialized views stored past their
+  creator's masks and row filters) and KI-349 (`SHOW CREATE CATALOG` with no privilege). The local development stack's
+  `starrocks` service runs `egret-starrocks-allin1:4.1.7-egret.3`.
+- **New refusals on the patched image:** `FILES()` needs the OPERATE privilege on SYSTEM (error 5211), and creating a
+  materialized view over a table where a mask or row filter applies to the creator is refused (error 5212), whichever
+  columns the view reads; an existing materialized view of such a creator stops refreshing. `SHOW CREATE CATALOG` needs
+  a privilege on the catalog.
+- **Existing engines keep their image**, including those on `4.1.7-egret.1`. Move each one with
+  `PUT /api/control-plane/engines/{id}` as described under *Egret's patched StarRocks image* on **Engines and Ranger**;
+  its pods restart.
+- **The warning** now names every hole, and is shown for every StarRocks engine bound to a profile unless it runs
+  `egret-starrocks-fe` `4.1.7-egret.3` or later, so it comes back for an engine on `4.1.7-egret.1`.
+
 ## Rolling back
 
 There is no supported in-place rollback. Restore the database from the backup taken in step 2, then start the previous
