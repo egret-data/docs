@@ -28,10 +28,11 @@ jar out of each.
 | Trino | `trinodb/trino:483` | 2.8.0 |
 | StarRocks | `starrocks/fe-ubuntu:4.1.4` | 2.8.0 |
 | StarRocks | `starrocks/fe-ubuntu:4.1.6` | 2.9.0 |
+| StarRocks | `ghcr.io/egret-data/egret-starrocks-fe:4.1.7-egret.1` (Egret's patched 4.1.7) | 2.9.0 |
 
 Plugin 2.5.0 cannot present the engine credential the policy service requires (see [Authentication of the plugin](#authentication-of-the-plugin)), so Egret refuses to create an engine on `trinodb/trino:470` or update one onto it (400), and refuses to register an external engine that declares a plugin older than 2.8.0. An existing Trino 470 engine must move to Trino 483.
 
-New provisioned engines default to **Trino 483** and **StarRocks 4.1.6**, pinned by digest. `GET
+New provisioned engines default to **Trino 483** and **StarRocks 4.1.7** on Egret's patched front end image (the compute nodes run the official `starrocks/cn-ubuntu:4.1.7`), pinned by digest. `GET
 /api/control-plane/engines/modelled-ranger-plugins` lists the modelled pairs: Trino 2.5.0 and 2.8.0, StarRocks 2.8.0 and
 2.9.0. An engine on a floating tag (`latest`, `4.1-latest`) or a rebuilt image is reported as **not modelled**: policies
 still compile and the plugin still enforces them, but **Explain** and policy migrations refuse until you pin the image. The
@@ -41,6 +42,24 @@ digests and the pinning procedure are in the repository's `docs/en/guides/engine
 After moving a StarRocks engine from 4.1.4 to 4.1.6, a reader who relied on a view without holding a grant on it starts to
 get `ERROR 5204`. Grant the view, or the base columns for an `INVOKER` view, to the readers who should have it.
 :::
+
+## Egret's patched StarRocks image
+
+The official StarRocks images have two holes that no policy Egret compiles can close (KI-340, KI-345):
+
+- they serve the metadata tables of Iceberg tables (`orders$files`, `$partitions`, `$snapshots`, …) to any login without
+  asking Ranger, which exposes row counts, partition values, data file paths and each column's lowest and highest value;
+- they apply no mask and no row filter to prepared statements (`PREPARE`/`EXECUTE`, or the MySQL binary protocol), and
+  Egret runs Data API endpoints with parameters on StarRocks that way, so such an endpoint returns every row and column
+  in the clear.
+
+`ghcr.io/egret-data/egret-starrocks-fe` is the official `starrocks/fe-ubuntu` image of the same release with two front
+end jars rebuilt with the fixes; it ships the official Ranger plugin. The source, the patches and the security test every
+image passes before it is published are at [github.com/egret-data/egret-starrocks](https://github.com/egret-data/egret-starrocks).
+New provisioned engines use it. To move an existing engine onto it, update the engine's `feImage` to
+`ghcr.io/egret-data/egret-starrocks-fe:4.1.7-egret.1@sha256:da948dad19e98a5a43b0073ec48f87c9e7429246ce4581a000c0955c742af250`
+and its `cnImage` to `starrocks/cn-ubuntu:4.1.7@sha256:39f7320127c9924abb1f1ce0ba0583ab11989cbe5bd1bb6274ada6f89ba5740d`
+(the pods restart; from 4.1.4 or 4.1.6 this is an upgrade). Run an external StarRocks engine on the same image.
 
 ## Connect an engine
 

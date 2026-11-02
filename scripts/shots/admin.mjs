@@ -474,7 +474,7 @@ export const shots = [
       await tab('StarRocks')(page);
       await engine('docs-starrocks')(page);
       await tab('Settings')(page);
-      await page.getByText(/serves the metadata tables/).first().scrollIntoViewIfNeeded();
+      await page.getByText(/serve the metadata tables/).first().scrollIntoViewIfNeeded();
     },
   },
   {
@@ -487,7 +487,7 @@ export const shots = [
       await page.getByRole('option', {name: 'StarRocks'}).click();
       await page.locator('#er-profile').click();
       await page.getByRole('option', {name: /docs-sr-spare/}).click();
-      await page.getByText(/serves the metadata tables/).first().scrollIntoViewIfNeeded();
+      await page.getByText(/serve the metadata tables/).first().scrollIntoViewIfNeeded();
     },
   },
   {id: 'admin/cp-catalogs', path: `${cp}/catalogs`, settle: 1500},
