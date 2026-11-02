@@ -39,6 +39,8 @@ Use this for break-glass accounts and for installations without SSO.
 
 The dialog says *Create a local account with an email and password.* The new user appears with provider `local`.
 
+The new user gets an engine username at once (since platform #823), derived from the email, for example `carla` for `carla@egret.local`, with a number appended when the name is taken. **Governance → People & groups** shows it, and a grant or rule can name the user straight away, before they have signed in or queried. A user who signs in through SSO for the first time gets one the same way.
+
 :::note
 Prefer SSO for people. A local account has its own password and does not follow the identity provider's group membership.
 :::

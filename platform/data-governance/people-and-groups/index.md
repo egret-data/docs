@@ -24,7 +24,7 @@ The page has four tabs, kept in the address as `?kind=`: users (the default), `g
 
 **Show service accounts** adds machine accounts to the list; they are hidden by default. People appear here once they have signed in; SSO users come with the groups the identity provider reports.
 
-*No username yet* is normal for a new user. Egret allocates one at their first query, notebook or engine token, or when a grant naming them, one of their groups or one of their workspaces is compiled. A grant created from the Data page can allocate it for you (see [Grants](../data/grants.md#create-a-grant)).
+Since platform #823 every person gets a username when they are created (on **New user**, or at their first SSO sign-in), and at start egret gives one to each existing person who has none. So *No username yet* now appears only for a service account (it gets one with its first token) and for a person egret could not name at start because a stored grant principal or rule exemption already uses the name it would give them; the server logs a warning, and **Unmatched names** shows that reference. For those, egret still allocates a username at their first query, notebook or engine token, or when a grant naming them, one of their groups or one of their workspaces is compiled, and a grant created from the Data page can allocate it for you (see [Grants](../data/grants.md#create-a-grant)).
 
 ### Groups
 

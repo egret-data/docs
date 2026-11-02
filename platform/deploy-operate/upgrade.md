@@ -396,6 +396,16 @@ From platform #822 there is no migration and no API change. Every StarRocks engi
 warning that StarRocks serves Iceberg metadata tables without asking Ranger (KI-340): on the Governance engine page, the
 Control plane engine page and **Register external engine**.
 
+### New users get an engine username at creation (platform #823)
+
+From platform #823 there is no migration and no API shape change.
+
+- **Behaviour change:** `POST /api/control-plane/users`, `egret create-admin` and a first SSO sign-in give the new user
+  an engine username at once; the answer's `username` is no longer `null` (KI-342). Service accounts are unchanged.
+- **At start:** egret gives a username to every existing person who has none. A person whose would-be name a stored
+  grant principal or rule exemption already uses is left without one, and the server logs a warning; allocate theirs by
+  hand from a grant dialog, which answers 409 naming those rows until they are resolved.
+
 ## Rolling back
 
 There is no supported in-place rollback. Restore the database from the backup taken in step 2, then start the previous
