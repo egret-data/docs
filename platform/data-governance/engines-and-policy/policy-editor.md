@@ -6,7 +6,7 @@ sidebar_position: 3
 
 Most policies in a profile are compiled by egret from your grants and rules. A **hand-written policy** is a raw Apache Ranger policy you write yourself in the **Advanced** tab. Use it for the few things the permission model cannot express, and prefer [grants](../data/grants.md), [rules](../data/masks-and-filters.md) and [engine permissions](./engine-permissions.md) for everything else.
 
-![The Advanced tab of docs-trino: egret compiles this profile, so new hand-written policies are refused](/img/platform/admin/gov-engine-advanced.png)
+![The Advanced tab of the provisioned engine docs-lake: egret compiles this profile, so new hand-written policies are refused; its Tag service section names docs-lake_tag](/img/platform/admin/gov-engine-advanced.png)
 
 The tab opens with a fixed warning: *Manual policies are outside egret's model: egret does not recompile them, does not check overlaps with grants, and Data and People pages will mark them manual. Prefer Engine permissions or grants on Data.*
 

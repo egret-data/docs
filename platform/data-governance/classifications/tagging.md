@@ -17,7 +17,14 @@ Tags attach to tables and columns in egret-managed catalogs (Iceberg warehouses)
 3. In **Add classification**, open **Classification** and choose one. Classifications already on the object are not offered; if there are none left the dialog says *Every classification is already on this table.* (or *column*). With none defined it says *No classifications are defined yet.*
 4. Press **Add classification**. A toast says *Classification attached.*
 
-When the attach needs your attention, a warning toast takes the place of the success toast. Today there is one such case: a classification with a [clearance](./clearance.md#on-columns-or-on-a-whole-table) attached to a whole table that a StarRocks engine serves but the catalog does not have yet (an unknown name, a view, or a table not created yet). The attach succeeds, and the warning says that a direct read is refused but a view over the table shows the values until the table exists in the catalog, when egret writes the column masks. The tag control under **Browse** shows the same warning.
+When the attach needs your attention, a warning toast takes the place of the success toast. This happens when a classification with a [clearance](./clearance.md#on-columns-or-on-a-whole-table) is attached to a whole object that a StarRocks engine serves and that is not a table in the catalog. The attach succeeds in both cases below; the tag control under **Browse** shows the same warnings.
+
+- **A name the catalog does not have** (an unknown name, or a table not created yet): the warning says that a direct read is refused, but a view over the table shows the values until the table exists in the catalog, when egret writes the column masks.
+- **A view** (since platform #820): the warning says that the name is a view, not a table. On StarRocks the clearance compiles only a select deny on the view's name, which egret has not measured StarRocks applying to a view, and no column masks, now or later, because egret builds masks from a table's columns. To protect what the view shows, classify the table the view reads: that table's masks hold through the views over it.
+
+![Confidential attached to analytics.sessions_archive, a name the catalog does not have: the warning toast says the masks take effect once the table exists](/img/platform/admin/gov-attach-notice-table.png)
+
+![Confidential attached to the view analytics.revenue_by_country: the warning toast says the name is a view, not a table, and to classify the table it reads](/img/platform/admin/gov-attach-notice-view.png)
 
 ![The Data page for the sessions table: header, engine docs-trino, and the Columns list with classifications and rules](/img/platform/admin/gov-table-overview.png)
 
@@ -151,6 +158,7 @@ These do not follow a rename:
 - A mask by tag on a column type the mask cannot apply to returns an engine error rather than a masked value.
 - A classified rename is held for up to 90 seconds, and a silent bound engine makes it fail (KI-310). Run from SQL Lab, a hold longer than 60 seconds shows a timeout, which says that the rename may still complete.
 - A classification with a clearance attached to a table that is not in the catalog yet leaves a StarRocks view over it unprotected until the table exists. The attach warns about it (since platform #818), and **Who can read?** says so on the table's columns. The warning is given at the attach only, not when a clearance is added later to a classification already on such a table.
+- A classification with a clearance attached to a view gives that view no column masks on StarRocks, now or later. The attach warns about it (since platform #820). Classify the table the view reads instead.
 
 ## Further reading
 

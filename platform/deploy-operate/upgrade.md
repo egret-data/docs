@@ -367,6 +367,19 @@ From platform #818 there is no migration.
 - **API change:** the rule effect no longer carries `trinoColumnOnly`, and explain no longer carries
   `row_filter_not_applied`.
 
+### The attach notice for a view (platform #820)
+
+From platform #820 there is no migration.
+
+- **API change:** `PUT /api/control-plane/warehouses/{warehouse_id}/resource-tags` can answer a second notice code,
+  `clearance_on_view`, when a whole-table classification with a clearance is attached to a name that is a view in the
+  catalog on a warehouse a StarRocks engine serves. Before, such an attach answered `clearance_masks_pending_table`,
+  whose message promised masks once the table exists; a view never becomes a table. A name the catalog does not have
+  still answers `clearance_masks_pending_table`. A client that matches on `code` should handle both. See
+  [Tagging](../data-governance/classifications/tagging.md#tag-a-table-or-a-column).
+- **Behaviour change:** the `skipped` reason of `POST /api/control-plane/perm/compile/{service_id}` for a whole-table clearance on a view says
+  that it is a view and gets no masks, instead of *not protected until the table exists*.
+
 ## Rolling back
 
 There is no supported in-place rollback. Restore the database from the backup taken in step 2, then start the previous

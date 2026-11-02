@@ -39,7 +39,16 @@ const whoCanReadColumn = (subject, search) => async (page) => {
   await d.getByRole('button', {name: 'Explain'}).click();
   await page.waitForTimeout(4000);
 };
-// The provisioned engine the cp-engine-* shots open (DOCS_ENGINE overrides it for a pass that adds its own).
+// Add classification → Confidential on the open table, then wait for the warning toast.
+const attachConfidential = async (page) => {
+  await page.getByRole('button', {name: 'Add classification'}).first().click();
+  const d = page.getByRole('dialog');
+  await d.getByRole('combobox', {name: 'Classification'}).click();
+  await page.getByRole('option', {name: /Confidential/}).click();
+  await d.getByRole('button', {name: 'Add classification'}).click();
+  await page.locator('[data-sonner-toast][data-type="warning"]').first().waitFor({timeout: 30000});
+};
+// The provisioned engine the cp-engine-* and gov-engine-* shots open (DOCS_ENGINE overrides it for a pass that adds its own).
 const DOCS_ENGINE = process.env.DOCS_ENGINE ?? 'docs-trino';
 
 export const shots = [
@@ -152,6 +161,33 @@ export const shots = [
       await page.getByRole('dialog').getByText(/On a whole table, this classification/).waitFor();
     },
   },
+  // Kind hint (platform #818): Filter rows by a classification. Cropped to the dialog's top.
+  {
+    id: 'admin/gov-rule-kind-hint',
+    path: `${T}?tab=masks`,
+    settle: 800,
+    prepare: async (page) => {
+      await page.getByRole('button', {name: 'Add rule'}).click();
+      const d = page.getByRole('dialog');
+      await d.getByRole('combobox', {name: 'Kind', exact: true}).click();
+      await page.getByRole('option', {name: 'Filter rows'}).click();
+      await d.getByText(/A row filter by classification filters every table/).waitFor();
+    },
+  },
+  // Attach notices (platform #818, #820). Each attaches Confidential (clearance data_steward) on a warehouse that the
+  // StarRocks profile starrocks-prod serves (external engine docs-starrocks); remove the classification to re-capture.
+  {
+    id: 'admin/gov-attach-notice-table',
+    path: `${gov}/data/demo_warehouse/analytics/sessions_archive`,
+    settle: 800,
+    prepare: async (page) => attachConfidential(page),
+  },
+  {
+    id: 'admin/gov-attach-notice-view',
+    path: `${gov}/data/demo_warehouse/analytics/revenue_by_country`,
+    settle: 800,
+    prepare: async (page) => attachConfidential(page),
+  },
   {id: 'admin/gov-people-users', path: `${gov}/people`, settle: 2000},
   {id: 'admin/gov-people-groups', path: `${gov}/people?kind=group`, settle: 2000},
   {id: 'admin/gov-people-roles', path: `${gov}/people?kind=role`, settle: 2000},
@@ -179,13 +215,13 @@ export const shots = [
     },
   },
   {id: 'admin/gov-engines-index', path: `${gov}/engines`, settle: 2500},
-  {id: 'admin/gov-engine-permissions', path: `${gov}/engines`, settle: 2000, prepare: click('docs-trino')},
+  {id: 'admin/gov-engine-permissions', path: `${gov}/engines`, settle: 2000, prepare: click(DOCS_ENGINE)},
   {
     id: 'admin/gov-engine-grant-dialog',
     path: `${gov}/engines`,
     settle: 800,
     prepare: async (page) => {
-      await click('docs-trino')(page);
+      await click(DOCS_ENGINE)(page);
       await page.getByRole('button', {name: 'Grant', exact: true}).click();
       const d = page.getByRole('dialog');
       await d.getByRole('combobox').first().click();
@@ -193,9 +229,9 @@ export const shots = [
       await page.waitForTimeout(800);
     },
   },
-  {id: 'admin/gov-engine-policies', path: `${gov}/engines`, settle: 2000, prepare: seq(click('docs-trino'), tab('Policies'))},
-  {id: 'admin/gov-engine-plugin', path: `${gov}/engines`, settle: 2000, prepare: seq(click('docs-trino'), tab('Plugin'))},
-  {id: 'admin/gov-engine-advanced', path: `${gov}/engines`, settle: 2000, prepare: seq(click('docs-trino'), tab('Advanced'))},
+  {id: 'admin/gov-engine-policies', path: `${gov}/engines`, settle: 2000, prepare: seq(click(DOCS_ENGINE), tab('Policies'))},
+  {id: 'admin/gov-engine-plugin', path: `${gov}/engines`, settle: 2000, prepare: seq(click(DOCS_ENGINE), tab('Plugin'))},
+  {id: 'admin/gov-engine-advanced', path: `${gov}/engines`, settle: 2000, prepare: seq(click(DOCS_ENGINE), tab('Advanced'))},
   {
     id: 'admin/gov-engine-migrate',
     path: `${gov}/engines`,
@@ -209,6 +245,24 @@ export const shots = [
     },
   },
   {id: 'admin/gov-profile', path: `${gov}/engines`, settle: 2000, prepare: link('docs-external-policy')},
+  {
+    id: 'admin/gov-new-profile',
+    path: `${gov}/engines`,
+    settle: 800,
+    prepare: async (page) => {
+      await page.getByRole('button', {name: 'New profile'}).click();
+      await page.getByRole('dialog').getByLabel('Name').fill('lake-trino');
+    },
+  },
+  {
+    id: 'admin/gov-trino-config',
+    path: `${gov}/engines`,
+    settle: 1500,
+    prepare: seq(click(DOCS_ENGINE), tab('Plugin'), async (page) => {
+      await page.getByRole('button', {name: 'Download Trino config'}).click();
+      await page.getByRole('dialog').waitFor();
+    }),
+  },
   {
     id: 'admin/gov-policy-editor',
     path: `${gov}/engines`,
@@ -250,6 +304,13 @@ export const shots = [
     prepare: seq(click('Personal data (PII)'), tab('Views')),
   },
   {id: 'admin/gov-tag-clearance', path: `${gov}/classifications`, settle: 2500, prepare: seq(click('Confidential'), tab('Clearance'))},
+  // Manual policies (platform #809): hand-written tag policies of docs-legacy-tags, one with the tag value P*x.
+  {
+    id: 'admin/gov-tag-manual-policies',
+    path: `${gov}/classifications`,
+    settle: 2500,
+    prepare: seq(click('Personal data (PII)'), tab('Manual policies')),
+  },
   {
     id: 'admin/gov-add-tag',
     path: `${T}?column=started_at`,

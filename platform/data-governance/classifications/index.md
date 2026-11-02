@@ -92,6 +92,8 @@ A row is a match on the tag name, not a decision. A policy is listed in three wa
 | *Names this classification through a pattern.* | The pattern matches the name, for example `p*` on `pii`. |
 | **Wider than its pattern**, with *The engine applies this policy to every tag starting with “p”, not only the tags its pattern matches.* (or *… to every tag, …*) | The pattern does **not** match the name, but the engines apply the policy to it anyway. See below. |
 
+![The Manual policies tab of Personal data (PII): the hand-written tag policy mask-P-x, tag value P*x, carries Wider than its pattern; deny-pii names the classification literally](/img/platform/admin/gov-tag-manual-policies.png)
+
 When nothing is listed the tab says *No manual tag policy names this classification.*, or *No readable manual tag policy names this classification.* when some policies could not be read (they are listed under the table). With no tag service on any profile it says *No engine profile has a tag service, so no engine downloads tag policies.*
 
 #### How the engines pick tag policies

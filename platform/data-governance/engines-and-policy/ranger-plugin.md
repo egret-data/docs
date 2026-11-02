@@ -17,6 +17,8 @@ The **Plugin** tab of an engine in **Governance → Engine & policy** shows whet
 - **Downloads reported by plugins**: each plugin instance (for example `trino@4ae60563e301-docs-trino`), the kind, the last known and served version, and when. A provisioned engine that was restarted shows its old container's plugin as well, with an older version.
 - **Download Trino config** opens *Trino config — \<profile\>* with the plugin files, each with a **Download** button. When the download URL in the files is a loopback or unparseable address, the dialog shows the same warning as the external engine's **Plugin config** tab, for example *The download URL (http://localhost:8080) is a loopback or unspecified address: no engine can reach it. It comes from `[catalog] public_url`, which defaults to localhost on a fresh install; set it to an address the engine can reach.*
 
+![The Trino config dialog of the provisioned engine docs-lake: access-control.properties and ranger-trino-security.xml, each with a Download button](/img/platform/admin/gov-trino-config.png)
+
 For an external engine the state reads *egret does not judge external engines: it does not run them and cannot tell whether they should be polling.*, and the list says *No plugin has downloaded from this profile in the last 24 hours.* until your engine downloads.
 
 A provisioned engine needs nothing else: egret installs and configures the plugin. The tab shows only for an engine bound to a policy profile.
