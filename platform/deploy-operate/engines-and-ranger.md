@@ -28,7 +28,8 @@ jar out of each.
 | Trino | `trinodb/trino:483` | 2.8.0 |
 | StarRocks | `starrocks/fe-ubuntu:4.1.4` | 2.8.0 |
 | StarRocks | `starrocks/fe-ubuntu:4.1.6` | 2.9.0 |
-| StarRocks | `ghcr.io/egret-data/egret-starrocks-fe:4.1.7-egret.1` (Egret's patched 4.1.7) | 2.9.0 |
+| StarRocks | `ghcr.io/egret-data/egret-starrocks-fe:4.1.7-egret.1` (Egret's patched 4.1.7, first fixes; superseded) | 2.9.0 |
+| StarRocks | `ghcr.io/egret-data/egret-starrocks-fe:4.1.7-egret.3` (Egret's patched 4.1.7) | 2.9.0 |
 
 Plugin 2.5.0 cannot present the engine credential the policy service requires (see [Authentication of the plugin](#authentication-of-the-plugin)), so Egret refuses to create an engine on `trinodb/trino:470` or update one onto it (400), and refuses to register an external engine that declares a plugin older than 2.8.0. An existing Trino 470 engine must move to Trino 483.
 
@@ -45,21 +46,30 @@ get `ERROR 5204`. Grant the view, or the base columns for an `INVOKER` view, to 
 
 ## Egret's patched StarRocks image
 
-The official StarRocks images have two holes that no policy Egret compiles can close (KI-340, KI-345):
+The official StarRocks images have holes that no policy Egret compiles can close:
 
 - they serve the metadata tables of Iceberg tables (`orders$files`, `$partitions`, `$snapshots`, …) to any login without
-  asking Ranger, which exposes row counts, partition values, data file paths and each column's lowest and highest value;
+  asking Ranger, which exposes row counts, partition values, data file paths and each column's lowest and highest value
+  (KI-340);
 - they apply no mask and no row filter to prepared statements (`PREPARE`/`EXECUTE`, or the MySQL binary protocol), and
   Egret runs Data API endpoints with parameters on StarRocks that way, so such an endpoint returns every row and column
-  in the clear.
+  in the clear (KI-345);
+- they apply no mask and no row filter to the front end's HTTP SQL API (port 8030, which the StarRocks Ingress exposes)
+  or to Arrow Flight SQL (KI-346);
+- `FILES()` reads and writes object storage with no privilege at all (KI-347);
+- a materialized view stores its base tables' rows past its creator's masks and row filters (KI-348);
+- `SELECT *` under a mask or row filter returns the hidden `_file` and `_pos` columns (KI-337), and `SHOW CREATE CATALOG`
+  shows every catalog's properties to anyone (KI-349).
 
 `ghcr.io/egret-data/egret-starrocks-fe` is the official `starrocks/fe-ubuntu` image of the same release with two front
-end jars rebuilt with the fixes; it ships the official Ranger plugin. The source, the patches and the security test every
+end jars rebuilt with the fixes; it ships the official Ranger plugin. `4.1.7-egret.3` fixes all of the above;
+`4.1.7-egret.1` fixed only the first two. On it, `FILES()` needs the OPERATE privilege on SYSTEM, and creating a
+materialized view over a table where a mask or row filter applies to the creator is refused. The source, the patches and the security test every
 image passes before it is published are at [github.com/egret-data/egret-starrocks](https://github.com/egret-data/egret-starrocks).
 New provisioned engines use it. To move an existing engine onto it, update the engine's `feImage` to
-`ghcr.io/egret-data/egret-starrocks-fe:4.1.7-egret.1@sha256:da948dad19e98a5a43b0073ec48f87c9e7429246ce4581a000c0955c742af250`
+`ghcr.io/egret-data/egret-starrocks-fe:4.1.7-egret.3@sha256:5c74c820f9b741bc8054247f47f3d54dd9e526710b6fc2b5a7873cae6bb2d2b0`
 and its `cnImage` to `starrocks/cn-ubuntu:4.1.7@sha256:39f7320127c9924abb1f1ce0ba0583ab11989cbe5bd1bb6274ada6f89ba5740d`
-(the pods restart; from 4.1.4 or 4.1.6 this is an upgrade). Run an external StarRocks engine on the same image.
+(the pods restart; from 4.1.4 or 4.1.6 this is an upgrade; an engine on `4.1.7-egret.1` moves the same way). Run an external StarRocks engine on the same image.
 
 ## Connect an engine
 
