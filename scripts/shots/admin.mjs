@@ -462,6 +462,34 @@ export const shots = [
   {id: 'admin/cp-engine-ext-overview', path: `${cp}/engines`, settle: 2000, prepare: engine('trino-demo-ext')},
   {id: 'admin/cp-engine-plugin', path: `${cp}/engines`, settle: 2000, prepare: seq(engine('trino-demo-ext'), tab('Plugin config'))},
   {id: 'admin/cp-engine-ext-settings', path: `${cp}/engines`, settle: 2000, prepare: seq(engine('trino-demo-ext'), tab('Settings'))},
+  // StarRocks metadata-table warning (platform #822), on the external StarRocks engine docs-starrocks bound to
+  // starrocks-prod. The Register shot picks a StarRocks profile that no engine is bound to (docs-sr-spare).
+  {id: 'admin/gov-engine-starrocks-warning', path: `${gov}/engines`, settle: 2000, prepare: click('docs-starrocks')},
+  {id: 'admin/cp-engine-ext-sr-overview', path: `${cp}/engines`, settle: 2000, prepare: seq(tab('StarRocks'), engine('docs-starrocks'))},
+  {
+    id: 'admin/cp-engine-ext-sr-settings',
+    path: `${cp}/engines`,
+    settle: 1500,
+    prepare: async (page) => {
+      await tab('StarRocks')(page);
+      await engine('docs-starrocks')(page);
+      await tab('Settings')(page);
+      await page.getByText(/serves the metadata tables/).first().scrollIntoViewIfNeeded();
+    },
+  },
+  {
+    id: 'admin/cp-register-sr-warning',
+    path: `${cp}/engines/register`,
+    settle: 1000,
+    prepare: async (page) => {
+      await page.locator('#er-name').fill('lake-starrocks');
+      await page.locator('#er-type').click();
+      await page.getByRole('option', {name: 'StarRocks'}).click();
+      await page.locator('#er-profile').click();
+      await page.getByRole('option', {name: /docs-sr-spare/}).click();
+      await page.getByText(/serves the metadata tables/).first().scrollIntoViewIfNeeded();
+    },
+  },
   {id: 'admin/cp-catalogs', path: `${cp}/catalogs`, settle: 1500},
   {
     id: 'admin/cp-catalog-new',

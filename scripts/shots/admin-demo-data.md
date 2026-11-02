@@ -34,7 +34,7 @@ checks first.
      platform admin `ops.admin@egret.local` used for impersonation.
    - For the final DG-debt shots: the hand-written tag policies `mask-P-x` (tag value `P*x`) and `deny-pii` (tag value `Personal data (PII)`) in `docs-legacy-tags`, written
      through `POST /api/control-plane/policies`), and an external StarRocks engine `docs-starrocks` bound to
-     `starrocks-prod` that declares `demo_warehouse` (the attach notices need a StarRocks profile serving the warehouse).
+     `starrocks-prod` that declares `demo_warehouse` (the attach notices and the StarRocks warning shots need it), and an unbound StarRocks profile `docs-sr-spare` for the Register shot.
 4. Capture: `node scripts/screenshots.mjs admin/<id> …` with the admin `STATE`. `admin/gov-clearance-409` needs a staged
    race and has its own script, `scripts/capture-clearance-409.mjs`.
 

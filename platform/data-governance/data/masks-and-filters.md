@@ -143,7 +143,7 @@ The local platform admin `admin@egret.local` got the same masked values: platfor
 - A rule that selects by path is copied to the new name when its table or column is renamed, and the original stays on the old name; a rule that selects by tag follows because classifications do. A rule that selects by a pattern the new name escapes refuses the rename. See [Renames and drops](./grants.md#renames-and-drops).
 - A row filter or custom mask expression that names a renamed column is not rewritten (KI-321).
 - On StarRocks, masks and row filters do not reach a table's Iceberg metadata tables (`orders$files`, `orders$partitions`, …): StarRocks serves them to any login without asking Ranger, so column bounds, partition values and counts are readable regardless of rules (KI-340). Do not give StarRocks logins to people who must not see the values.
-- On Trino, masks, row filters and denies did not reach a table's metadata tables either (KI-341, fix in review).
+- On Trino, a table's metadata tables (`orders$files`, `orders$partitions`, …) follow its masks, row filters and denies (since platform #821): a person a mask, row filter or deny on the table restricts gets *Access Denied* on every one of them, and a person it exempts or does not restrict reads them as before. A tag rule or clearance does the same for each table that carries the classification. Profiles that egret's permission model does not compile get no such deny (KI-341).
 - On StarRocks, `SELECT *` on an Iceberg table shows the hidden `_file` and `_pos` columns to a user with a row filter (KI-337). List the columns instead.
 
 ## Further reading

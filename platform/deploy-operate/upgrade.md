@@ -380,6 +380,22 @@ From platform #820 there is no migration.
 - **Behaviour change:** the `skipped` reason of `POST /api/control-plane/perm/compile/{service_id}` for a whole-table clearance on a view says
   that it is a view and gets no masks, instead of *not protected until the table exists*.
 
+### Trino metadata tables follow masks, row filters and denies (platform #821)
+
+From platform #821 there is no migration.
+
+- **Behaviour change:** on Trino, a person a mask, row filter or select deny restricts on a table is now refused
+  (*Access Denied*) on every metadata table of that table (`orders$files`, `orders$partitions`, `orders$history`, …).
+  Before, they could read column bounds, partition values and counts there (KI-341). People the policy exempts or does
+  not restrict read them as before. egret recompiles the affected Trino profiles; the new policies are named
+  `perm-hidden-meta-…`. Profiles that egret's permission model does not compile get nothing.
+
+### Warning on StarRocks engines (platform #822)
+
+From platform #822 there is no migration and no API change. Every StarRocks engine bound to a policy profile shows a
+warning that StarRocks serves Iceberg metadata tables without asking Ranger (KI-340): on the Governance engine page, the
+Control plane engine page and **Register external engine**.
+
 ## Rolling back
 
 There is no supported in-place rollback. Restore the database from the backup taken in step 2, then start the previous
