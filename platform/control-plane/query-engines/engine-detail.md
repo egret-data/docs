@@ -121,7 +121,7 @@ The header shows the engine name, its type, an **External** badge and **Open in 
 
 For a StarRocks engine with a bound profile the tab also shows a warning (since platform #822; widened in platform #826): official StarRocks images serve the metadata tables of Iceberg tables (`$files`, `$partitions`, `$snapshots` and the others) without asking Ranger, so anyone who can log in to the engine can read row counts, partition values, data file paths and each column's lowest and highest values for every table of an attached Iceberg catalog, whatever the profile's grants, masks, row filters and classifications say, and apply no mask or row filter to prepared statements such as Data API endpoints with parameters (KI-340, KI-345). Egret's patched image `ghcr.io/egret-data/egret-starrocks-fe` fixes both; run the engine on it. Give StarRocks logins only to people who may see these values, and serve masked or filtered data through Trino. A Trino engine shows no such warning.
 
-![The Overview tab of the external StarRocks engine docs-starrocks with the metadata-table warning](/img/platform/admin/cp-engine-ext-sr-overview.png)
+![The Overview tab of the external StarRocks engine docs-starrocks with the StarRocks security warning](/img/platform/admin/cp-engine-ext-sr-overview.png)
 
 ### Catalogs
 
@@ -153,7 +153,7 @@ The installation files and warnings for the Ranger plugin: **Ranger service name
 
 For a StarRocks engine, the same warning appears under **Policy profile** as soon as a profile is picked, before you save.
 
-![The Settings tab of docs-starrocks with the profile starrocks-prod picked and the metadata-table warning under it](/img/platform/admin/cp-engine-ext-sr-settings.png)
+![The Settings tab of docs-starrocks with the profile starrocks-prod picked and the StarRocks security warning under it](/img/platform/admin/cp-engine-ext-sr-settings.png)
 
 Changing or removing the profile recompiles both the old and the new profile. If that would leave two mask or row-filter rules deciding one column differently, egret refuses and changes nothing. **Save changes** applies; before any edit the form says *Nothing has changed yet.*
 

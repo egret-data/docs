@@ -46,7 +46,7 @@ Egret proves migrations and explains access only for Trino with plugin 2.5.0 or 
 
 For a StarRocks engine, picking a profile shows a warning under the picker (since platform #822): official StarRocks images serve the metadata tables of Iceberg tables without asking Ranger, so anyone who can log in to the engine can read row counts, partition values, data file paths and column bounds of every table in its Iceberg catalogs, whatever the profile says, and apply no mask or row filter to prepared statements (KI-340, KI-345). Run the external engine on Egret's patched image `ghcr.io/egret-data/egret-starrocks-fe`, which fixes both; the warning stays, because Egret cannot see which image an external engine runs.
 
-![Register external engine with type StarRocks and a profile picked: the metadata-table warning under Policy profile](/img/platform/admin/cp-register-sr-warning.png)
+![Register external engine with type StarRocks and a profile picked: the StarRocks security warning under Policy profile](/img/platform/admin/cp-register-sr-warning.png)
 
 :::note
 A Trino profile needs a tag service to be bound. Pick one when you create the profile with **New profile**, or set it later on the profile's **Advanced** tab (see [Engines and policy](../../data-governance/engines-and-policy/index.md#create-a-policy-profile)).

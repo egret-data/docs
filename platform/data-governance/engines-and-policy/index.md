@@ -62,7 +62,7 @@ Select an engine to open its page. The header shows the engine name, its **Type*
 
 For a StarRocks engine bound to a profile, a warning under the header says that official StarRocks images serve the metadata tables of Iceberg tables (`$files`, `$partitions`, `$snapshots` and the others) without asking Ranger, so anyone who can log in to the engine can read row counts, partition values, data file paths and each column's lowest and highest values for every table of an attached Iceberg catalog, whatever the profile's grants, masks, row filters and classifications say, and apply no mask or row filter to prepared statements (KI-340, KI-345). It advises running the engine on Egret's patched image `ghcr.io/egret-data/egret-starrocks-fe`, or giving StarRocks logins only to people who may see these values and serving masked or filtered data through Trino (since platform #822). With **engine:read**, it is not shown for a provisioned engine on Egret's patched image `ghcr.io/egret-data/egret-starrocks-fe` (the default for new engines since platform #826), which fixes both holes; an external engine always shows it, because Egret does not know its image.
 
-![The Governance page of the external StarRocks engine docs-starrocks: the warning that StarRocks serves Iceberg metadata tables without asking Ranger, above the tabs](/img/platform/admin/gov-engine-starrocks-warning.png)
+![The Governance page of the external StarRocks engine docs-starrocks: the warning that official StarRocks images serve Iceberg metadata tables without asking Ranger and apply no mask or row filter to prepared statements, above the tabs](/img/platform/admin/gov-engine-starrocks-warning.png)
 
 The tabs are:
 
