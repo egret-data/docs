@@ -25,7 +25,7 @@ A person needs every layer to say yes. Passing layer 2 does not give them the da
 
 People sign in with SSO (OIDC) or with a local account. Users who sign in through SSO are created on their first sign-in, together with the groups the identity provider reports. Groups synced from the identity provider cannot be renamed or changed in egret, but you can give them roles and grants.
 
-A query engine knows a user by a short **username**, not by an email address. Egret allocates that username the first time you grant something to the person (the dialog says *Allocate a username to Member SSO?*) or the first time they query. The username is lower-cased, and a number is appended on collision. **Governance → People & groups** shows *No username yet* for people who have none.
+A query engine knows a user by a short **username**, not by an email address. Egret allocates that username when the person is created (since platform #823; before, at the first grant naming them or their first query). A service account gets one with its first token. The username is lower-cased, and a number is appended on collision. **Governance → People & groups** shows *No username yet* for people who have none.
 
 ## Layer 2: roles
 

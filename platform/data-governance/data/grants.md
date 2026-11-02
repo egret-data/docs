@@ -39,7 +39,7 @@ Each row has **Open**, which opens the [grant's own page](#the-single-grant-page
 2. Press **Grant access**. The dialog opens as **New grant** with the catalog, schema and table already filled in.
 3. Leave **Effect** as **Allow**. Under **Actions**, keep **Read** ticked.
 4. Under **Principals → Include**, choose a kind (**user**, **group** or **role**), then search.
-5. A user who already has an engine username is added by selecting the match. For a user who has none yet, the match shows **Allocate username and add**: press it. Confirm **Allocate and add** in the dialog *Allocate a username to Member SSO?* Egret reports *Member SSO was allocated a username and added, stored as member-sso.* The username is kept even if you close the form without saving.
+5. A user who already has an engine username is added by selecting the match; since platform #823 that is every user except a service account before its first token and a person whose name a stored reference already uses. For such a user the match shows **Allocate username and add**: press it. Confirm **Allocate and add** in the dialog *Allocate a username to Member SSO?* Egret reports *Member SSO was allocated a username and added, stored as member-sso.* The username is kept even if you close the form without saving.
 6. Press **Preview**. The dialog scrolls to the preview, so its result and **Create** are both on screen. The preview names the profiles that would be recompiled, for example `docs-trino`, and how many policies would be created, updated, deleted or left unchanged.
 7. Press **Create**. You see *Grant created.*
 

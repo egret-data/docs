@@ -367,6 +367,45 @@ From platform #818 there is no migration.
 - **API change:** the rule effect no longer carries `trinoColumnOnly`, and explain no longer carries
   `row_filter_not_applied`.
 
+### The attach notice for a view (platform #820)
+
+From platform #820 there is no migration.
+
+- **API change:** `PUT /api/control-plane/warehouses/{warehouse_id}/resource-tags` can answer a second notice code,
+  `clearance_on_view`, when a whole-table classification with a clearance is attached to a name that is a view in the
+  catalog on a warehouse a StarRocks engine serves. Before, such an attach answered `clearance_masks_pending_table`,
+  whose message promised masks once the table exists; a view never becomes a table. A name the catalog does not have
+  still answers `clearance_masks_pending_table`. A client that matches on `code` should handle both. See
+  [Tagging](../data-governance/classifications/tagging.md#tag-a-table-or-a-column).
+- **Behaviour change:** the `skipped` reason of `POST /api/control-plane/perm/compile/{service_id}` for a whole-table clearance on a view says
+  that it is a view and gets no masks, instead of *not protected until the table exists*.
+
+### Trino metadata tables follow masks, row filters and denies (platform #821)
+
+From platform #821 there is no migration.
+
+- **Behaviour change:** on Trino, a person a mask, row filter or select deny restricts on a table is now refused
+  (*Access Denied*) on every metadata table of that table (`orders$files`, `orders$partitions`, `orders$history`, …).
+  Before, they could read column bounds, partition values and counts there (KI-341). People the policy exempts or does
+  not restrict read them as before. egret recompiles the affected Trino profiles; the new policies are named
+  `perm-hidden-meta-…`. Profiles that egret's permission model does not compile get nothing.
+
+### Warning on StarRocks engines (platform #822)
+
+From platform #822 there is no migration and no API change. Every StarRocks engine bound to a policy profile shows a
+warning that StarRocks serves Iceberg metadata tables without asking Ranger (KI-340): on the Governance engine page, the
+Control plane engine page and **Register external engine**.
+
+### New users get an engine username at creation (platform #823)
+
+From platform #823 there is no migration and no API shape change.
+
+- **Behaviour change:** `POST /api/control-plane/users`, `egret create-admin` and a first SSO sign-in give the new user
+  an engine username at once; the answer's `username` is no longer `null` (KI-342). Service accounts are unchanged.
+- **At start:** egret gives a username to every existing person who has none. A person whose would-be name a stored
+  grant principal or rule exemption already uses is left without one, and the server logs a warning; allocate theirs by
+  hand from a grant dialog, which answers 409 naming those rows until they are resolved.
+
 ## Rolling back
 
 There is no supported in-place rollback. Restore the database from the backup taken in step 2, then start the previous

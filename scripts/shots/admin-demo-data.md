@@ -29,10 +29,14 @@ checks first.
    - **Register external engine** `trino-demo-ext` (`trino-demo:8080`, plugin 2.8.0) with `tpch_bench` and `finance_pg`
      declared; profile pair `docs-legacy-tags` / `docs-legacy-trino` (API, `config.tagService`) bound to it, with the
      hand-written policy `legacy: analysts read finance_pg` (migratable). Profiles `docs-external-policy` (Trino, seeded
-     defaults), `docs-external-trino` and `starrocks-prod` unbound.
+     defaults) and `docs-external-trino` unbound.
    - JDBC catalog `finance_pg` (secret `finance-postgres`), SMTP and Slack settings of `Docs sandbox` (Mailpit), a local
      platform admin `ops.admin@egret.local` used for impersonation.
-4. Capture: `node scripts/screenshots.mjs admin/<id> …` with the admin `STATE`.
+   - For the final DG-debt shots: the hand-written tag policies `mask-P-x` (tag value `P*x`) and `deny-pii` (tag value `Personal data (PII)`) in `docs-legacy-tags`, written
+     through `POST /api/control-plane/policies`), and an external StarRocks engine `docs-starrocks` bound to
+     `starrocks-prod` that declares `demo_warehouse` (the attach notices and the StarRocks warning shots need it), and an unbound StarRocks profile `docs-sr-spare` for the Register shot.
+4. Capture: `node scripts/screenshots.mjs admin/<id> …` with the admin `STATE`. `admin/gov-clearance-409` needs a staged
+   race and has its own script, `scripts/capture-clearance-409.mjs`.
 
 The engines are removed at the end of a docs pass (**Delete engine**), so the engine shots can only be re-captured after
 repeating step 3.

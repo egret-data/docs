@@ -12,6 +12,8 @@ Select an engine in **Control Plane → Engines** to open its page. The tabs dep
 
 The header shows the engine name, its namespace (`egret-engines`), the image, the endpoint, the authentication (*JWT auth*) and the Ranger plugin version, with the type and status badges. The endpoint is the `host:port` a workspace connection to the engine dials, for example `docs-trino-trino.egret-engines.svc:8443` (port 8443 is the HTTPS listener of an engine with JWT delegation). **Open in Engine & policy** opens the engine in Governance, **Restart** restarts the engine, and the **More engine actions** menu (**⋯**) holds **Delete engine**. The tabs are **Overview**, **Catalogs**, **Workspaces**, **Settings** and **Monitor**.
 
+A provisioned StarRocks engine that a policy profile names shows, above the tabs, the warning that StarRocks serves the Iceberg metadata tables without asking Ranger (since platform #822; see [External engine](#overview-1) and KI-340). It is not shown while the profile list loads, or to a viewer who cannot read it.
+
 ### Overview
 
 A strip shows the **phase**, **pods** (ready/total; **containers** on the Docker provisioner), **replicas** (for example *Coord 1 · Worker 0*, the counts the engine runs with), **catalogs**, **workspaces** and **auth** (*JWT auth*, impersonation, password auth or no delegation). For StarRocks, **FE replicas** and **CN replicas** replace *replicas*.
@@ -117,6 +119,10 @@ The header shows the engine name, its type, an **External** badge and **Open in 
 | **Ranger plugin version** | The version you declared. |
 | **Policy profile** | The bound profile, or *None bound. Bind one on the Settings tab.* |
 
+For a StarRocks engine with a bound profile the tab also shows a warning (since platform #822): StarRocks serves the metadata tables of Iceberg tables (`$files`, `$partitions`, `$snapshots` and the others) without asking Ranger, so anyone who can log in to the engine can read row counts, partition values, data file paths and each column's lowest and highest values for every table of an attached Iceberg catalog, whatever the profile's grants, masks, row filters and classifications say; egret cannot block this (KI-340). Give StarRocks logins only to people who may see these values, and serve masked or filtered data through Trino. A Trino engine shows no such warning.
+
+![The Overview tab of the external StarRocks engine docs-starrocks with the metadata-table warning](/img/platform/admin/cp-engine-ext-sr-overview.png)
+
 ### Catalogs
 
 *These catalogs are declared as served by this engine, so grants on them reach its policy profile. egret does not create these catalogs on your engine — create them there with the same names.*
@@ -144,6 +150,10 @@ The installation files and warnings for the Ranger plugin: **Ranger service name
 | **Port** | The engine's port. |
 | **Plugin version** | The Ranger plugin version (**2.5.0**, **2.8.0** or **Other…**). |
 | **Policy profile** | The profile the engine downloads, or **No profile**. Profiles bound elsewhere are marked, for example *docs-trino — bound to docs-trino*, and a Trino profile with no tag service is listed disabled, with *— no tag service: give it one on its Advanced tab*. |
+
+For a StarRocks engine, the same warning appears under **Policy profile** as soon as a profile is picked, before you save.
+
+![The Settings tab of docs-starrocks with the profile starrocks-prod picked and the metadata-table warning under it](/img/platform/admin/cp-engine-ext-sr-settings.png)
 
 Changing or removing the profile recompiles both the old and the new profile. If that would leave two mask or row-filter rules deciding one column differently, egret refuses and changes nothing. **Save changes** applies; before any edit the form says *Nothing has changed yet.*
 

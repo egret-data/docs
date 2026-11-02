@@ -46,6 +46,8 @@ Each row shows the rule **Name**, the path or tag it selects, its **Kind** (for 
 
 With **Applies to** set to **Classification** and **Filter rows** chosen, a hint under **Kind** reads: *A row filter by classification filters every table that carries the classification, on the whole table or on any of its columns, on Trino and on StarRocks.* See [Row filters by classification](#row-filters-by-classification).
 
+![The New rule dialog with Filter rows chosen for a classification: the hint under Kind says that the filter applies to every table carrying the classification, on Trino and StarRocks](/img/platform/admin/gov-rule-kind-hint.png)
+
 A new rule's suggested name follows **Kind** until you edit it: a name seeded as *Mask PII Data* becomes *Filter rows PII Data* when you switch to **Filter rows**.
 
 ### Mask type
@@ -140,6 +142,9 @@ The local platform admin `admin@egret.local` got the same masked values: platfor
 - A mask on a column whose type the mask cannot apply to can return an error from the engine rather than a masked value.
 - A rule that selects by path is copied to the new name when its table or column is renamed, and the original stays on the old name; a rule that selects by tag follows because classifications do. A rule that selects by a pattern the new name escapes refuses the rename. See [Renames and drops](./grants.md#renames-and-drops).
 - A row filter or custom mask expression that names a renamed column is not rewritten (KI-321).
+- On StarRocks, masks and row filters do not reach a table's Iceberg metadata tables (`orders$files`, `orders$partitions`, …): StarRocks serves them to any login without asking Ranger, so column bounds, partition values and counts are readable regardless of rules (KI-340). Do not give StarRocks logins to people who must not see the values.
+- On Trino, a table's metadata tables (`orders$files`, `orders$partitions`, …) follow its masks, row filters and denies (since platform #821): a person a mask, row filter or deny on the table restricts gets *Access Denied* on every one of them, and a person it exempts or does not restrict reads them as before. A tag rule or clearance does the same for each table that carries the classification. Profiles that egret's permission model does not compile get no such deny (KI-341).
+- On StarRocks, `SELECT *` on an Iceberg table shows the hidden `_file` and `_pos` columns to a user with a row filter (KI-337). List the columns instead.
 
 ## Further reading
 

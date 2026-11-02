@@ -44,6 +44,8 @@ Provisioned engines get their profile automatically: provisioning `docs-trino` c
 4. For a Trino profile, choose its **Tag service**: one of the existing Tag profiles, or **None**. The dialog says *An engine can be bound to a Trino profile only once it names a tag service: the tag profile its classification masks and row filters live in.*
 5. Press **Create profile**.
 
+![The New profile dialog: name lake-trino, type Trino, and the Tag service picker](/img/platform/admin/gov-new-profile.png)
+
 To create the Tag profile at the same time, press **New tag profile** beside the picker. The dialog switches to a Tag profile named `<name>_tag` (for `lake-trino`, `lake-trino_tag`). Press **Create profile**: the dialog says *Tag profile lake-trino_tag created.* and comes back to the Trino profile with the new Tag profile picked, and a second **Create profile** creates it. These are two separate creates, so a refusal never leaves half a pair.
 
 The profile appears under **Profiles without an engine**, with origin **Manual**. Bind it to an engine on the engine's **Settings** tab in the Control Plane (see [Register an external engine](../../control-plane/query-engines/register-external.md)).
@@ -57,6 +59,10 @@ A Trino profile with no tag service cannot be bound to an engine: egret refuses 
 ## The engine page
 
 Select an engine to open its page. The header shows the engine name, its **Type** badge, **Provisioned** or **External**, the bound **Profile**, the **Ranger plugin** version, and **Open in Control plane**. For an external engine a note reads *egret compiles this engine's policies but cannot see whether the external engine downloads them.*
+
+For a StarRocks engine bound to a profile, a warning under the header says that StarRocks serves the metadata tables of Iceberg tables (`$files`, `$partitions`, `$snapshots` and the others) without asking Ranger, so anyone who can log in to the engine can read row counts, partition values, data file paths and each column's lowest and highest values for every table of an attached Iceberg catalog, whatever the profile's grants, masks, row filters and classifications say; egret cannot block this (KI-340). It advises giving StarRocks logins only to people who may see these values, and serving masked or filtered data through Trino (since platform #822).
+
+![The Governance page of the external StarRocks engine docs-starrocks: the warning that StarRocks serves Iceberg metadata tables without asking Ranger, above the tabs](/img/platform/admin/gov-engine-starrocks-warning.png)
 
 The tabs are:
 

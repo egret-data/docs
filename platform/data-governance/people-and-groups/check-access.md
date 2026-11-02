@@ -8,7 +8,7 @@ The **Check access** tab on a person, group or role page asks the engines a prec
 
 ![Check access for Member SSO on demo_warehouse.analytics.customers: refused on docs-trino because no policy allows it](/img/platform/admin/gov-person-check.png)
 
-Check access needs **policy:read**. A user with no username cannot be checked: the tab says *No username yet, so no engine knows this user.* Grant them something first so a username is allocated.
+Check access needs **policy:read**. A user with no username cannot be checked: the tab says *No username yet, so no engine knows this user.* Since platform #823 this happens only for a service account before its first token, or a person egret could not name at start (see [People and groups](./index.md#users)); grant them something first so a username is allocated.
 
 ## Check a user's access to a column
 
