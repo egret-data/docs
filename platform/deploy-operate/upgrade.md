@@ -396,6 +396,22 @@ From platform #822 there is no migration and no API change. Every StarRocks engi
 warning that StarRocks serves Iceberg metadata tables without asking Ranger (KI-340): on the Governance engine page, the
 Control plane engine page and **Register external engine**.
 
+### StarRocks engines default to Egret's patched image (platform #826)
+
+From platform #826 there is no migration and no API change.
+
+- **Behaviour change:** a new provisioned StarRocks engine runs `ghcr.io/egret-data/egret-starrocks-fe:4.1.7-egret.1` for
+  its front end and `starrocks/cn-ubuntu:4.1.7` for its compute nodes (both pinned by digest), instead of the official
+  4.1.6 images. The patched front end fixes KI-340 (Iceberg metadata tables read without a privilege check) and KI-345
+  (masks and row filters skipped for prepared statements, which Data API endpoints with parameters use). The local
+  development stack's `starrocks` service runs the patched `egret-starrocks-allin1` image.
+- **Existing engines keep their image.** Move each StarRocks engine onto the patched image with
+  `PUT /api/control-plane/engines/{id}` as described under *Egret's patched StarRocks image* on **Engines and Ranger**;
+  its pods restart. From 4.1.4 or 4.1.6 this is an upgrade to 4.1.7. Run an external StarRocks engine on the same image.
+- **The warning about both holes** is no longer shown for a provisioned engine on the patched image; it still shows for
+  every other StarRocks engine bound to a profile, and always for an external one.
+- The cluster must be able to pull from `ghcr.io/egret-data`.
+
 ### New users get an engine username at creation (platform #823)
 
 From platform #823 there is no migration and no API shape change.
