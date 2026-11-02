@@ -32,6 +32,7 @@ With default values `helm template` renders these objects:
 | `Secret/egret-secrets` | `master-key`, `secret-key`, `catalog-auth-token`, storage credentials, the admin password and the OIDC client secret. The three keys are generated at install and **reused on upgrade** (looked up from the existing Secret). |
 | `ConfigMap/egret-env` | Every `EGRET_*` setting that is not a secret. |
 | `ServiceAccount`, `Role` and `RoleBinding` `egret-engine-provisioner` | Lets Egret manage workloads in the engine namespace. |
+| `NetworkPolicy/egret-engine-isolation` | In the engine namespace: only that namespace's own pods, Egret's pods and the StarRocks operator (front end ports 8030 and 9030) may connect to the engines (since platform #828). See [Engine network policy](#engine-network-policy). |
 | `Deployment/postgres`, `PersistentVolumeClaim/postgres-data` (1 GiB), `Service/postgres` | Bundled PostgreSQL 16 (`deps.enabled`). |
 | `Deployment/rustfs`, `PersistentVolumeClaim/rustfs-data`, `Service/rustfs`, `Job/egret-rustfs-bucket` | Bundled RustFS and a job that creates the bucket. |
 | `Pod/mailpit`, `Service/mailpit` | A mail catcher so you can read report emails. Never for real use. |
@@ -176,6 +177,10 @@ Running a script task also needs the workspace feature `workflow_containers` (of
 |---|---|---|
 | `ranger.enabled` | `false` | Sets `EGRET_RANGER__ENABLED`. The chart sets `EGRET_RANGER__AUTH_TOKEN` to empty, so stock plugins can download policies. |
 | `engineNamespace` | `egret-engines` | Where Egret provisions engines. Normally pre-created by `just k8s-up`; set `createEngineNamespace=true` on a bare cluster. |
+| `engineNetworkPolicy.enabled` | `true` | Render `NetworkPolicy/egret-engine-isolation` in `engineNamespace`. |
+| `engineNetworkPolicy.operatorNamespaces` | `[starrocks]` | Namespaces of the StarRocks operator, let in on the front end's 8030 and 9030. |
+| `engineNetworkPolicy.ingressFrom` | `[]` | NetworkPolicy peers an engine Ingress forwards from (your ingress controller), let in on 8030 (StarRocks front end) and 8080 and 8443 (Trino). **Required when an engine has an Ingress**, or the Ingress gets no traffic. |
+| `engineNetworkPolicy.extraFrom` | `[]` | Other NetworkPolicy peers, let in on every port, for example a metrics scraper. |
 | `apps.origin`, `apps.egretOrigin` | empty | The Data Apps origin (a sibling subdomain such as `apps.<host>`) and Egret's own origin. Empty turns the apps iframe and its listener off. |
 | `apps.pod.launcher` | `none` | `kubernetes` starts one hardened pod per author per workspace in `apps.pod.namespace` (`egret-apps`). Also `image`, `imagePullPolicy`, `resources`, `readyTimeoutSecs`, `idleSecs`, `networkPolicy.enabled` and `run.*`. |
 
@@ -186,6 +191,29 @@ For Egret to provision an engine, its service account needs the rights the chart
 `StarRocksCluster` resource. StarRocks additionally needs the kube-starrocks operator installed (the manifests are vendored in
 `deploy/starrocks-operator/`). Trino is provisioned as plain Deployments with no operator. See [Engines and Ranger
 setup](./engines-and-ranger) and [Query engines](../control-plane/query-engines).
+
+### Engine network policy
+
+An engine answers anyone who can reach its ports and has a login: StarRocks also serves an HTTP SQL API on 8030 and Trino
+its HTTP port, and only Egret needs either. `NetworkPolicy/egret-engine-isolation` (on by default since platform
+#828) therefore admits, into `engineNamespace`:
+
+| From | Ports |
+|---|---|
+| pods of `engineNamespace` itself (StarRocks front end and compute nodes, Trino coordinator and workers, the StarRocks password Job) | all |
+| Egret's pods (`app: egret` in the release namespace) | all |
+| `engineNetworkPolicy.operatorNamespaces` (the StarRocks operator runs SQL and HTTP calls against the front end) | 8030, 9030 |
+| `engineNetworkPolicy.ingressFrom` (the ingress controller of an engine Ingress) | 8030, 8080, 8443 |
+| `engineNetworkPolicy.extraFrom` | all |
+
+Everything else is refused, including workflow task pods and app pods (they query through Egret) and Egret's other pods
+(PostgreSQL, RustFS). Egress is not restricted: engines still reach Egret's policy API, the catalog and object storage.
+Measured on kind 0.29 with a listener on 8030, 9030, 8080 and 9010: before the policy every client connected to every port;
+after it, a task pod and a non-Egret pod of the release namespace were refused on all four, the operator's namespace got
+8030 and 9030 only, and an `ingressFrom` peer got 8030 and 8080 only.
+
+The policy needs a network plugin that enforces NetworkPolicy (kind 0.24 and later, Calico, Cilium and most managed
+clusters do). An external engine is outside it: put it behind your own firewall.
 
 ## Verify
 

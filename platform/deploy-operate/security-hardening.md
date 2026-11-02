@@ -83,6 +83,10 @@ Expose only what clients need.
 - [ ] **Keep PostgreSQL and the object store off the public network.** In Kubernetes, the chart's task and app pod network
   policies exist to keep user code away from the metadata database: set `workflow.tasks.networkPolicy.podCidr`,
   `serviceCidr` and `apiServerCidrs` correctly, because wrong values silently re-open PostgreSQL on some network plugins.
+- [ ] **Keep the engines reachable from Egret only.** Leave `engineNetworkPolicy.enabled` on (the default since platform
+  #828): a person who reaches an engine's port with a login skips Egret entirely, and StarRocks serves SQL over HTTP
+  too. Add your ingress controller to `engineNetworkPolicy.ingressFrom` only for engines that need an Ingress, and keep an
+  external engine behind your own firewall. See [Engine network policy](./kubernetes#engine-network-policy).
 
 ## 5. Features that widen the attack surface
 

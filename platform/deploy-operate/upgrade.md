@@ -442,6 +442,22 @@ From platform #827 there is no migration and no API change.
 - **The warning** now names every hole, and is shown for every StarRocks engine bound to a profile unless it runs
   `egret-starrocks-fe` `4.1.7-egret.3` or later, so it comes back for an engine on `4.1.7-egret.1`.
 
+### Engines accept connections only from Egret (platform #828)
+
+From platform #828 there is no migration and no API change.
+
+- **Behaviour change (Helm chart):** the chart renders `NetworkPolicy/egret-engine-isolation` in `engineNamespace`, on by
+  default. Only the engine namespace's own pods, Egret's pods and the StarRocks operator (8030 and 9030) can connect to the
+  engines; workflow task pods, app pods and anything else in the cluster are refused. See
+  [Engine network policy](./kubernetes#engine-network-policy).
+- **An engine Ingress needs a value:** if an engine is reached through an Ingress, add the ingress controller to
+  `engineNetworkPolicy.ingressFrom` (for example
+  `- namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: ingress-nginx } }`) before upgrading, or that Ingress
+  stops getting traffic.
+- **The operator elsewhere:** if the StarRocks operator does not run in `starrocks`, set
+  `engineNetworkPolicy.operatorNamespaces`.
+- To keep the old behaviour, set `engineNetworkPolicy.enabled=false`.
+
 ## Rolling back
 
 There is no supported in-place rollback. Restore the database from the backup taken in step 2, then start the previous
