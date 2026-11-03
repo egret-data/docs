@@ -458,6 +458,26 @@ From platform #828 there is no migration and no API change.
   `engineNetworkPolicy.operatorNamespaces`.
 - To keep the old behaviour, set `engineNetworkPolicy.enabled=false`.
 
+### StarRocks engines default to `egret-starrocks-fe` `4.1.7-egret.4` (platform #832)
+
+From platform #832 there is no migration and no API change.
+
+- **Behaviour change:** a new provisioned StarRocks engine runs `ghcr.io/egret-data/egret-starrocks-fe:4.1.7-egret.4`
+  (pinned by digest) instead of `4.1.7-egret.3`; the compute nodes stay on the official `starrocks/cn-ubuntu:4.1.7`. It
+  also fixes KI-350 (`EXPLAIN COSTS` shows the statistics of hidden rows) and KI-351 (loads, exports and
+  `SELECT INTO OUTFILE` with the nodes' own cloud identity). The local development stack's `starrocks` service runs
+  `egret-starrocks-allin1:4.1.7-egret.4`.
+- **New refusals on the patched image:** `EXPLAIN COSTS` over a table where a mask or row filter applies to the person
+  is refused (error 5213). `BROKER LOAD`, `EXPORT`, `SELECT ... INTO OUTFILE` and `ENGINE = file` tables need the
+  OPERATE privilege on SYSTEM (error 5214) unless every location is on an object store and the statement carries that
+  store's own keys; HDFS and local paths always need it. Egret itself runs none of these statements.
+- **The image ships StarRocks' AuditLoader plugin** at `/opt/egret/auditloader.zip`. Nothing installs it yet.
+- **Existing engines keep their image**, including those on `4.1.7-egret.3`. Move each one with
+  `PUT /api/control-plane/engines/{id}` as described under *Egret's patched StarRocks image* on **Engines and Ranger**;
+  its pods restart.
+- **The warning** now also names KI-350 and KI-351, and is shown for every StarRocks engine bound to a profile unless it
+  runs `egret-starrocks-fe` `4.1.7-egret.4` or later, so it comes back for an engine on `4.1.7-egret.3`.
+
 ## Rolling back
 
 There is no supported in-place rollback. Restore the database from the backup taken in step 2, then start the previous
