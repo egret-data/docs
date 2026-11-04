@@ -478,6 +478,26 @@ From platform #832 there is no migration and no API change.
 - **The warning** now also names KI-350 and KI-351, and is shown for every StarRocks engine bound to a profile unless it
   runs `egret-starrocks-fe` `4.1.7-egret.4` or later, so it comes back for an engine on `4.1.7-egret.3`.
 
+### Egret's own engine policies are kept in line (governance SP2a)
+
+From this version, Egret derives its own policies on each profile from the engines bound to it and the active platform
+admins, and brings the stored policies in line at every change and every start. These are the `egret-admin - …`
+policies, plus on Trino `egret-user-impersonate-self`, `egret-user-execute-query`, `egret-query-timeout` and
+`egret-delegator-impersonate`. See [Platform admins on the engines](./engines-and-ranger.md#platform-admins-on-the-engines).
+There is no migration and no API change.
+
+- **Behaviour change:** the first start of the new version deletes the policies of these names that are no longer wanted:
+  - `egret-delegator-impersonate` on a profile whose Trino engine no longer impersonates with a delegator;
+  - all of them on a profile with no delegating engine bound (unbound, deleted, open or external engines);
+  - `egret-admin - …` policies for a resource hierarchy the profile's service definition no longer has, and all
+    `egret-admin - …` policies when there is no active platform admin.
+
+  Each profile that changes gets one new policy version. A hand-written policy that an operator gave one of these names
+  is treated as Egret's own and is updated or deleted with them.
+- A start that finds nothing to change no longer raises the policy version. Before, every start raised it by 3 on each
+  Trino profile with a delegating engine.
+- The `all - …` defaults written by `seed-defaults` are not touched.
+
 ## Rolling back
 
 There is no supported in-place rollback. Restore the database from the backup taken in step 2, then start the previous

@@ -147,13 +147,31 @@ store: `/ranger/service/roles/secure/download/...` answers `404`, and the plugin
 
 ### Platform admins on the engines
 
-When an engine is applied, Egret seeds `egret-admin - <resources>` policies into its profile (one per resource
-hierarchy). They give every **active** platform admin all access on the engine, by engine username. Egret keeps them in
-step with platform-admin membership: granting or removing `platform_admin` (to a user or to a group), adding or removing a
-member of a group that holds it, deleting a user, disabling or enabling a platform admin, and `egret init` rewrite the `egret-admin`
-policies of every engine in the same database transaction, and the policy version goes up. A disabled platform admin is
-not in them. At every start the server also repairs `egret-admin` policies written before this behaviour existed
-(one transaction per profile; a failure is logged and does not stop the start).
+Egret writes its own policies into the profile of every engine that delegates queries, that is, every engine whose
+**Per-user delegation** is impersonation or JWT. It does not write them for an open engine or an external one.
+
+- `egret-admin - <resources>` policies, one per resource hierarchy, give every **active** platform admin all access on
+  the engine, by engine username. A disabled platform admin is not in them.
+- On Trino, three baseline policies: `egret-user-impersonate-self`, `egret-user-execute-query` and `egret-query-timeout`.
+- On a Trino engine that impersonates with a delegator account, also `egret-delegator-impersonate`.
+
+Egret derives this set from the engines bound to the profile and the active platform admins, and brings the stored
+policies in line with it. It adds a missing policy, updates one in place (the policy id stays the same), and deletes one
+that is no longer wanted. This happens when an engine is applied, unbound or deleted, at every recompile of the profile,
+and when platform-admin membership changes: granting or removing `platform_admin` (to a user or to a group), adding or
+removing a member of a group that holds it, deleting a user, disabling or enabling a platform admin, and `egret init`.
+Each change happens in one database transaction, and the policy version goes up only when a policy changed. The same
+pass runs at every start, one transaction per profile; a failure is logged and does not stop the start. A start that
+finds nothing to change leaves the policy version where it was.
+
+So a policy that is no longer wanted goes away:
+
+- `egret-delegator-impersonate` goes when the engine moves from impersonation to JWT;
+- all of these policies go when the profile's last delegating engine is unbound or deleted;
+- the `egret-admin` policies go when there is no active platform admin.
+
+The `all - <resources>` defaults that `POST /api/control-plane/policies/services/{service}/seed-defaults` writes are not
+part of this set: Egret never changes or deletes them.
 
 At every start the server also recompiles each profile whose grants or rules name a role, so a policy an older version
 wrote without a role holder who had no engine username yet names them now. An unchanged profile writes nothing. This runs
