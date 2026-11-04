@@ -497,6 +497,9 @@ There is no migration and no API change.
 - A start that finds nothing to change no longer raises the policy version. Before, every start raised it by 3 on each
   Trino profile with a delegating engine.
 - The `all - …` defaults written by `seed-defaults` are not touched.
+- If migrating a profile to the permission model is refused (422, not equivalent) because one of these policies
+  differs, recompile the profile first ([`POST /api/control-plane/perm/compile/{service_id}`](../reference/rest-api/perm.md)) to bring them in line, then
+  migrate again.
 
 ## Rolling back
 
