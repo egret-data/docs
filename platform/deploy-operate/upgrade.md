@@ -480,7 +480,7 @@ From platform #832 there is no migration and no API change.
 
 ### Egret's own engine policies are kept in line (governance SP2a)
 
-From this version, Egret derives its own policies on each profile from the engines bound to it and the active platform
+From platform #836, Egret derives its own policies on each profile from the engines bound to it and the active platform
 admins, and brings the stored policies in line at every change and every start. These are the `egret-admin - …`
 policies, plus on Trino `egret-user-impersonate-self`, `egret-user-execute-query`, `egret-query-timeout` and
 `egret-delegator-impersonate`. See [Platform admins on the engines](./engines-and-ranger.md#platform-admins-on-the-engines).
