@@ -21,9 +21,20 @@ The environment wins.
 - Lists and tables take TOML syntax in the variable: `EGRET_OIDC__SCOPES='["openid","email","profile"]'`.
 - Keys marked **required** in the Default column have an empty default and a boot-time check; the server refuses to start
   without them (see [Startup checks](#startup-checks)).
-- A key the server does not know is silently ignored at the top level and in most sections. A typo in a variable name
-  therefore leaves the default in place. The sub-tables `workflow.storage`, `workflow.kubernetes`,
-  `workflow.plugin_host`, `apps.storage` and the entries of `workflow.plugin_configurations` reject unknown keys.
+- A key the server does not know is ignored at the top level and in most sections, so a typo leaves the default in
+  place, but every subcommand logs a `WARN` for it right after the configuration has passed the
+  [startup checks](#startup-checks), with the closest real key when one is within two edits:
+
+  ```text
+  ignored environment variable EGRET_SERVER__PORTT: no configuration key has this name (did you mean EGRET_SERVER__PORT?)
+  ignored key server.portt in <path>/egret.toml: no configuration key has this name (did you mean server.port?)
+  ```
+
+  The warning never stops the start. It covers every `EGRET_*` variable and every key of the configuration file, except
+  the [variables read outside the configuration](#variables-outside-the-configuration-file) and the test-harness prefixes
+  `EGRET_TEST_`, `EGRET_E2E_` and `EGRET_ALLOW_`. The sub-tables `workflow.storage`, `workflow.kubernetes`,
+  `workflow.plugin_host`, `apps.storage` and the entries of `workflow.plugin_configurations` go further and reject
+  unknown keys.
 
 ## server
 
@@ -63,9 +74,9 @@ Two limiters, both in memory per replica. The window and the lockout are in seco
 
 | Key | Environment variable | Default | Meaning |
 |---|---|---|---|
-| `login_max_attempts` | `EGRET_RATE_LIMIT__LOGIN_MAX_ATTEMPTS` | `5` | Local sign-in attempts allowed per window, per address and per email. Successful and failed attempts both count. |
+| `login_max_attempts` | `EGRET_RATE_LIMIT__LOGIN_MAX_ATTEMPTS` | `5` | Failed local sign-in attempts allowed per window, per address and email. Successful attempts do not count, and a success clears the failures. |
 | `login_window_secs` | `EGRET_RATE_LIMIT__LOGIN_WINDOW_SECS` | `300` | Length of the sign-in window. |
-| `login_lockout_secs` | `EGRET_RATE_LIMIT__LOGIN_LOCKOUT_SECS` | `300` | How long a key stays blocked (HTTP 429) once it exceeds the limit. |
+| `login_lockout_secs` | `EGRET_RATE_LIMIT__LOGIN_LOCKOUT_SECS` | `300` | How long a key stays blocked (HTTP 429 with `Retry-After`) once it reaches the limit. |
 | `token_max_attempts` | `EGRET_RATE_LIMIT__TOKEN_MAX_ATTEMPTS` | `60` | Requests to the machine identity provider's `POST /oauth/token` (client credentials) and to the token exchange per window, keyed on address and client id. Requests that repeat an already verified secret are not counted. |
 | `token_window_secs` | `EGRET_RATE_LIMIT__TOKEN_WINDOW_SECS` | `60` | Length of the token window. |
 | `token_lockout_secs` | `EGRET_RATE_LIMIT__TOKEN_LOCKOUT_SECS` | `60` | How long a key stays blocked after exceeding the token limit. |
@@ -105,7 +116,7 @@ This is a different issuer from `oidc`, which describes the external provider pe
 
 | Key | Environment variable | Default | Meaning |
 |---|---|---|---|
-| `master_key` | `EGRET_SECRETS__MASTER_KEY` | empty | Base64 key of at least 32 bytes used for AES-256-GCM encryption of stored credentials. Empty disables sealing: registering a database or storage connection **with a secret** then fails. If set, it must decode to 32 bytes or more. |
+| `master_key` | `EGRET_SECRETS__MASTER_KEY` | empty | Base64 key of at least 32 bytes used for AES-256-GCM encryption of stored credentials. Empty disables sealing: registering a database or storage connection **with a secret** then fails, and so does starting a workflow that declares a `SECRET` input (400). If set, it must decode to 32 bytes or more. |
 
 ## catalog
 
@@ -116,8 +127,9 @@ The embedded Iceberg REST catalog. See [Storage and catalog setup](../deploy-ope
 | `enabled` | `EGRET_CATALOG__ENABLED` | `false` | Run the catalog in the server process. Requires `warehouse`, `auth_token` and the `storage` credentials. |
 | `warehouse` | `EGRET_CATALOG__WAREHOUSE` | `s3://warehouse` | Warehouse location of the default catalog. |
 | `auth_token` | `EGRET_CATALOG__AUTH_TOKEN` | empty (required with `enabled`) | Static token for catalog administration. |
-| `public_url` | `EGRET_CATALOG__PUBLIC_URL` | `http://localhost:8080` | Base origin of this server, without `/catalog`, advertised to catalog clients. Engines in a cluster resolve it, so in Kubernetes it is a Service DNS name. It is also the fallback for `idp.issuer`. |
+| `public_url` | `EGRET_CATALOG__PUBLIC_URL` | `http://localhost:<server.port>` (an unset or blank value follows `server.port`) | Base origin of this server, without `/catalog`, advertised to catalog clients. Engines in a cluster resolve it, so in Kubernetes it is a Service DNS name. It is also the fallback for `idp.issuer`. |
 | `system_user` | `EGRET_CATALOG__SYSTEM_USER` | `egret-system` | Stable name of the in-process principal that bootstraps the catalog's default project. Keep it stable across deploys; changing it creates a different system administrator. |
+| `sts_token_validity_seconds` | `EGRET_CATALOG__STS_TOKEN_VALIDITY_SECONDS` | `900` | How long the S3 credentials the catalog vends on a table load stay valid, in seconds: 900 (the STS minimum) to 43200 (the STS maximum). egret writes it into every S3 warehouse at creation, and into the existing ones at every start (log line `vended credential lifetime seconds=900 warehouses_changed=N`). A credential outlives a revoked grant by up to this long (KI-315). See [Storage credentials follow the grant](../control-plane/catalogs/catalog-detail#storage-credentials-follow-the-grant). |
 
 ## storage
 
@@ -137,7 +149,8 @@ The S3-compatible object store used for the catalog warehouse, query results, wo
 | Key | Environment variable | Default | Meaning |
 |---|---|---|---|
 | `enabled` | `EGRET_RANGER__ENABLED` | `false` | Serve the Ranger-compatible policy service that engine plugins poll, and turn on policy administration. See [Engines and Ranger setup](../deploy-operate/engines-and-ranger). |
-| `auth_token` | `EGRET_RANGER__AUTH_TOKEN` | empty | Token the Ranger plugins present to the policy service. |
+| `auth_mode` | `EGRET_RANGER__AUTH_MODE` | `required` | `required`: every request under `/ranger` needs an engine credential or the operator token. `anonymous`: requests without a credential are served, for a throwaway local stack only. |
+| `auth_token` | `EGRET_RANGER__AUTH_TOKEN` | empty | The operator's bearer token for the policy service. Empty accepts no bearer. Engines do not use it: each presents its own credential. |
 
 ## engine
 
@@ -206,6 +219,7 @@ Switches and limits for the workflow engine. Both loops default to **off**.
 | `scheduler_enabled` | `EGRET_WORKFLOW__SCHEDULER_ENABLED` | `false` | Start the trigger loop, so `cron:` schedule and flow triggers fire. It needs the worker on to be useful. |
 | `tick_interval_secs` | `EGRET_WORKFLOW__TICK_INTERVAL_SECS` | `1` | Seconds between claim ticks. |
 | `batch` | `EGRET_WORKFLOW__BATCH` | `8` | Most task runs one claim tick takes. |
+| `max_concurrent_runs` | `EGRET_WORKFLOW__MAX_CONCURRENT_RUNS` | `8` | Most claimed task runs one replica runs at the same time. A tick claims at most the free slots, so a slow task holds one slot and not the whole replica. `0` is refused at start. |
 | `reaper_interval_secs` | `EGRET_WORKFLOW__REAPER_INTERVAL_SECS` | `60` | Seconds between reaper passes. |
 | `working_timeout_s` | `EGRET_WORKFLOW__WORKING_TIMEOUT_S` | `3600` | How long a lease may go unreleased before the reaper hands the run back. Too short and a slow live task is run twice; too long and a task of a dead replica stays stuck. |
 | `container_default_timeout_s` | `EGRET_WORKFLOW__CONTAINER_DEFAULT_TIMEOUT_S` | `3600` | Timeout of a script or container task that declares none. Other task types run unbounded. |
@@ -310,8 +324,9 @@ These are read directly from the environment.
 | Variable | Used by | Meaning |
 |---|---|---|
 | `EGRET_ADMIN_EMAIL` | `egret init`, `egret workspace add-group` | Email of the bootstrap administrator. Default `admin@egret.local`. |
-| `EGRET_ADMIN_PASSWORD` | `egret init` | Password of the bootstrap administrator. If unset, a random one is generated and printed once. |
+| `EGRET_ADMIN_PASSWORD` | `egret init` | Password of the bootstrap administrator. It is not printed (`init` says *taken from EGRET_ADMIN_PASSWORD (not shown)*). If unset or empty, a random one is generated and printed once. |
 | `EGRET_ENGINE_TLS_INSECURE` | Query connectors and the engine monitor | `1`, `true` or `yes` skip TLS certificate verification when connecting to engines. Development only. |
+| `EGRET_WRITE_PROPERTY_TREATMENT` | The workflow test-corpus generator | A development switch, not used by a running server. |
 | `DATABASE_URL` | `sqlx` tooling and the test suite | Used by compile-time query checking and tests, not by the server (which reads `EGRET_DATABASE__URL`). `.env.example` sets both. |
 
 ## Startup checks
@@ -325,10 +340,12 @@ same check. A failure prints one line and exits. These are the rules:
 | `oidc.enabled` needs an issuer and a client id | `oidc.enabled requires issuer_url and client_id` |
 | `catalog.enabled` needs a warehouse and a token | `catalog.enabled requires warehouse and auth_token` |
 | `catalog.enabled` needs the storage credentials | `catalog.enabled requires storage access_key/secret_key/bucket` |
+| Always: `catalog.sts_token_validity_seconds` is 900 to 43200 | `catalog.sts_token_validity_seconds must be between 900 and 43200, got ...` |
 | `secrets.master_key`, when set, must decode to 32 bytes or more | `secrets.master_key must be base64 of >=32 bytes` |
 | Always: `storage.bucket`, `access_key` and `secret_key` | `the apps API requires [storage] bucket, access_key, secret_key ...` |
 | `engine.max_rows` and `query_timeout_secs` are at least 1; `preview_rows` is at most `max_rows` | `engine.max_rows and engine.query_timeout_secs must be >= 1` |
 | `workflow.kill_poll_ms` is at least 100 | `workflow.kill_poll_ms: ... is below the minimum 100` |
+| `workflow.max_concurrent_runs` is at least 1 | `workflow.max_concurrent_runs must be >= 1 (EGRET_WORKFLOW__MAX_CONCURRENT_RUNS)` |
 | `workflow.container_runner` other than `none` needs the storage credentials and `plugin_host.image` | `workflow.container_runner other than none requires [storage] ...` |
 | `apps.origin` set: both origins are `scheme://host[:port]`, differ from each other, and the TTLs are at least 1 | `apps.origin must differ from apps.egret_origin ...` |
 | `apps.pod.launcher` is `none`, `subprocess` or `kubernetes`, with the keys each needs | `apps.pod.launcher must be none, subprocess or kubernetes ...` |
@@ -336,8 +353,8 @@ same check. A failure prints one line and exits. These are the rules:
 
 :::warning The storage credentials are required even if you never use object storage
 The apps API stores draft and version content in the storage bucket regardless of the pod launcher, so the check applies
-on every start, including `egret migrate` and `egret init`. A copy of `.env.example` alone does not satisfy it. See the
-[Quick start](../get-started/quick-start).
+on every start, including `egret migrate` and `egret init`. The repository's `.env.example` sets them to the dev compose's
+RustFS credentials, and a test keeps it passing these checks. See the [Quick start](../get-started/quick-start).
 :::
 
 ## Further reading

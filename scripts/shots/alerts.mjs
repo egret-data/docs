@@ -2,7 +2,10 @@
 // Run scripts/seed-dashboards.mjs and then `scripts/seed-alerts.mjs --run` first, so the lists, run logs
 // and the Mailpit inbox have content. Mail shots read Mailpit (MAILPIT, default http://localhost:8025):
 // the demo stack delivers every mail there.
-const ws = '/explore/default';
+// DOCS_WS picks the workspace the Explore objects live in (default: `default`).
+const ws = `/explore/${process.env.DOCS_WS ?? 'default'}`;
+// The alert whose run log alerts/run-log shows (RUN_LOG_ALERT overrides it).
+const RUN_LOG_ALERT = process.env.RUN_LOG_ALERT ?? 'Pending orders above 100';
 const MAILPIT = process.env.MAILPIT ?? 'http://localhost:8025';
 // Every shot sets its own height, so a tall shot never leaks its viewport into the next one.
 const vp = (page, h = 900) => page.setViewportSize({width: 1440, height: h});
@@ -45,6 +48,9 @@ export const shots = [
     path: `${ws}/alerts/new?section=what`,
     prepare: async (page) => {
       await vp(page, 1000);
+      // The connection defaults to the first one; the query reads tpch, which trino-demo serves.
+      await page.getByRole('combobox').filter({hasText: /trino/}).first().click();
+      await page.getByRole('option', {name: 'trino-demo', exact: true}).click();
       await page.getByPlaceholder(/SELECT count/).fill("SELECT count(*) FROM tpch.tiny.orders WHERE orderstatus = 'O'");
     },
     settle: 1500,
@@ -52,13 +58,23 @@ export const shots = [
   {id: 'alerts/editor-schedule', path: `${ws}/alerts/new?section=schedule`, prepare: tall(1100), settle: 1500},
   {id: 'alerts/editor-notification', path: `${ws}/alerts/new?section=notification`, prepare: tall(1300), settle: 1500},
   {id: 'alerts/editor-dataapi', path: `${ws}/alerts/new?type=dataapi_alert&section=what`, prepare: tall(1000), settle: 2000},
-  {id: 'alerts/editor-report', path: `${ws}/alerts/new?type=report&section=what`, prepare: tall(1000), settle: 2000},
+  {
+    id: 'alerts/editor-report',
+    path: `${ws}/alerts/new?type=report&section=what`,
+    // The dashboard defaults to the first in the list; pick a demo one.
+    prepare: async (page) => {
+      await vp(page, 1000);
+      await page.locator('main').getByRole('combobox').nth(1).click();
+      await page.getByRole('option', {name: 'Executive summary', exact: true}).click();
+    },
+    settle: 2000,
+  },
   {
     id: 'alerts/run-log',
     path: `${ws}/alerts`,
     prepare: async (page) => {
       await vp(page);
-      await page.getByRole('button', {name: 'Run log for Pending orders above 100'}).click();
+      await page.getByRole('button', {name: `Run log for ${RUN_LOG_ALERT}`}).click();
       await page.waitForTimeout(1500);
     },
     settle: 500,

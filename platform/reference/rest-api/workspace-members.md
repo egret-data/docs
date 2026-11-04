@@ -8,7 +8,7 @@ description: REST endpoints in the workspace-members group.
 
 Workspace membership (add/remove principals).
 
-This page lists 9 endpoints (OpenAPI tag `workspace-members`). It is generated from `openapi.json`; see the [REST API overview](../rest-api) for authentication, CSRF and error conventions.
+This page lists 11 endpoints (OpenAPI tag `workspace-members`). It is generated from `openapi.json`; see the [REST API overview](../rest-api) for authentication, CSRF and error conventions.
 
 | Method | Path | Operation id | Notes |
 |---|---|---|---|
@@ -16,6 +16,8 @@ This page lists 9 endpoints (OpenAPI tag `workspace-members`). It is generated f
 | POST | `/api/ws/{workspace}/access-requests/{id}/approve` | `approve_access_request` | `POST /ws/\{workspace\}/access-requests/\{id\}/approve` — approve a pending request: add the requester as a member with the chosen role + optional expiry via the... |
 | POST | `/api/ws/{workspace}/access-requests/{id}/deny` | `deny_access_request` | `POST /ws/\{workspace\}/access-requests/\{id\}/deny` — deny a pending request with an optional note. |
 | POST | `/api/ws/{workspace}/impersonate` | `ws_impersonate_start` | `POST /api/ws/\{workspace\}/impersonate` — a `ws_admin` of `\{workspace\}` (or a platform_admin) starts impersonating a MEMBER of that workspace. |
+| GET | `/api/ws/{workspace}/invites` | `list_invites` |  |
+| DELETE | `/api/ws/{workspace}/invites/{id}` | `delete_invite` |  |
 | GET | `/api/ws/{workspace}/members` | `list_members` |  |
 | POST | `/api/ws/{workspace}/members` | `add_member` |  |
 | DELETE | `/api/ws/{workspace}/members/{ptype}/{pid}` | `remove_member` |  |
@@ -153,6 +155,55 @@ Guards run in a deliberate order so a caller learns nothing before its own autho
 | 409 | OIDC caller: re-authenticate at `authorize_url`, then the callback creates the overlay |
 | 500 | Internal error |
 
+## GET `/api/ws/{workspace}/invites`
+
+Operation id: `list_invites`. Auth: Session cookie. Forbidden (403): Missing workspace permission.
+
+| Parameter | In | Type | Required | Description |
+|---|---|---|---|---|
+| `workspace` | path | string | yes | Workspace slug |
+
+**Response 200 (application/json)**: array of `InviteDto`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `id` | string | yes |  |
+| `email` | string | yes |  |
+| `role` | string | yes |  |
+| `invited_by_name` | string, nullable | no |  |
+| `created_at` | string (date-time) | yes |  |
+
+| Status | Meaning |
+|---|---|
+| 200 | Emails pre-registered for their first SSO sign-in |
+| 401 | Not authenticated |
+| 403 | Missing workspace permission |
+| 500 | Internal error |
+
+## DELETE `/api/ws/{workspace}/invites/{id}`
+
+Operation id: `delete_invite`. Auth: Session cookie and `X-Egret-CSRF` header. Forbidden (403): Missing workspace permission.
+
+| Parameter | In | Type | Required | Description |
+|---|---|---|---|---|
+| `workspace` | path | string | yes | Workspace slug |
+| `id` | path | string (uuid) | yes | Pre-registration id |
+| `workspace` | path | string | yes |  |
+
+**Response 200 (application/json)**: `Ack`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `ok` | boolean | yes |  |
+
+| Status | Meaning |
+|---|---|
+| 200 | Pre-registration withdrawn |
+| 401 | Not authenticated |
+| 403 | Missing workspace permission |
+| 404 | No such pre-registration in this workspace |
+| 500 | Internal error |
+
 ## GET `/api/ws/{workspace}/members`
 
 Operation id: `list_members`. Auth: Session cookie. Forbidden (403): Missing workspace permission.
@@ -196,15 +247,17 @@ Operation id: `add_member`. Auth: Session cookie and `X-Egret-CSRF` header. Forb
 | `principal_id` | string | yes |  |
 | `role` | string | yes |  |
 
-**Response 200 (application/json)**: `Ack`
+**Response 200 (application/json)**: `AddMemberResult`
 
 | Field | Type | Required | Description |
 |---|---|---|---|
 | `ok` | boolean | yes |  |
+| `invited` | boolean | yes | `true` when the email belongs to nobody yet and was pre-registered instead: the membership binds at that SSO user's first sign-in (KI-185). |
 
 | Status | Meaning |
 |---|---|
-| 200 | Member added |
+| 200 | Member added, or (`invited`) an unknown email pre-registered for its first SSO sign-in |
+| 400 | Unknown principal or role |
 | 401 | Not authenticated |
 | 403 | Missing workspace permission |
 | 500 | Internal error |
@@ -251,7 +304,8 @@ Operation id: `list_workspace_roles`. Auth: Session cookie. Forbidden (403): Mis
 | `name` | string | yes |  |
 | `description` | string | yes |  |
 | `parent_role_id` | string, nullable | no |  |
-| `permissions` | WsPermDto[] | yes |  |
+| `permissions` | WsPermDto[] | yes | The role's own permissions. |
+| `inherited_permissions` | WsPermDto[] | yes | Permissions held through the parent chain and not held directly; a holder of the role has them too. |
 
 | Status | Meaning |
 |---|---|

@@ -22,7 +22,7 @@ The strip counts **groups** and **members**. **Source** filters the list: **All*
 
 ## Synced groups
 
-Groups synced from OIDC are created at sign-in from the groups claim of the identity provider. Their name and membership are managed in the provider and cannot be changed in egret. The group page says *This group is synced from your identity provider — its name and membership are managed there and can't be changed here. You can still assign roles to it.* Membership changes when a member next signs in.
+Groups synced from OIDC are created at sign-in from the groups claim of the identity provider. Their name and membership are managed in the provider and cannot be changed in egret. The group page says *This group is synced from your identity provider — its name and membership are managed there and can't be changed here. You can still assign roles to it.* Membership changes when a member next signs in. A member who has not signed in for 7 days loses the synced groups, and with them the roles and workspaces they hold through those groups, until they sign in again. egret cannot see a rename or removal in the provider before then. A role or workspace that lapses is also re-applied to the engines within an hour: egret recompiles the profiles it reached every hour, so an expired grant stops applying on the engines without waiting for an unrelated change.
 
 ## Create a local group
 
@@ -42,11 +42,11 @@ The dialog says *Create a local group.* After creating it, open the group to add
 | **Members** | For a local group: *Users in this group. Search to add someone, or remove with ×.*, a **User** search with **Add**, and the **Member** and **Email** of each member with a remove button. For a synced group: *Members are synced from your identity provider.* |
 | **Roles** | *Roles granted to every member of this group.* Choose **Scope** (**Platform** or **Workspace**) and **Role**, then **Add**. |
 
-When a group holds a role, every member gets it. In the platform a role held through a group works as expected. In the query engine, however, a group name never reaches Trino or StarRocks: engines count only roles a user holds directly, which the **Applied on engines** column of [People & groups](../../data-governance/people-and-groups/index.md) shows as *egret only — not applied on engines: held through a group*.
+When a group holds a role or a workspace, every member gets it, in the platform and on the query engines: egret writes the group's members into the engine's policy. The **Applied on engines** column of [People & groups](../../data-governance/people-and-groups/index.md) shows the membership as applied. A member's page lists the platform roles they hold through groups under **Through groups**, and the Users list names the group beside the role.
 
-:::warning
-A platform role assigned to a group does not give its members engine permissions. If someone needs a role in the engine, give it to them directly.
-:::
+When the group holds `platform_admin`, removing a member, removing the role from the group, or deleting the group is refused with *Cannot remove the last active platform admin* (HTTP 409) if it would leave no active platform admin (see [The last active platform admin](./users.md#the-last-active-platform-admin)). For a synced group, the sign-in sync keeps such a membership with a warning instead.
+
+Deleting a local group also deletes every grant that names the group, in the same step: its platform and workspace roles and its grants on objects. Its members lose what they held through it.
 
 ## Give a group access to a workspace
 

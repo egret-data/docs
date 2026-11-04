@@ -12,17 +12,17 @@ SQL Lab is the interactive SQL editor in a workspace. You pick one of the worksp
 The Docker demo stack has one connection, *trino-demo*, a Trino server with the catalogs `tpch` (generated TPC-H data in schemas `tiny`, `sf1`, `sf100` and so on) and `memory`, plus Trino's own `system`. Every example on these pages runs against `tpch.tiny`.
 :::
 
-SQL Lab is the first item in the **Explore** group of the sidebar, so it is the page a workspace opens on when the SQL Lab module is turned on. It runs on the database connections that a workspace admin has added under **Manage → Workspace settings → Databases** (see [Databases](../../workspace-settings/databases.md)). Trino and StarRocks connections are supported.
+SQL Lab is the first item in the **Explore** group of the sidebar, so it is the page a workspace opens on when the SQL Lab module is turned on. It runs on the database connections that a workspace admin has added under **Manage → Workspace settings → Databases** (see [Connections](../../workspace-settings/databases.md)). Trino and StarRocks connections are supported.
 
 ## What is on the page
 
-The page is one resizable workspace. Drag the grey bars between the panels to change their sizes.
+The page is one resizable workspace. By default the editor takes 40 % of the height and the results below it 60 %, so at 1440×900 the grid shows about a dozen rows. Drag the grey bars between the panels to change their sizes.
 
 | Area | What it does | Details |
 |---|---|---|
-| **Tab strip** (top) | One editor per tab, plus the **+** button and the **⌘ K for commands** hint. | [The query editor](./editor.md) |
+| **Tab strip** (top) | The page title **SQL Lab**, then one editor per tab, plus the **+** button and the **⌘ K for commands** hint. | [The query editor](./editor.md) |
 | **Explorer** (left) | Database picker, a search box and a tree of catalogs, schemas, tables and columns. | [The schema browser](./schema-browser.md) |
-| **Toolbar** (above the editor) | **Run**, **Cancel**, **Format**, **Limit**, the database badge, a status badge, **Save**, **Save as dataset**, the command palette button and a **…** menu. | [The query editor](./editor.md) |
+| **Toolbar** (above the editor) | **Run**, **Cancel**, **Format**, **Limit**, the connection badge, a status badge, **Save**, **Save as dataset**, the command palette button and a **…** menu. | [The query editor](./editor.md) |
 | **Editor** | The SQL text, with syntax colouring and autocomplete. A **Parameters** bar appears when the SQL contains `{{name}}`. | [Query parameters](./parameters.md) |
 | **Results** (below) | The rows of the last run as a table or a small chart, with filter, copy and export. | [Query results](./results.md) |
 | **History**, **Saved**, **Snippets** (tabs next to **Results**) | Your past runs, the workspace's saved queries and reusable SQL fragments. | [History, saved queries and snippets](./history-saved-snippets.md) |
@@ -46,12 +46,10 @@ The page is one resizable workspace. Drag the grey bars between the panels to ch
 4. Leave **Limit** at **1,000 rows** or choose another value.
 5. Press **Run** (or **⌘ Enter** on macOS, **Ctrl Enter** elsewhere).
 
-Keep the `LIMIT` after an `ORDER BY`: without it, Trino may return the rows in another order (see [Row limit](./editor.md#row-limit)).
-
 While the query runs, a *Running…* badge shows in the toolbar and the **Cancel** button is enabled. When it ends the badge reads, for example, *Done in 397 ms · 3 rows* (or *Failed in 125 ms*), and the rows appear in **Results**.
 
 :::tip Name tables completely
-Trino tables are `catalog.schema.table`, for example `tpch.tiny.orders`. Click a table in the Explorer to insert its full name at the end of the editor text instead of typing it.
+Trino tables are `catalog.schema.table`, for example `tpch.tiny.orders`. Click a table in the Explorer to insert its full name at the end of the editor text instead of typing it. Egret puts a space in front of it when it would otherwise run into the word before.
 :::
 
 ## How the pieces fit together
@@ -63,7 +61,7 @@ Trino tables are `catalog.schema.table`, for example `tpch.tiny.orders`. Click a
 
 ## Who the query runs as
 
-By default every query runs with the connection's own credentials, so all workspace members who can use SQL Lab see what that service identity can see. If the connection has per-user delegation switched on, the query runs as you, with a short-lived engine token minted from your session, and the engine's own access policies apply to you. A user who is not signed in through SSO cannot run on a delegated connection and gets a *forbidden* error. These options are set per connection; see [Databases](../../workspace-settings/databases.md).
+By default every query runs with the connection's own credentials, so all workspace members who can use SQL Lab see what that service identity can see. If the connection has per-user delegation switched on, the query runs as you, with a short-lived engine token minted from your session, and the engine's own access policies apply to you. A user who is not signed in through SSO cannot run on a delegated connection and gets a *forbidden* error. These options are set per connection; see [Connections](../../workspace-settings/databases.md).
 
 SQL Lab does not itself restrict the kind of statement you can send. A `DROP TABLE` on the demo Trino was sent to the engine and refused by the engine ("This connector does not support dropping tables"). What is allowed depends on the connection's credentials and on the engine's access policies.
 
@@ -72,12 +70,12 @@ SQL Lab does not itself restrict the kind of statement you can send. A `DROP TAB
 | What | Where | Who sees it |
 |---|---|---|
 | Open tabs (title, SQL, database, limit) | Your browser's local storage, one set per workspace | Only you, only in that browser |
-| Query history | Egret, last 50 runs | Only you |
+| Query history | Egret, last 50 runs; **Clear history** hides your own entries | Only you |
 | Saved queries | Egret, in the workspace | Workspace members with read access to saved queries |
 | Snippets | Egret, in the workspace | Workspace members with read access to saved queries |
 | Result rows | Egret's object store, one file per run | The user who ran the query (and platform admins) |
 
-Because tabs live in the browser, clearing site data or switching browsers gives you a fresh *Query 1*. Anything you want to keep must be saved.
+Because tabs live in the browser, clearing site data or switching browsers gives you a fresh *Query 1*. A tab's result and parameter values last only while the page is open: switching tabs keeps them, a reload does not. Anything you want to keep must be saved.
 
 ## Pages in this section
 
@@ -92,13 +90,11 @@ Because tabs live in the browser, clearing site data or switching browsers gives
 
 ## Limits and known issues
 
-- SQL Lab needs at least one database connection granted to the workspace. Without one the database picker is empty and **Run** reports *Pick a database*.
+- SQL Lab needs at least one database connection granted to the workspace. Without one the database picker is empty, the Explorer says *No connection is granted to this workspace. Ask a workspace admin.*, and **Run** reports *Pick a connection*.
 - The row limit, the 60-second query timeout and the 100,000-row ceiling are server settings; see [Query results](./results.md#limits).
-- Cancelling a query leaves the Results panel empty without saying the query was cancelled. See the [editor page](./editor.md#run-and-cancel).
-- On Trino, an `ORDER BY` without a `LIMIT` can be lost, because Egret wraps the query to apply the row limit. See [Row limit](./editor.md#row-limit).
 
 ## Further reading
 
 - [Datasets & metrics](../datasets-and-metrics/index.md)
 - [Charts](../charts/index.md)
-- [Databases](../../workspace-settings/databases.md)
+- [Connections](../../workspace-settings/databases.md)

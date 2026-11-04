@@ -16,7 +16,7 @@ The page has an Egret header and the marimo notebook in an iframe below it.
 
 | Header element | What it shows or does |
 |---|---|
-| Back arrow | Returns to the Apps list. |
+| **Apps** (back link, with an arrow) | Returns to the Apps list. |
 | App name and badge | **Draft only** until the first publish, then **Published vN**. |
 | **Draft revision N** | The draft's revision number. It increases every time the draft is saved. The header re-reads it every 5 seconds. |
 | *Save in the editor (Ctrl/⌘+S) before publishing.* | A reminder: publishing freezes the **saved** draft. |
@@ -60,7 +60,7 @@ import egret_marimo as egret
 
 | Function | What it does |
 |---|---|
-| `egret.connect(database, dialect="sql")` | Returns a DB-API 2.0 connection for the database named `database` (its name in **Workspace settings → Engines**). marimo SQL cells list it and can use it. |
+| `egret.connect(database, dialect="sql")` | Returns a DB-API 2.0 connection for the database named `database` (its name in **Workspace settings → Connections**). marimo SQL cells list it and can use it. |
 | `egret.sql(query, database, params=())` | Runs `query` and returns a Polars `DataFrame`. `params` is a list of values bound to `?` markers in order. |
 | `egret.databases()` | Returns `(name, engine)` pairs for pickers, for example `[('trino-demo', 'trino')]`. **Edit mode only**: a viewer's session gets a `403`, because listing a workspace's databases is an admin act. An app that needs the names when viewed carries them in its source. |
 

@@ -30,12 +30,12 @@ that means. Each item says how to check it. Tick them in order.
 
 ## 2. The break-glass administrator
 
-- [ ] **Set the password yourself** with `EGRET_ADMIN_PASSWORD` at `egret init` (or let `init` generate one and store it in a
-  vault). Never keep the Helm default `Admin12345!` (`admin.password`).
+- [ ] **Set the password yourself** with `EGRET_ADMIN_PASSWORD` at `egret init`; `init` does not print a supplied password
+  (or let `init` generate one, printed once, and store it in a vault). Never keep the Helm default `Admin12345!` (`admin.password`).
 - [ ] **Move day-to-day administration to IdP groups.** Grant `platform_admin` to a group in **Control Plane → Groups**, and
   keep the local account for recovery.
-- [ ] **Keep the local sign-in rate limit.** Five attempts per five minutes (`rate_limit.login_*`) is what stands in front of
-  password guessing, and successful attempts count.
+- [ ] **Keep the local sign-in rate limit.** Five failed attempts per five minutes, then a five-minute lockout
+  (`rate_limit.login_*`), is what stands in front of password guessing. Only failures count.
 - [ ] **Know that local sign-in cannot be switched off.** With SSO on, the local form is only hidden behind **Admin sign-in
   (break-glass)**; the `POST /api/auth/login` route still answers. Restrict who can reach it at the network layer if that
   matters to you.
@@ -54,6 +54,8 @@ Egret speaks plain HTTP; terminate TLS in front of it.
   which is the safe direction.
 - [ ] **Use HTTPS to the identity provider**, and register only the exact redirect URI. The development realm uses
   `sslRequired: none` and `*` as a redirect URI.
+- [ ] **Do not set `oidc.devRealm=true` in the Helm chart** outside a cluster only you can reach. It is the opt-in that lets
+  `oidc.enabled=true` install the bundled Keycloak with the development realm; without it the chart refuses to render.
 - [ ] **Enable TLS on the engines.** Trino enforces JWT only over HTTPS (over HTTP it accepts a valid token but also trusts a
   bare `X-Trino-User`). StarRocks' per-user JWT login sends the token in clear text with `mysql_clear_password` unless the
   front end has TLS.
@@ -69,17 +71,22 @@ Expose only what clients need.
 | `/` and `/api/*` | People | Behind TLS. |
 | `/data-api/*`, `/oauth/token`, `/.well-known/*` | Data API consumers and clients of Egret's machine identity provider | Rate limited (`rate_limit.token_*`). |
 | `/catalog/*` | Engines and Iceberg clients | Authenticated with Egret-issued tokens. |
-| `/service/*` | **Engines only** | Read-only policy API; see below. |
+| `/ranger/*` | **Engines only** | Read-only policy API, authenticated with each engine's own credential; see below. |
 | `/metrics`, `/healthz`, `/readyz` | **Your monitoring only** | **Unauthenticated.** `/metrics` answers `200` with Prometheus metrics to anyone who can reach it. The chart's ingress does not route them. |
 
-- [ ] **Do not route `/service`, `/metrics`, `/healthz` or `/readyz` to the internet.**
-- [ ] **Decide how the policy API is protected.** With `EGRET_RANGER__AUTH_TOKEN` empty, `/service` is open to anyone who can
-  reach it (read-only: policies and tags). With a token set, a stock Ranger plugin cannot send it and is refused with 401.
-  Prefer an empty token plus a network policy that admits only the engines. See [Engines and Ranger
-  setup](./engines-and-ranger).
+- [ ] **Do not route `/ranger`, `/metrics`, `/healthz` or `/readyz` to the internet.**
+- [ ] **Keep the policy API authenticated.** `ranger.auth_mode` is `required` by default: each engine presents its own
+  credential, and `ranger.auth_token` is only an operator token (leave it empty unless tooling needs it). Never run
+  `anonymous` outside a throwaway stack: it lets anyone who can reach `/ranger` download every profile's policies. Serve
+  `/ranger` over TLS or keep it inside the cluster, because the engine credential travels as HTTP Basic. See [Engines and
+  Ranger setup](./engines-and-ranger#authentication-of-the-plugin).
 - [ ] **Keep PostgreSQL and the object store off the public network.** In Kubernetes, the chart's task and app pod network
   policies exist to keep user code away from the metadata database: set `workflow.tasks.networkPolicy.podCidr`,
   `serviceCidr` and `apiServerCidrs` correctly, because wrong values silently re-open PostgreSQL on some network plugins.
+- [ ] **Keep the engines reachable from Egret only.** Leave `engineNetworkPolicy.enabled` on (the default since platform
+  #828): a person who reaches an engine's port with a login skips Egret entirely, and StarRocks serves SQL over HTTP
+  too. Add your ingress controller to `engineNetworkPolicy.ingressFrom` only for engines that need an Ingress, and keep an
+  external engine behind your own firewall. See [Engine network policy](./kubernetes#engine-network-policy).
 
 ## 5. Features that widen the attack surface
 
@@ -103,7 +110,8 @@ Expose only what clients need.
 - [ ] **Pin engine images** to the measured versions. Floating tags are not modelled, and Explain refuses for them.
 - [ ] **Turn on governance for connections whose data is sensitive** (**Governed data**) and use per-user delegation where
   the engine supports it, so row filters and masks apply per person. A shared service account bypasses them.
-- [ ] **Remember StarRocks tag masking is not enforced by its Ranger plugin**; only resource-based policies are.
+- [ ] **Remember StarRocks' Ranger plugin enforces resource-based policies only.** Egret's rules and clearances by
+  classification reach it as resource policies; hand-written tag policies do not.
 - [ ] **Re-check `access_control = ranger` after StarRocks container recreation.** It is lost silently.
 
 ## 7. Single sign-on
@@ -117,7 +125,7 @@ Expose only what clients need.
 
 ```bash
 curl -s -o /dev/null -w '%{http_code}\n' https://egret.example.com/metrics                 # 404 or 403 from the proxy, not 200
-curl -s -o /dev/null -w '%{http_code}\n' https://egret.example.com/service/plugins/services # not reachable from the internet
+curl -s -o /dev/null -w '%{http_code}\n' https://egret.example.com/ranger/service/plugins/services # not reachable from the internet
 curl -sI https://egret.example.com/api/auth/config | grep -i set-cookie                     # no cookie yet; sign in and check Secure
 ```
 

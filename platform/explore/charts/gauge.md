@@ -19,8 +19,7 @@ A gauge shows one value on a dial, with the dial divided into colored ranges. Us
 | Field | What it does |
 |---|---|
 | **Dataset** | The dataset to read. |
-| **Metric** | The value the needle points to. Required. The query returns one row. |
-| **Row limit** | Present but ignored. |
+| **Metric** | The value the needle points to. Required. The query returns one row, so there is no **Row limit**. |
 
 ## Display
 
@@ -61,7 +60,6 @@ Open **Formatting → *metric*** and set **Number style** to **Percent**. The di
 | Setting | Where | Default |
 |---|---|---|
 | **Metric** | Data | Required |
-| **Row limit** | Data | Ignored |
 | **Ranges** (color, **Min**, **Max**, **Label**) | Display | Three equal ranges from 0 to twice the value (red, yellow, green) |
 | **Formatting** (one row for the metric) | Display | Dataset's format |
 | **Axes** tab | | Not applicable |

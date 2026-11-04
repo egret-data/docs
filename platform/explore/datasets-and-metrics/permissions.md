@@ -43,7 +43,8 @@ The checks on every dataset action use the dataset itself, so a share, a folder 
 |---|---|
 | Open the Datasets list, a dataset page, **Usage**, **Preview** | `dataset:read` |
 | Bookmark a dataset | `dataset:read` |
-| **Create**, **Duplicate** | `dataset:manage` on the workspace, a granted database |
+| **Create** | `dataset:manage` on the workspace, a granted database |
+| **Duplicate** | `dataset:read` on the source dataset, plus `dataset:manage` on the workspace and a granted database |
 | **Edit** (name, description, SQL) | `dataset:manage` on the dataset |
 | **Refresh**, column settings, **+ Calculated column**, **+ Metric**, metric edit and delete | `dataset:manage` on the dataset |
 | **Move to Trash**, **Restore**, **Delete permanently**, header **Delete** | `dataset:manage` on the dataset |
@@ -68,7 +69,7 @@ A dataset only holds definitions. When someone opens **Preview** or a chart, Egr
 - With the **shared service account**, the query reads whatever that account can read, no matter who asked. Giving someone a viewer share on a dataset therefore lets them see its rows even if they have no access in the engine.
 - With **per-user delegation**, the query runs as the person looking, and the engine's access policies (row filters, column masks, denied tables) apply. A reader who may not read the table sees an error in **Preview** (an error message with the engine's text).
 
-See [Databases](../../workspace-settings/databases) and [Data Governance](../../data-governance/overview).
+See [Connections](../../workspace-settings/databases) and [Data Governance](../../data-governance/overview).
 
 ## What the interface shows
 

@@ -58,16 +58,20 @@ and makes the administrator its `ws_admin`. It runs migrations first.
 | Input | Meaning |
 |---|---|
 | `EGRET_ADMIN_EMAIL` | The administrator's email. Default `admin@egret.local`. |
-| `EGRET_ADMIN_PASSWORD` | The password. If unset, a random one is generated. |
+| `EGRET_ADMIN_PASSWORD` | The password. If unset or empty, a random one is generated. |
 | `--force` | Create **another** administrator even if one exists. Without it, `init` logs `a platform_admin already exists` and does nothing. |
 
-The email and password are printed once:
+The email and a generated password are printed once:
 
 ```text
 Bootstrap admin: admin@egret.local
 Password: <password>
+(generated; shown only this once)
 Default workspace: default
 ```
+
+A password you supplied in `EGRET_ADMIN_PASSWORD` is not printed, so it does not land in terminal history or CI logs. The
+second line then reads `Password: taken from EGRET_ADMIN_PASSWORD (not shown)`.
 
 An email that already exists fails with `conflict: user already exists: <email>`, so a second administrator needs a different
 email. See [Cannot sign in](../deploy-operate/troubleshooting/cannot-sign-in).

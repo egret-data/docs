@@ -35,9 +35,11 @@ Open **Explore → Apps**. The list shows every app you can see, grouped by fold
 | **Status** | **Draft only** until the first publish, then **Published vN** for the latest version. |
 | **Updated** | When the app last changed. |
 
-Above the table: **Search apps…**, and the toolbar buttons **Bookmarks**, **Bulk select**, **Trash** and **New folder**. **+ App** creates an app and is shown only to people who may create apps. A folder row has its own **⋯** menu to rename, share or delete the folder; apps not in a folder are listed under **Uncategorized**.
+Above the table: **Search apps…**, and the toolbar buttons **Bookmarks**, **Bulk select**, **Trash** and **New folder**. **+ App** creates an app and is shown only to people who may create apps. A folder row has its own **⋯** menu to rename, share or delete the folder; apps not in a folder are listed under **Uncategorized**. Deleting a folder asks first (*Delete folder?*) and says how many apps move to **Uncategorized** ("The 2 apps in it move to Uncategorized; none is deleted."); no app is deleted. With **Bulk select**, **Move *n* to Trash** also asks first ("2 apps move to the Trash. You can restore them from there.").
 
 ### Row actions
+
+Each row's **⋯** button is named after its app (*Actions for Revenue explorer*), as in the Data API lists, so screen readers tell the rows apart.
 
 ![The row menu of Revenue explorer, with Open, Edit, Rename, Duplicate, the folder actions, Share and Move to Trash](/img/platform/apps/row-menu.png)
 
@@ -51,7 +53,7 @@ Above the table: **Search apps…**, and the toolbar buttons **Bookmarks**, **Bu
 | **Remove from folder** | Moves the app back to **Uncategorized**. Shown for an app in a folder. |
 | **Move to new folder…** | Creates a folder and moves the app into it. |
 | **Share…** | Grants people and groups access. Shown to people who can manage the app. See [Access and data](./apps/access-and-data). |
-| **Move to Trash** | Soft-deletes the app. In **Trash**, **Restore** brings it back and **Delete permanently** removes the draft and every published version for good. |
+| **Move to Trash** | Asks first (*Move to Trash?*, "*name*" moves to the Trash. You can restore it from there.), then soft-deletes the app. In **Trash**, **Restore** brings it back and **Delete permanently** removes the draft and every published version for good. |
 
 ## Create an app
 
@@ -63,7 +65,7 @@ Above the table: **Search apps…**, and the toolbar buttons **Bookmarks**, **Bu
 
 Egret creates the app with a starter notebook and takes you straight to the editor. The dialog explains it in one line: *A data app is a marimo notebook that runs SQL as whoever is looking at it. You edit a draft; publishing it makes it the version people open.* The dialog asks only for a name; add a description later with **Rename…**.
 
-The starter source is:
+The starter source is written the way marimo saves a notebook, so opening the editor leaves it unchanged. An app created through the API with a database also gets a cell with `db = egret.connect("<database>")`. Until you change and save it, the draft cannot be published (see [Publish and version an app](./apps/publishing)). The starter source is:
 
 ```python
 import marimo
@@ -76,12 +78,15 @@ app = marimo.App(width="medium")
 def _():
     import marimo as mo
     import egret_marimo as egret
-    return egret, mo
+
+    return (mo,)
 
 
 @app.cell
 def _(mo):
-    mo.md("# New data app")
+    mo.md("""
+    # New data app
+    """)
     return
 
 
@@ -106,6 +111,7 @@ The workspace must have the **Apps** feature enabled, and an operator must have 
 - The app source is limited to 1 MiB.
 - An app cannot be opened until it has been published once.
 - The Create app dialog sets only the name; the description and a starting database cell cannot be set there (KI-041).
+- The **Trash** view still shows **+ App**, while the Charts, Dashboards and Alerts & Reports Trash views offer no create button (KI-300).
 
 ## Further reading
 

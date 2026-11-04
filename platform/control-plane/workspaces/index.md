@@ -19,7 +19,7 @@ The strip counts **total**, **active** and **archived** workspaces. **Status** f
 | **Workspace** | The display name above its slug, for example `default`. Select it to open the workspace. |
 | **Owner** | The user who owns the workspace. |
 | **Created** | When it was created, relative. |
-| **Status** | **active** or **archived**. |
+| **Status** | **Active** or **Archived**. |
 
 ## Create a workspace
 
@@ -58,7 +58,7 @@ The dialog says *Reassign this workspace to another user. They will be added as 
 1. Open the workspace and press **Archive**.
 2. Confirm *Archive workspace?* The dialog says *\<name\> will be archived and hidden from active lookups. You can restore it later.*
 
-An archived workspace shows **archived** in the list and the button on its page becomes **Restore**. Nothing is deleted: the archived workspace keeps its members, resources and content. Press **Restore** to bring it back. **Rename** and **Transfer owner** stay available while archived.
+An archived workspace shows **Archived** in the list and the button on its page becomes **Restore**. Nothing is deleted: the archived workspace keeps its members, resources and content. Press **Restore** to bring it back. **Rename** and **Transfer owner** stay available while archived.
 
 :::tip
 Archive a workspace instead of deleting data. There is no delete button here.
@@ -70,7 +70,7 @@ A workspace is useful once it has:
 
 1. **Members.** Add people and groups (see [Members](../../workspace-settings/members.md)).
 2. **An engine and catalogs.** Assign an engine and a catalog (see [Workspace details](./workspace-detail.md#resources) and [Catalogs](../catalogs/index.md)).
-3. **A database connection** in **Workspace settings → Engines** (see [Databases](../../workspace-settings/databases.md)).
+3. **A database connection** in **Workspace settings → Connections** (see [Connections](../../workspace-settings/databases.md)).
 4. **Notifications** if alerts and reports will email or post to Slack (see [Notifications](../../workspace-settings/notifications.md)).
 
 ## Limits and known issues

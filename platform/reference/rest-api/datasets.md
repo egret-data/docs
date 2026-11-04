@@ -8,7 +8,7 @@ description: REST endpoints in the datasets group.
 
 BI datasets: sources, columns, metrics, folders, trash + bookmarks.
 
-This page lists 21 endpoints (OpenAPI tag `datasets`). It is generated from `openapi.json`; see the [REST API overview](../rest-api) for authentication, CSRF and error conventions.
+This page lists 22 endpoints (OpenAPI tag `datasets`). It is generated from `openapi.json`; see the [REST API overview](../rest-api) for authentication, CSRF and error conventions.
 
 | Method | Path | Operation id | Notes |
 |---|---|---|---|
@@ -24,6 +24,7 @@ This page lists 21 endpoints (OpenAPI tag `datasets`). It is generated from `ope
 | PUT | `/api/ws/{workspace}/datasets/{id}/columns/{column_name}` | `ds_update_column` |  |
 | DELETE | `/api/ws/{workspace}/datasets/{id}/columns/{column_name}` | `ds_delete_column` |  |
 | POST | `/api/ws/{workspace}/datasets/{id}/data` | `ds_data` | Object-scoped dataset data-preview: runs ONLY a bounded `SELECT * FROM &lt;the dataset's own source> LIMIT n` (n from the optional body, clamped to [100, 1000]). |
+| POST | `/api/ws/{workspace}/datasets/{id}/duplicate` | `ds_duplicate` |  |
 | PATCH | `/api/ws/{workspace}/datasets/{id}/folder` | `ds_set_folder` |  |
 | POST | `/api/ws/{workspace}/datasets/{id}/metrics` | `ds_add_metric` |  |
 | PUT | `/api/ws/{workspace}/datasets/{id}/metrics/{metric_id}` | `ds_update_metric` |  |
@@ -105,6 +106,7 @@ Operation id: `ds_create`. Auth: Session cookie and `X-Egret-CSRF` header. Forbi
 | `certified` | boolean | yes | Certified as a trusted/official dataset. |
 | `certified_by` | string | yes |  |
 | `certification_details` | string | yes |  |
+| `deleted_at` | string (date-time), nullable | no | When the dataset was moved to the trash; null while it is live. Its charts keep running until it is deleted, and say so. |
 
 | Status | Meaning |
 |---|---|
@@ -143,6 +145,7 @@ Operation id: `ds_get`. Auth: Session cookie. Forbidden (403): Missing dataset:r
 | `certified` | boolean | yes | Certified as a trusted/official dataset. |
 | `certified_by` | string | yes |  |
 | `certification_details` | string | yes |  |
+| `deleted_at` | string (date-time), nullable | no | When the dataset was moved to the trash; null while it is live. Its charts keep running until it is deleted, and say so. |
 
 | Status | Meaning |
 |---|---|
@@ -189,6 +192,7 @@ Operation id: `ds_update`. Auth: Session cookie and `X-Egret-CSRF` header. Forbi
 | `certified` | boolean | yes | Certified as a trusted/official dataset. |
 | `certified_by` | string | yes |  |
 | `certification_details` | string | yes |  |
+| `deleted_at` | string (date-time), nullable | no | When the dataset was moved to the trash; null while it is live. Its charts keep running until it is deleted, and say so. |
 
 | Status | Meaning |
 |---|---|
@@ -206,6 +210,7 @@ Operation id: `ds_remove`. Auth: Session cookie and `X-Egret-CSRF` header. Forbi
 |---|---|---|---|---|
 | `workspace` | path | string | yes | Workspace slug |
 | `id` | path | string (uuid) | yes | Dataset id |
+| `confirm` | query | string | no | The dataset's exact name. Required while charts are built on it: with it, those charts are deleted too. |
 | `workspace` | path | string | yes |  |
 
 **Response 200 (application/json)**: `Ack`
@@ -220,6 +225,7 @@ Operation id: `ds_remove`. Auth: Session cookie and `X-Egret-CSRF` header. Forbi
 | 401 | Not authenticated |
 | 403 | Missing dataset:manage permission, or not the dataset owner |
 | 404 | No such dataset in this workspace |
+| 409 | Charts are built on this dataset (live or in the trash) and `confirm` is not its name. Body: `\{error, code: "in_use", charts: [\{id, name, viz_type, trashed\}]\}` |
 | 500 | Internal error |
 
 ## POST `/api/ws/{workspace}/datasets/{id}/bookmark`
@@ -306,6 +312,7 @@ Operation id: `ds_set_certification`. Auth: Session cookie and `X-Egret-CSRF` he
 | `certified` | boolean | yes | Certified as a trusted/official dataset. |
 | `certified_by` | string | yes |  |
 | `certification_details` | string | yes |  |
+| `deleted_at` | string (date-time), nullable | no | When the dataset was moved to the trash; null while it is live. Its charts keep running until it is deleted, and say so. |
 
 | Status | Meaning |
 |---|---|
@@ -353,11 +360,12 @@ Operation id: `ds_add_column`. Auth: Session cookie and `X-Egret-CSRF` header. F
 | `certified` | boolean | yes | Certified as a trusted/official dataset. |
 | `certified_by` | string | yes |  |
 | `certification_details` | string | yes |  |
+| `deleted_at` | string (date-time), nullable | no | When the dataset was moved to the trash; null while it is live. Its charts keep running until it is deleted, and say so. |
 
 | Status | Meaning |
 |---|---|
 | 200 | Calculated column added (expression validated) |
-| 400 | Invalid column expression |
+| 400 | Empty column name, or invalid column expression |
 | 401 | Not authenticated |
 | 403 | Missing dataset:manage permission, or not the dataset owner |
 | 404 | No such dataset in this workspace |
@@ -406,6 +414,7 @@ Operation id: `ds_update_column`. Auth: Session cookie and `X-Egret-CSRF` header
 | `certified` | boolean | yes | Certified as a trusted/official dataset. |
 | `certified_by` | string | yes |  |
 | `certification_details` | string | yes |  |
+| `deleted_at` | string (date-time), nullable | no | When the dataset was moved to the trash; null while it is live. Its charts keep running until it is deleted, and say so. |
 
 | Status | Meaning |
 |---|---|
@@ -446,6 +455,7 @@ Operation id: `ds_delete_column`. Auth: Session cookie and `X-Egret-CSRF` header
 | `certified` | boolean | yes | Certified as a trusted/official dataset. |
 | `certified_by` | string | yes |  |
 | `certification_details` | string | yes |  |
+| `deleted_at` | string (date-time), nullable | no | When the dataset was moved to the trash; null while it is live. Its charts keep running until it is deleted, and say so. |
 
 | Status | Meaning |
 |---|---|
@@ -489,6 +499,53 @@ Object-scoped dataset data-preview: runs ONLY a bounded `SELECT * FROM &lt;the d
 | 404 | No such dataset in this workspace |
 | 500 | Internal error |
 | 502 | Query engine error |
+
+## POST `/api/ws/{workspace}/datasets/{id}/duplicate`
+
+Operation id: `ds_duplicate`. Auth: Session cookie and `X-Egret-CSRF` header. Forbidden (403): No dataset:read on the source, or no dataset:manage (or the database is not granted).
+
+| Parameter | In | Type | Required | Description |
+|---|---|---|---|---|
+| `workspace` | path | string | yes | Workspace slug |
+| `id` | path | string (uuid) | yes | Dataset id |
+| `workspace` | path | string | yes |  |
+
+**Request body (application/json)**: `DuplicateDataset`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `name` | string | yes | Name of the copy; unique in the workspace. |
+
+**Response 200 (application/json)**: `DatasetDetailDto`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `id` | string | yes |  |
+| `name` | string | yes |  |
+| `description` | string | yes |  |
+| `database_id` | string | yes |  |
+| `kind` | string | yes |  |
+| `catalog` | string, nullable | no |  |
+| `schema` | string, nullable | no |  |
+| `table` | string, nullable | no |  |
+| `sql` | string, nullable | no |  |
+| `updated_at` | string (date-time) | yes |  |
+| `columns` | DatasetColumnDto[] | yes |  |
+| `metrics` | MetricDto[] | yes |  |
+| `certified` | boolean | yes | Certified as a trusted/official dataset. |
+| `certified_by` | string | yes |  |
+| `certification_details` | string | yes |  |
+| `deleted_at` | string (date-time), nullable | no | When the dataset was moved to the trash; null while it is live. Its charts keep running until it is deleted, and say so. |
+
+| Status | Meaning |
+|---|---|
+| 200 | The copy: same source, every column setting and metric (not the certification) |
+| 400 | Empty name |
+| 401 | Not authenticated |
+| 403 | No dataset:read on the source, or no dataset:manage (or the database is not granted) |
+| 404 | No such dataset in this workspace |
+| 409 | A dataset with this name already exists |
+| 500 | Internal error |
 
 ## PATCH `/api/ws/{workspace}/datasets/{id}/folder`
 
@@ -559,11 +616,12 @@ Operation id: `ds_add_metric`. Auth: Session cookie and `X-Egret-CSRF` header. F
 | `certified` | boolean | yes | Certified as a trusted/official dataset. |
 | `certified_by` | string | yes |  |
 | `certification_details` | string | yes |  |
+| `deleted_at` | string (date-time), nullable | no | When the dataset was moved to the trash; null while it is live. Its charts keep running until it is deleted, and say so. |
 
 | Status | Meaning |
 |---|---|
 | 200 | Metric added (expression validated) |
-| 400 | Invalid metric expression |
+| 400 | Invalid metric expression, or not an aggregate |
 | 401 | Not authenticated |
 | 403 | Missing dataset:manage permission, or not the dataset owner |
 | 404 | No such dataset in this workspace |
@@ -609,14 +667,16 @@ Operation id: `ds_update_metric`. Auth: Session cookie and `X-Egret-CSRF` header
 | `certified` | boolean | yes | Certified as a trusted/official dataset. |
 | `certified_by` | string | yes |  |
 | `certification_details` | string | yes |  |
+| `deleted_at` | string (date-time), nullable | no | When the dataset was moved to the trash; null while it is live. Its charts keep running until it is deleted, and say so. |
 
 | Status | Meaning |
 |---|---|
-| 200 | Metric updated (expression validated) |
-| 400 | Invalid metric expression |
+| 200 | Metric updated (expression validated). A rename rewrites the charts that use the metric in the same transaction. |
+| 400 | Invalid metric expression, or not an aggregate |
 | 401 | Not authenticated |
 | 403 | Missing dataset:manage permission, or not the dataset owner |
 | 404 | No such dataset, or metric not in this dataset |
+| 409 | Name taken, or a rename of a used metric whose old or new name is also a column name (the charts could not be rewritten unambiguously). Body of the latter: `\{error, code: "in_use", charts\}` |
 | 500 | Internal error |
 
 ## DELETE `/api/ws/{workspace}/datasets/{id}/metrics/{metric_id}`
@@ -628,6 +688,7 @@ Operation id: `ds_delete_metric`. Auth: Session cookie and `X-Egret-CSRF` header
 | `workspace` | path | string | yes | Workspace slug |
 | `id` | path | string (uuid) | yes | Dataset id |
 | `metric_id` | path | string (uuid) | yes | Metric id |
+| `confirm` | query | string | no | The metric's exact name. Required while charts use it: with it, the metric is deleted and those charts stop running. |
 | `workspace` | path | string | yes |  |
 
 **Response 200 (application/json)**: `DatasetDetailDto`
@@ -649,6 +710,7 @@ Operation id: `ds_delete_metric`. Auth: Session cookie and `X-Egret-CSRF` header
 | `certified` | boolean | yes | Certified as a trusted/official dataset. |
 | `certified_by` | string | yes |  |
 | `certification_details` | string | yes |  |
+| `deleted_at` | string (date-time), nullable | no | When the dataset was moved to the trash; null while it is live. Its charts keep running until it is deleted, and say so. |
 
 | Status | Meaning |
 |---|---|
@@ -656,6 +718,7 @@ Operation id: `ds_delete_metric`. Auth: Session cookie and `X-Egret-CSRF` header
 | 401 | Not authenticated |
 | 403 | Missing dataset:manage permission, or not the dataset owner |
 | 404 | No such dataset, or metric not in this dataset |
+| 409 | Charts use this metric and `confirm` is not its name. Body: `\{error, code: "in_use", charts\}` |
 | 500 | Internal error |
 
 ## PUT `/api/ws/{workspace}/datasets/{id}/metrics/{metric_id}/certification`
@@ -695,6 +758,7 @@ Operation id: `ds_set_metric_certification`. Auth: Session cookie and `X-Egret-C
 | `certified` | boolean | yes | Certified as a trusted/official dataset. |
 | `certified_by` | string | yes |  |
 | `certification_details` | string | yes |  |
+| `deleted_at` | string (date-time), nullable | no | When the dataset was moved to the trash; null while it is live. Its charts keep running until it is deleted, and say so. |
 
 | Status | Meaning |
 |---|---|
@@ -714,7 +778,7 @@ Operation id: `ds_refresh`. Auth: Session cookie and `X-Egret-CSRF` header. Forb
 | `id` | path | string (uuid) | yes | Dataset id |
 | `workspace` | path | string | yes |  |
 
-**Response 200 (application/json)**: `DatasetDetailDto`
+**Response 200 (application/json)**: `DatasetRefreshDto`
 
 | Field | Type | Required | Description |
 |---|---|---|---|
@@ -733,10 +797,13 @@ Operation id: `ds_refresh`. Auth: Session cookie and `X-Egret-CSRF` header. Forb
 | `certified` | boolean | yes | Certified as a trusted/official dataset. |
 | `certified_by` | string | yes |  |
 | `certification_details` | string | yes |  |
+| `deleted_at` | string (date-time), nullable | no | When the dataset was moved to the trash; null while it is live. Its charts keep running until it is deleted, and say so. |
+| `added_columns` | string[] | yes |  |
+| `removed_columns` | string[] | yes |  |
 
 | Status | Meaning |
 |---|---|
-| 200 | Physical columns reconciled from the source |
+| 200 | Physical columns reconciled from the source; names the columns added and removed. A column that kept its engine type keeps its Time switch. |
 | 401 | Not authenticated |
 | 403 | Missing dataset:manage permission, or not the dataset owner |
 | 404 | No such dataset in this workspace |
@@ -798,6 +865,7 @@ Operation id: `ds_usage`. Auth: Session cookie. Forbidden (403): Missing dataset
 |---|---|---|---|---|
 | `workspace` | path | string | yes | Workspace slug |
 | `id` | path | string (uuid) | yes | Dataset id |
+| `include_trashed` | query | boolean | no | Also list charts in the trash: every chart a delete of the dataset would delete with it |
 | `workspace` | path | string | yes |  |
 
 **Response 200 (application/json)**: array of `DatasetUsageDto`
@@ -806,10 +874,12 @@ Operation id: `ds_usage`. Auth: Session cookie. Forbidden (403): Missing dataset
 |---|---|---|---|
 | `id` | string | yes |  |
 | `name` | string | yes |  |
+| `viz_type` | string | yes | The chart's viz type, for its icon. |
+| `trashed` | boolean | yes | The chart is in the trash (listed only with `include_trashed`). |
 
 | Status | Meaning |
 |---|---|
-| 200 | Charts that use this dataset |
+| 200 | Charts that use this dataset, live ones first |
 | 403 | Missing dataset:read permission |
 | 404 | No such dataset in this workspace |
 

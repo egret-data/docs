@@ -6,9 +6,9 @@ sidebar_position: 1
 
 The **Check access** tab on a person, group or role page asks the engines a precise question: can this principal perform this action on this target? It uses the same evaluator as [Explain access](../data/explain-access.md), but lets you choose any catalog, schema, table or column and either action.
 
-![Check access for Member SSO on demo_warehouse.analytics.customers: No policy matched on docs-trino](/img/platform/admin/gov-person-check.png)
+![Check access for Member SSO on demo_warehouse.analytics.customers: refused on docs-trino because no policy allows it](/img/platform/admin/gov-person-check.png)
 
-Check access needs **policy:read**. A user with no username cannot be checked: the tab says *No username yet, so no engine knows this user.* Grant them something first so a username is allocated.
+Check access needs **policy:read**. A user with no username cannot be checked: the tab says *No username yet, so no engine knows this user.* Since platform #823 this happens only for a service account before its first token, or a person egret could not name at start (see [People and groups](./index.md#users)); grant them something first so a username is allocated.
 
 ## Check a user's access to a column
 
@@ -18,13 +18,13 @@ Check access needs **policy:read**. A user with no username cannot be checked: t
 4. Under **Target**, pick the **Catalog** from the dropdown, then type the **Schema**, **Table** and **Column** as needed. Each field unlocks after the one before it; the button reads *Explain needs a target catalog.* until a catalog is chosen.
 5. Press **Explain**.
 
-The result is the same per-profile answer as the Data page's **Who can read?**: a verdict (**Allowed**, **Refused by a deny item**, **Refused by deny-all-else**, **No policy matched**, **Undecidable**), the deciding grant or policy, and the tags that could decide. See [Explain access](../data/explain-access.md#read-the-result-for-a-user) for what each means.
+The result is the same per-profile answer as the Data page's **Who can read?**: one sentence per engine saying what the person gets and why (for a read, the column value and the rows they see), then, under **Which policies decided this**, a verdict (**Allowed**, **Refused by a deny item**, **Refused by deny-all-else**, **No policy matched**, **Undecidable**), the deciding grant or policy, and the tags that could decide. See [Explain access](../data/explain-access.md#read-the-answer-for-a-user) for what each means.
 
 On the demo stack, **read** on `demo_warehouse.analytics.customers` for `member-sso` answers **No policy matched** on `docs-trino` (*Nobody granted this — not the same as somebody forbidding it.*), while `demo_warehouse.analytics.sessions` answers **Allowed** with **View grant** and the Ranger policy `perm-grant-d7441a5e-…`. A query on `customers` as her is refused by the engine.
 
 ## Check a group or role
 
-For a group or role the tab asks about every member. The result counts members allowed by every profile, refused by at least one, undecidable, and masked, with a **Refused only** filter. A group with no members asks nobody.
+For a group or role the tab asks about every member, up to 200. The result counts members allowed by every profile, refused by at least one, undecidable, and masked, and lists each member with their sentence per engine, with a **Refused only** filter. A group with no members asks nobody. See [Explain access](../data/explain-access.md#read-the-answer-for-a-group-or-role).
 
 ## The check dialog
 
@@ -35,14 +35,19 @@ The shield button at the top right of the People list (**Check access**) opens t
 | Symptom | Likely cause |
 |---|---|
 | **No policy matched** for someone you granted | The grant is on a catalog no engine serves, or the person's group was granted but they have no username yet. |
-| **Allowed** but the person sees masked values | Masks on Trino are not reported by explain. Check the table's **Masks & filters** tab. |
+| **Allowed** but the person sees masked values or fewer rows | A mask or row filter applies. Ask about the column: the sentence names the rule, or the clearance on StarRocks. |
+| A row filter by classification does not show on a table | The table does not carry the classification, on the table or on any of its columns,. Before platform #818 Trino did not filter a table where the classification was only on columns. See [Explain access](../data/explain-access.md#row-filters-by-classification). |
+| A whole-table clearance shows *No NULL mask … is served here* | On StarRocks the direct read is refused, but a view over the table shows the values until egret has the table's columns: the table is not in the catalog yet, or the profile has not been recompiled since a column appeared. See [Explain access](../data/explain-access.md#clearance-on-starrocks). |
+| A renamed table is **Allowed** where a deny or a path mask applied before the rename | It, or the view, was renamed before the version of egret that carries grants and rules to the new name (views and hand-written policies reached through a pattern are covered since platform #814), which left them on the old name. The Governance overview lists the rows left behind as *permissions on tables that do not exist*. Write them on the new name. See [Renames and drops](../data/grants.md#renames-and-drops). |
+| A person with an allow grant is **Refused** on a table renamed a moment ago | The allow grant moved to the new name after the rename, and the engine applies it at its next policy poll, up to about two polls (KI-317). Ask again in a minute. |
+| A table renamed before this version has no clearance or tag mask | Its classifications are still on the old name. The Governance overview reports them as *classifications on tables that do not exist*. Attach them to the new name. |
 | **Allowed** from a policy marked *Outside the permission model* | A hand-written Ranger policy decides. Egret does not manage it. |
 | **Undecidable** | The engine's super-user list, plugin version or tag assignment is not known. The reason names it. |
 
 ## Limits and known issues
 
 - Check access evaluates the policy set the profile serves now. An engine may still enforce an older download until its next poll.
-- Only engines whose plugin version egret models are checked (Trino 2.5.0 and 2.8.0; StarRocks 2.8.0 and 2.9.0).
+- Only engines whose plugin version egret models are checked (Trino 2.8.0; StarRocks 2.8.0 and 2.9.0).
 
 ## Further reading
 

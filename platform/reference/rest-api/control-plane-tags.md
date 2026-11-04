@@ -119,10 +119,10 @@ Operation id: `create_tag`. Auth: Session cookie and `X-Egret-CSRF` header. Forb
 | Status | Meaning |
 |---|---|
 | 201 | Tag created |
-| 400 | Invalid tag key |
+| 400 | Invalid tag key: `code` is `tag_key_invalid` |
 | 401 | Not authenticated |
 | 403 | Missing tag:manage permission |
-| 409 | A tag with that key already exists |
+| 409 | `code` is `tag_key_taken` (the key exists) or `tag_name_taken` (another classification has that name, ignoring case); `existing` names the holder |
 | 500 | Internal error |
 
 ## PATCH `/api/control-plane/tags/{id}`
@@ -160,6 +160,7 @@ Operation id: `update_tag`. Auth: Session cookie and `X-Egret-CSRF` header. Forb
 | 401 | Not authenticated |
 | 403 | Missing tag:manage permission |
 | 404 | No such tag |
+| 409 | `code` is `tag_name_taken`: another classification has that name, ignoring case; `existing` names the holder |
 | 500 | Internal error |
 
 ## DELETE `/api/control-plane/tags/{id}`
@@ -175,6 +176,7 @@ Operation id: `delete_tag`. Auth: Session cookie and `X-Egret-CSRF` header. Forb
 | 204 | Tag deleted |
 | 401 | Not authenticated |
 | 403 | Missing tag:manage permission |
+| 409 | `code` is `tag_in_use`: `rules` lists the rules that still select this classification. Or `code: "profile_set_changed"` with `retryable: true`: an engine was bound, or a policy profile created, while this write ran, so a profile it... |
 | 500 | Internal error |
 
 ## PUT `/api/control-plane/tags/{id}/access-policy`
@@ -204,6 +206,7 @@ Operation id: `set_access_policy`. Auth: Session cookie and `X-Egret-CSRF` heade
 | 200 | Classification access policy set |
 | 401 | Not authenticated |
 | 403 | Missing tag:manage permission |
+| 409 | `code` is `expansion_ceiling` or `rule_overlap` (the gate cannot be compiled), or `profile_set_changed` with `retryable: true`: an engine was bound, or a policy profile created, while this write ran (#792); nothing was written, and the same... |
 | 500 | Internal error |
 
 ## DELETE `/api/control-plane/tags/{id}/access-policy`

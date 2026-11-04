@@ -32,7 +32,7 @@ named `egret-dev`.
 | `valkey` | `valkey/valkey:8` | 6399 (to 6379 in the container) | The shared limiter and response cache for the Data API (`data_api.shared_store_url`). The dev server does not need it; `just check` does, for the store tests. No volume: its contents can be rebuilt. |
 | `rustfs` | `rustfs/rustfs:1.0.1` | 9000 (S3 API), 9001 (console) | S3-compatible object storage. Access key `egret`, secret `egretsecret`. It replaced MinIO, whose public images were withdrawn. It must support STS `AssumeRole`, because the embedded catalog vends credentials through it. |
 | `trino` | `trinodb/trino:483` (pinned by digest) | 8090 (HTTP), 8453 (HTTPS) | A development Trino with JWT authentication against Keycloak and a file-based group access control. JWT is only enforced over TLS, so the HTTPS listener uses a self-signed keystore (`deploy/trino/etc/gen-certs.sh` makes it). It ships no catalogs: mount property files into `deploy/trino/catalog`. |
-| `starrocks` | `starrocks/allin1-ubuntu:4.1.6` (pinned by digest) | 9030 (MySQL protocol), 8030 (FE HTTP) | A single-container StarRocks. The Ranger plugin configuration (`ranger-starrocks-security.xml`, `ranger-starrocks-audit.xml`) is mounted into the front end. |
+| `starrocks` | `ghcr.io/egret-data/egret-starrocks-allin1:4.1.7-egret.4` (Egret's patched StarRocks, pinned by digest) | 9030 (MySQL protocol), 8030 (FE HTTP) | A single-container StarRocks. The Ranger plugin configuration (`ranger-starrocks-security.xml`, `ranger-starrocks-audit.xml`) is mounted into the front end. |
 | `keycloak` | `quay.io/keycloak/keycloak:26.0` | 8081 | The development identity provider, started with `start-dev --import-realm`. The `egret` realm is imported from `deploy/keycloak/egret-realm.json`. The Keycloak administrator is `admin` / `admin`. |
 | `frontend` | built from `frontend/` (nginx) | 5173 | The production build of the web app, for static smoke tests only. The backend is not containerized in this file, so `/api` does not resolve from it. Use `npm run dev` in `frontend/` for development. |
 
@@ -49,11 +49,11 @@ keys](../reference/configuration-keys); the ones that matter for the compose sta
 | Need | Variable | Value for the compose stack |
 |---|---|---|
 | Metadata database | `EGRET_DATABASE__URL` | `postgres://egret:egret@localhost:5432/egret` |
-| Object storage | `EGRET_STORAGE__ENDPOINT`, `__BUCKET`, `__ACCESS_KEY`, `__SECRET_KEY` | `http://localhost:9000`, a bucket you create, `egret`, `egretsecret` |
+| Object storage | `EGRET_STORAGE__ENDPOINT`, `__BUCKET`, `__ACCESS_KEY`, `__SECRET_KEY` | `http://localhost:9000`, `warehouse` (create it yourself), `egret`, `egretsecret` |
 | Single sign-on | `EGRET_OIDC__ISSUER_URL`, `__CLIENT_ID`, `__CLIENT_SECRET`, `__REDIRECT_URL` | `http://localhost:8081/realms/egret`, `egret`, `egret-secret`, `http://localhost:5173/api/auth/oidc/callback` |
 
-`.env.example` does not include the `EGRET_STORAGE__*` variables, and the server will not start without them; the Quick
-start shows the lines to add.
+`.env.example` sets all of these, and a test in the repository keeps it passing the server's startup checks. The bucket
+itself is not created for you; the Quick start shows how.
 
 The OIDC redirect URL must be on the origin the browser uses. With the Vite dev server that is port 5173, so the session
 cookie is set for the app and not for port 8080.
@@ -73,9 +73,9 @@ EGRET_STORAGE__ACCESS_KEY=egret EGRET_STORAGE__SECRET_KEY=egretsecret \
 ```
 
 If you also enable Data Apps (`apps.origin`), give each instance its own `apps.listen`: that listener binds
-`0.0.0.0:8081` by default. Changing the port does not change the catalog's advertised address: with the catalog on, also
-set `EGRET_CATALOG__PUBLIC_URL` to the new origin, or the token issuer in `/.well-known/openid-configuration` keeps
-saying `http://localhost:8080` (observed on an instance started on port 18080).
+`0.0.0.0:8081` by default. When `EGRET_CATALOG__PUBLIC_URL` is unset, the catalog's advertised address (and with it the token issuer in
+`/.well-known/openid-configuration`) follows the port: `http://localhost:18080` here. Set it yourself when clients reach the
+instance under another name.
 
 ## StarRocks and Ranger in the compose stack
 

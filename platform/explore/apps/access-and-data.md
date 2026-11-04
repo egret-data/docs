@@ -53,7 +53,7 @@ An app's code is written by its author, but it runs **for the viewer**: run mode
 | **Per-user delegation** or **Run queries as the logged-in user** turned on | The viewer. Ranger row filters and column masks that apply to the viewer apply to the app. |
 | Neither turned on | The connection's own shared user. Every viewer sees what that user can read. |
 
-The demo connection `trino-demo` has neither switch on, so `SELECT current_user` from an app answers `egret` for everyone. For data that needs per-person rules, turn on **Per-user delegation** or **Run queries as the logged-in user** on the connection; see [Databases](../../workspace-settings/databases).
+The demo connection `trino-demo` has neither switch on, so `SELECT current_user` from an app answers `egret` for everyone. For data that needs per-person rules, turn on **Per-user delegation** or **Run queries as the logged-in user** on the connection; see [Connections](../../workspace-settings/databases).
 
 With a per-user connection:
 
@@ -84,7 +84,7 @@ Opening an app shows *Starting the app…* (*The first open after a while can ta
 |---|---|
 | *You can't open this app* | The viewer lacks `app:read` on it, or the workspace denies running queries. Ask a workspace admin. |
 | *App not found* | The app was deleted or belongs to another workspace. |
-| *Nobody has published this app yet* | The author has not published a version (the detail reads *the app has no published version to run; publish it first*). Ask them to publish before sharing. |
+| *Nobody has published this app yet* | The author has not published a version. The page says *There is no version to open. Ask the author to publish one, then open the app again.* |
 | *This app can't be opened right now* | The app is in the trash. |
 | *Apps are not set up on this deployment* | The apps origin is not configured. An operator needs to set `apps.origin`. |
 
@@ -106,5 +106,5 @@ The `subprocess` launcher runs every app process inside the Egret container as t
 ## Further reading
 
 - [Write an app](./authoring)
-- [Databases](../../workspace-settings/databases)
+- [Connections](../../workspace-settings/databases)
 - [Shared objects](../../workspace-settings/shared-objects)

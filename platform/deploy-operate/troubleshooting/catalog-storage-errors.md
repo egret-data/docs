@@ -13,7 +13,7 @@ catalog:
 
 | Message | Cause and fix |
 |---|---|
-| `Error: the apps API requires [storage] bucket, access_key, secret_key (it stores draft/version content there regardless of apps.pod.launcher)` | The object-store credentials are always required. A copy of `.env.example` does not set them. Set `EGRET_STORAGE__BUCKET`, `EGRET_STORAGE__ACCESS_KEY` and `EGRET_STORAGE__SECRET_KEY`. |
+| `Error: the apps API requires [storage] bucket, access_key, secret_key (it stores draft/version content there regardless of apps.pod.launcher)` | The object-store credentials are always required. `.env.example` sets them; check that they were not removed or misspelled (an unknown name logs a `WARN`). Set `EGRET_STORAGE__BUCKET`, `EGRET_STORAGE__ACCESS_KEY` and `EGRET_STORAGE__SECRET_KEY`. |
 | `Error: catalog.enabled requires warehouse and auth_token` | Set `EGRET_CATALOG__AUTH_TOKEN` (and `EGRET_CATALOG__WAREHOUSE`). |
 | `Error: catalog.enabled requires storage access_key/secret_key/bucket` | The catalog needs the same storage settings. |
 | `Error: secrets.master_key must be base64 of >=32 bytes` | `EGRET_SECRETS__MASTER_KEY` is set but does not decode to 32 bytes or more. Generate one with `head -c 32 /dev/urandom \| base64`. |
@@ -49,8 +49,22 @@ of a real failure:
 | Symptom | Cause |
 |---|---|
 | 403 on a table that exists | The client's role has no grant, or a `read` grant where the call writes. `write` and `manage` permit writes; any grant permits reads. |
+| 403 on a rename (*may not rename …* or *may not rename into …*) | A rename needs `write` covering the source table and a `catalog` or `namespace` grant on the destination namespace; a grant on the destination table name is not enough. |
+| 403 on a commit (*may not commit to …*) | A commit needs `write` covering the table it changes, the table named in the body's `identifier` when there is one. A multi-table commit needs it on every table, and one uncovered table refuses the whole commit. |
+| 403 on a recursive namespace drop | A recursive drop needs a `catalog`-level `write` or `manage` grant. |
+| 403 on a namespace create (*may not create namespace …*) | Creating a namespace needs `write` or `manage` on its parent namespace, or a `catalog`-level grant for a top-level namespace. A grant on the new namespace itself, or on a table, is not enough. |
+| A namespace, table or view is missing from a listing, but loads by name | Listings show only what the role can see. A table grant shows its table and its namespace, not the other tables beside it. |
+| 403 *remote signing is not used by egret* | The client asked the S3 request signer. egret does not sign requests; configure the client for vended credentials. |
+| 400 *malformed rename request*, *malformed multi-table commit*, *malformed table commit* or *malformed namespace create* | The request body is not the JSON the Iceberg REST API defines. |
+| 408 *the body of the … did not arrive within 30 s; nothing was changed* | The client declared a body and did not send all of it within 30 seconds of the request. Check the client's network path; nothing was written. |
+| 413 *the body of a … is larger than … bytes* | A rename or namespace create body is limited to 1 MiB, and a commit body to 16 MiB. |
 | 403 on the warehouse | The token's warehouse differs from the one requested. |
-| Warehouse creation refused | A warehouse without a `key_prefix` claims the whole bucket, and the catalog rejects a location that overlaps another warehouse. Give each its own bucket or prefix. |
+| A write fails at the object store with *access denied* (PyIceberg: `ACCESS_DENIED during CreateMultipartUpload`), while reads of the same table work | The client's role has only a `read` grant covering the table, so the catalog vended read-only storage credentials. Give the role `write` on the table, its namespace or the catalog. Nothing was committed. See [Storage credentials follow the grant](../../control-plane/catalogs/catalog-detail#storage-credentials-follow-the-grant). |
+| Warehouse creation refused (*the storage overlaps warehouse '…'* or *Storage profile overlaps with existing warehouse …*) | A warehouse without a `key_prefix` claims the whole bucket, and a location that overlaps another warehouse is refused, however the endpoint is written. Give each its own bucket or prefix. |
+
+egret's refusals use the Iceberg REST error format, `{"error": {"message", "type", "code"}}`, so the client shows the
+message above in a typed error (PyIceberg raises `ForbiddenError` for a 403). The full list of what each operation needs is
+in [What each operation needs](../../control-plane/catalogs/catalog-detail#what-each-operation-needs).
 
 ### The advertised address is wrong
 
@@ -58,11 +72,15 @@ of a real failure:
 curl -s http://<egret>/.well-known/openid-configuration
 ```
 
-If `issuer` or `token_endpoint` names an address clients cannot reach (`http://localhost:8080` on a server that is not on
-localhost, or on a different port: reproduced on port 18080), set `EGRET_CATALOG__PUBLIC_URL` to the address engines use, and
+If `issuer` or `token_endpoint` names an address clients cannot reach (`http://localhost:<port>`, the default when
+`catalog.public_url` is unset, on a server that is not reached as localhost), set `EGRET_CATALOG__PUBLIC_URL` to the address engines use, and
 `EGRET_IDP__ISSUER` to the address of clients outside the cluster. **Changing the issuer strands StarRocks engines already
 provisioned**, because their security integration compares the old issuer byte for byte; re-provision them. See
 [Configuration](../configuration#address-settings-that-people-confuse).
+
+Behind the demo stack's edge on a port other than 80, `GET /catalog/v1/config` advertises its `uri` without the port (for
+example `http://egret.localtest.me/catalog` on port 18780). PyIceberg follows that address and fails with *connection
+refused* (KI-314). A client that reaches egret directly on the stack's network is not affected.
 
 ## The bucket does not exist
 
@@ -92,6 +110,11 @@ The Helm chart's `egret-rustfs-bucket` job does this for the bundled RustFS.
 The catalog hands engines short-lived, table-scoped credentials by calling STS `AssumeRole` on the object store. A store
 without STS support cannot serve them. RustFS supports it; MinIO's current public images are no longer available. Without
 vended credentials, engines need static `s3.*` keys in their catalog configuration.
+
+Vended credentials follow the client's grant: `read` vends read-only credentials, `write` and `manage` read-write-delete.
+A write by a read-only client fails at the object store, not in the catalog (see the table above). Credentials already
+handed out stay valid for up to 15 minutes after a grant is revoked or narrowed (KI-315), or as long as
+`catalog.sts_token_validity_seconds` sets.
 
 ## Storage connections in the app
 

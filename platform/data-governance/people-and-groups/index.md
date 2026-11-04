@@ -6,13 +6,13 @@ sidebar_position: 3
 
 **Governance → People & groups** answers "what reaches this person?" It lists the users, groups and roles that egret knows, and for each one shows the grants, rules, clearances and engine permissions that apply to them.
 
-![The Users tab of People and groups: twelve people with their emails and engine usernames](/img/platform/admin/gov-people-users.png)
+![The Users tab of People and groups: seventeen people with their emails and engine usernames](/img/platform/admin/gov-people-users.png)
 
 The area needs the **policy:read** permission. A steward who holds only **tag:read** is refused. Editing a grant or rule from a person's page needs **policy:update**.
 
-## The four tabs
+## The tabs
 
-The page has four tabs, kept in the address as `?kind=`: users (the default), `group`, `role` and `unmatched`. Each list has a **Search** box and is paged.
+The page has four tabs, kept in the address as `?kind=`: users (the default), `group`, `role` and `unmatched`. A platform admin also sees a fifth, **Reused names** (`reused`). Each list has a **Search** box and is paged.
 
 ### Users
 
@@ -24,7 +24,7 @@ The page has four tabs, kept in the address as `?kind=`: users (the default), `g
 
 **Show service accounts** adds machine accounts to the list; they are hidden by default. People appear here once they have signed in; SSO users come with the groups the identity provider reports.
 
-*No username yet* is normal for a new user. Egret allocates one at their first query, notebook or engine token, or when a grant naming them, one of their groups or one of their workspaces is compiled. A grant created from the Data page can allocate it for you (see [Grants](../data/grants.md#create-a-grant)).
+Since platform #823 every person gets a username when they are created (on **New user**, or at their first SSO sign-in), and at start egret gives one to each existing person who has none. So *No username yet* now appears only for a service account (it gets one with its first token) and for a person egret could not name at start because a stored grant principal or rule exemption already uses the name it would give them; the server logs a warning, and **Unmatched names** shows that reference. For those, egret still allocates a username at their first query, notebook or engine token, or when a grant naming them, one of their groups or one of their workspaces is compiled, and a grant created from the Data page can allocate it for you (see [Grants](../data/grants.md#create-a-grant)).
 
 ### Groups
 
@@ -54,11 +54,43 @@ The footnote says *Holders are users. A holder with no username gets one when a 
 
 This tab lists grant principals and rule exemptions that name someone egret does not know. When there are none it shows *Every grant principal and rule exemption names someone egret knows.* For each unmatched name the table shows what the reference is (a group with no members, an empty role, or a name that no longer exists), and whether it *Narrows access*.
 
-Egret refuses to write a name it cannot resolve. A grant naming a role that does not exist is rejected with *no role has this name — a role is expanded into its holders at compile time, and a name with no role expands to nobody*. Unmatched names therefore appear only when someone is deleted or a group is emptied after the grant was written.
+Egret refuses to write a name it cannot resolve. A grant naming a role that does not exist is rejected with *no role has this name — a role is expanded into its holders at compile time, and a name with no role expands to nobody*. Unmatched names therefore appear only when someone is deleted or a group is emptied after the grant was written. A deleted user's username is retired and is never given to anyone else, so such a name stays unmatched until you edit the grant or rule.
 
 :::warning
 An unmatched name is not harmless. A name that matches nobody grants nobody as an allow, but in a deny's exception or an allow's exclude it silently allows more than the model states. The Governance overview lists such findings as **unresolved principal references**.
 :::
+
+### Reused names
+
+This tab is for platform admins only; for anyone else `?kind=reused` opens **Users**. It lists engine usernames written into grants, rules, engine permissions and engine policies for someone other than the person who holds the name now.
+
+Before this check was added, deleting a user freed their engine username, and the next person whose email gave the same name (for example a new `alice@…`) was given it. That person then received everything still written for the old `alice`: allows, deny exceptions, mask and row-filter exemptions and, if the old `alice` was a platform admin, all access on every engine. Usernames are no longer reused (see [Control plane: Users](../../control-plane/access-control/users.md#what-a-retired-username-means)), so this tab finds what happened before.
+
+The page says what it lists in a short paragraph, then shows one row per username and place:
+
+| Column | Meaning |
+|---|---|
+| **Username** | The engine username. |
+| **Verdict** | **Definite**, **Possible**, **Stale** or **Dead** (below). A dead name that widens access also says **Widens access**. |
+| **Finding** | *Written before its holder joined* (a grant, rule or engine permission), *Policy older than its holder*, *Admin policy names someone who is not an active admin*, or *Names nobody, and nobody can hold it again*. |
+| **In** | Where the name is written, with a link: **Grant**, **Rule**, **Engine grant** (to the engine's **Engine permissions** tab), or *Policy \<name\> on \<profile\>* (to the profile's **Policies** tab). |
+| **Holder** | The person who holds the name now, with the date their account was created (*Since \<date\>*), or *Nobody*. |
+| **Evidence** | When and why, for example *governance event perm_grant:create named user:bob before its holder existed*. |
+
+Rows are ordered definite, possible, stale, dead. **Search** filters on the username. When policy bodies were captured at upgrade time, a footnote says *Policy bodies as they were on \<date\>, when this check was installed, are included.*
+
+| Verdict | What it means | What to do |
+|---|---|---|
+| **Definite** | A governance event or a timestamp proves the name was written before the current holder existed, or an egret-seeded or egret-compiled policy was. The holder got access meant for someone else. | Check what the holder could reach (open them on **Users**). Fix the place in **In**: edit the grant, rule or engine permission to name the right person, or remove it. Disable the holder if they should not have had the access. |
+| **Possible** | The place is older than the holder but may have been edited for them later (grants and rules record no edit time), or it is a hand-written policy, which may have been written in advance on purpose. | Ask who wrote it and for whom. If it was for someone else, fix it as for **Definite**. |
+| **Stale** | An `egret-admin` policy still gives engine all access to someone who is no longer an active platform admin. This is not a reuse: egret keeps that policy in step with platform admins, so a stale row means that update failed. | Check the server log for the failed recompile; a restart repairs the `egret-admin` policies at boot. |
+| **Dead** | The name matches nobody, and nobody can be given it again. | If **Widens access** is shown, the name sits in a deny, or in a grant's **Exclude** list or a hand-written policy's **Exclude from allow**: the entry that held someone back now holds back nobody. Name the right person. A hand-written policy that names a name retired at upgrade may have been written for someone who had not signed in yet; they were given another name (for example `alice-2`), so rewrite the policy to the name they were given. |
+
+Nothing is changed automatically: no user is disabled and no grant or policy is edited. Fix each place on its own page.
+
+When there is nothing to report the tab says *No reused engine usernames found.*, and that history past audit retention cannot be checked. The check reads governance events, which are pruned after the audit retention (90 days by default), and timestamps. It cannot see a name written in free text (a row-filter or mask expression, or a policy condition), table or view owners inside the engines, a reference that was already edited away, or whether an inherited access was ever used; the engines' query logs answer that.
+
+The same check raises a finding on the [Governance overview](../overview.md#needs-attention).
 
 ## Open a person, group or role
 
@@ -79,7 +111,7 @@ A user, a group and a role each have these tabs. A role has no **Masks & filters
 - **Group**: **Members** (name and username; a member without one reads *No username yet: a grant naming this group allocates one at compile*), **Roles held** and **Workspaces held**, each with **Scope**, **Expires** and **Applied on engines**.
 - **Role**: **Holders** and **Groups holding this role**.
 
-**Applied on engines** says whether the engines see the relationship. *egret only — not applied on engines: held through a group* means egret knows the person holds the role through their group, but engines count only roles held directly, so grants naming the role do not reach them through that group.
+**Applied on engines** says whether the engines see the relationship. A role or workspace held through a group is applied on engines, like a direct one. A membership is not applied on engines when it has expired (engines may still apply it until the next recompile) or when the user has no username yet.
 
 ### Permissions
 
@@ -96,7 +128,6 @@ Rules that **exempt** the principal. *No egret rule exempts Member SSO* is follo
 For each gated classification, whether the principal is cleared. Without any gated tag the tab says *No classification is gated*. The table columns are **Classification**, **Gate requires**, and two verdicts: **Engines** (what the query engines enforce) and **egret objects** (what egret enforces on datasets, charts and dashboards). A verdict is **Cleared** (for example *Cleared through role data_steward*), *Cleared through public*, or **Not cleared** with a reason, such as:
 
 - *no username yet*
-- *the required role is held through a group, and engines count only roles held directly*
 - *the required role has expired. Engines may apply it until the next recompile.*
 - *engines enforce only the gate's roles, not its groups*
 

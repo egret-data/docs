@@ -101,7 +101,7 @@ The last column is what a fresh install grants; your roles may differ.
 | Permission | Scope | What it allows | Built-in roles that hold it |
 |---|---|---|---|
 | `workflow:read` | workspace | View flow drafts, their validation report, and their published versions | `ws_admin`, `ws_editor` |
-| `workflow:manage` | workspace | Create, edit, publish and delete flow drafts | `ws_admin`, `ws_editor` |
+| `workflow:manage` | workspace | Create, edit, publish and delete flow drafts; restore a flow from the trash or delete it permanently | `ws_admin`, `ws_editor` |
 | `workflow:use_secrets` | workspace | Save and publish flows that call secret(), which reads any secret of the workspace | `ws_admin` |
 
 ### Policies

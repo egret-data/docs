@@ -19,6 +19,8 @@ The `[storage]` section is the object store the server itself uses. One bucket h
 | Data Apps drafts and versions | `apps.storage.prefix` | `apps/` |
 | The default catalog warehouse | `catalog.warehouse` (`s3://<bucket>`) | `s3://warehouse` |
 
+The first three prefixes hold other users' data, so **Control Plane → Storage → Browse** and its download close them to everyone except a platform admin ([Storage](../control-plane/storage/index.md#folders-only-a-platform-admin-can-open)).
+
 ```bash
 EGRET_STORAGE__ENDPOINT=http://localhost:9000   # omit for AWS S3
 EGRET_STORAGE__REGION=us-east-1
@@ -59,7 +61,7 @@ EGRET_CATALOG__PUBLIC_URL=http://egret.example.internal:8080
 | `catalog.enabled` | Off by default. When on, `warehouse`, `auth_token` and the storage credentials are required. The server logs lakekeeper's own migrations on first start, in the same database. |
 | `catalog.auth_token` | A static token for catalog administration. Treat it as a secret. |
 | `catalog.warehouse` | The default catalog's location. |
-| `catalog.public_url` | The address clients and engines use to reach this server, without `/catalog`. The default is `http://localhost:8080`, **whatever `server.port` is**: change it when the server is reachable under another name, port or scheme. It is also where the machine identity provider's issuer falls back to. |
+| `catalog.public_url` | The address clients and engines use to reach this server, without `/catalog`. Unset, it is `http://localhost:<server.port>`: change it when the server is reachable under another name or scheme. It is also where the machine identity provider's issuer falls back to. |
 | `catalog.system_user` | The stable name (`egret-system`) of the principal that bootstraps the catalog's default project. Keep it stable across deploys. |
 
 ### What an engine sees
@@ -87,8 +89,11 @@ s3.path-style-access=true
 ```
 
 With `vended-credentials-enabled`, engines get credentials scoped to the table they load and the static `s3.aws-*` keys are
-not needed. A warehouse is provisioned with STS enabled and remote signing off, because the embedded mount exposes no
-signer endpoint.
+not needed. The credentials follow the client's grant: a role with only `read` on the table gets read-only credentials, and
+`write` or `manage` gets read, write and delete, so an engine whose client holds only `read` grants cannot write (see
+[Storage credentials follow the grant](../control-plane/catalogs/catalog-detail#storage-credentials-follow-the-grant)).
+A warehouse is provisioned with STS enabled and remote signing off, and egret refuses every S3 signer request
+(`…/aws/s3/sign`) with 403, whatever the client's grants.
 
 ### Setting it up in the app
 
@@ -96,7 +101,8 @@ signer endpoint.
 2. **Control Plane → Catalogs → New catalog**: create an *egret warehouse* over that storage connection. This creates the
    warehouse in the embedded catalog.
 3. Open the catalog. On **Roles & grants**, add a role and give it a `write` grant (`write` and `manage` permit writes; any
-   grant permits reads).
+   grant permits reads). Creating a table, renaming into a namespace and dropping a namespace recursively need more than a
+   table grant; see [What each operation needs](../control-plane/catalogs/catalog-detail#what-each-operation-needs).
 4. On **Catalog Clients**, add a client bound to that role and copy the client id and secret. The secret is shown once.
 5. The **Connect** tab shows the catalog URI, warehouse name and OAuth token URL for this deployment, with ready-made
    snippets for PyIceberg, Trino and StarRocks.
@@ -104,7 +110,9 @@ signer endpoint.
 
 :::caution One warehouse, one prefix
 A warehouse without a `key_prefix` claims the whole bucket, and the catalog rejects a warehouse whose location overlaps an
-existing one. Give each warehouse its own bucket or key prefix.
+existing one. Give each warehouse its own bucket or key prefix. The overlap check reads the endpoint as a URL, so host case,
+a trailing slash or dot, an explicit default port, the scheme and the region do not hide an overlap. Two host names, or a host
+name and an IP address, for one store are not seen as the same store, because egret does not resolve names (KI-316).
 :::
 
 ### Check it

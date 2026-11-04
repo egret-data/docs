@@ -6,7 +6,7 @@ sidebar_position: 7
 
 **Activity** is the access log of the Data API: every call to one of the workspace's endpoints, with its status, duration and whether the cache answered. Use it to see who is calling what, find the call behind an error report, and spot an endpoint that has started to fail.
 
-![The Activity page for 24h: 282 calls, a 20.2% error rate shown as Failing, latency and cache-hit tiles, the per-endpoint table with No matching endpoint last, and the newest calls including 429 rate_limited](/img/platform/data-api/activity.png)
+![The Activity page for 24h: 136 calls, a 22.8% error rate shown as Failing, latency and cache-hit tiles, the per-endpoint table with No matching endpoint last, and the newest calls including 429 rate_limited](/img/platform/data-api/activity.png)
 
 Open **Explore → Data API → Activity**.
 
@@ -53,7 +53,7 @@ The **Calls** list shows individual requests, newest first, fifty at a time. Pre
 | **Status code** | Limit to one HTTP status, for example `404`. |
 | **Error code** | Limit to one `error_code`, for example `rate_limited`. |
 | **Request ID** | Look up one call from an error body. Paste the `request_id` a consumer gives you. |
-| **Include trial runs** | Also show calls made from the endpoint editor's **Try it** tab. Off by default, so the page shows real consumer traffic. A trial is marked with a **Trial** badge and the name of the person who ran it. |
+| **Include trial runs** | Also show calls made from the endpoint editor's **Try it** tab. Off by default, so the page shows real consumer traffic. A trial is marked with a **Trial** badge and the person who ran it: their profile name, else their email (a shortened user id only when that account no longer exists). |
 
 When the filters match nothing the page says so; with no calls at all it offers **View endpoints**.
 

@@ -42,7 +42,7 @@ Bar, row, line, area and combo charts. Empty by default (**Keep every category**
 
 ### Sort and Row limit
 
-The same query controls every chart has. See [Sort](./the-chart-editor#sort) and [Row limit](./the-chart-editor#row-limit). The chart is always ordered by the X-axis, ascending, after any sort you add.
+The same query controls every chart has. See [Sort](./the-chart-editor#sort) and [Row limit](./the-chart-editor#row-limit). The chart is always ordered by the X-axis, ascending, after any sort you add. A row chart with no sort is the exception: it orders by its first metric, descending, then by the X-axis (see [Row chart](./row)).
 
 ## Display tab
 
@@ -89,7 +89,7 @@ One row per series. A series is a metric, or a value of the **Series** dimension
 - A drag handle to reorder series. The order sets the stacking and legend order.
 - A color swatch. Click it for the palette or **Custom…**.
 - A display select (**Line**, **Area**, **Bar**), on line, area, bar and combo charts when **Stacking** is **Don't stack**. It sets how this one series is drawn, which is how you build a combo chart from any of them.
-- A name box. Type a label to rename the series in the legend and tooltip; the placeholder is the original name.
+- A name box. Type a label to rename the series in the legend and tooltip; the placeholder is the original name. Without a **Series** dimension, each series is a metric and is named by the metric's title (its **Column title**, else the dataset's **Display name**, for example **Revenue** rather than `revenue`), as the axis title is; a name typed here wins.
 - A settings button (gear), on series drawn as lines. It opens a popover with per-series overrides for **Line shape**, **Line style** (**Solid**, **Dashed**, **Dotted**), **Line size** (**S**, **M**, **L**), **Markers** (**On**, **Off**) and **Missing values**. Each also has **Auto**, which follows the chart-wide setting.
 - A switch that shows or hides the series.
 
@@ -158,7 +158,6 @@ To compare a count and an amount, set one metric to **Right** under the value ax
 
 - A chart with a **Series** plots one metric. Use several metrics without a series, or a series without extra metrics.
 - Scatter charts have no **Max categories** and no **Stacking**. A scatter's **Trend line** is hidden when the X-axis is a metric.
-- Axis titles default to the metric's database name rather than its display name; rename it with **Y label**.
 
 ## Further reading
 

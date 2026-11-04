@@ -6,7 +6,7 @@ sidebar_position: 2
 
 **Governance → Data** is the place to look at the access to one piece of data: a catalog, a schema, a table, a view or a column. Open an object to see who can read it, which tags and rules apply, which engines serve it and where it comes from.
 
-![The Data page for the sessions table: header, engine docs-trino, and the Columns list with tags and masking rules](/img/platform/admin/gov-table-overview.png)
+![The Data page for the sessions table: header, engine docs-trino, and the Columns list with classifications and rules](/img/platform/admin/gov-table-overview.png)
 
 The page needs the **policy:read** or **tag:read** permission. Reading grants and rules needs **policy:read**; reading and applying tags needs **tag:read**.
 
@@ -97,7 +97,7 @@ Selecting a column in the **Columns** table opens a panel on the right and adds 
 
 Close the panel with **Close**.
 
-![The column panel for user_id with its tag, the masking rule selected by the tag, and no column grant](/img/platform/admin/gov-column-panel.png)
+![The column panel for user_id with its classification, the rule selected by the classification, and no column grant](/img/platform/admin/gov-column-panel.png)
 
 ## Limits and known issues
 

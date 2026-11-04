@@ -8,12 +8,13 @@ description: REST endpoints in the queries group.
 
 Workspace query submission, status, results, and history.
 
-This page lists 6 endpoints (OpenAPI tag `queries`). It is generated from `openapi.json`; see the [REST API overview](../rest-api) for authentication, CSRF and error conventions.
+This page lists 7 endpoints (OpenAPI tag `queries`). It is generated from `openapi.json`; see the [REST API overview](../rest-api) for authentication, CSRF and error conventions.
 
 | Method | Path | Operation id | Notes |
 |---|---|---|---|
 | GET | `/api/ws/{workspace}/queries` | `history` |  |
 | POST | `/api/ws/{workspace}/queries` | `submit` |  |
+| DELETE | `/api/ws/{workspace}/queries` | `history_clear` |  |
 | GET | `/api/ws/{workspace}/queries/{id}` | `status` |  |
 | POST | `/api/ws/{workspace}/queries/{id}/cancel` | `cancel` |  |
 | GET | `/api/ws/{workspace}/queries/{id}/results` | `results` |  |
@@ -40,7 +41,7 @@ Operation id: `history`. Auth: Session cookie. Forbidden (403): Missing query:ru
 
 | Status | Meaning |
 |---|---|
-| 200 | Recent queries submitted by the caller (max 50) |
+| 200 | Recent queries submitted by the caller (max 50), less those they cleared |
 | 401 | Not authenticated |
 | 403 | Missing query:run permission |
 | 500 | Internal error |
@@ -76,6 +77,27 @@ Operation id: `submit`. Auth: Session cookie and `X-Egret-CSRF` header. Forbidde
 | 401 | Not authenticated |
 | 403 | Missing query:run permission |
 | 404 | Database not granted to workspace |
+| 500 | Internal error |
+
+## DELETE `/api/ws/{workspace}/queries`
+
+Operation id: `history_clear`. Auth: Session cookie and `X-Egret-CSRF` header. Forbidden (403): Missing query:run permission.
+
+| Parameter | In | Type | Required | Description |
+|---|---|---|---|---|
+| `workspace` | path | string | yes | Workspace slug |
+
+**Response 200 (application/json)**: `Ack`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `ok` | boolean | yes |  |
+
+| Status | Meaning |
+|---|---|
+| 200 | The caller's query history in this workspace is cleared; nobody else's is touched |
+| 401 | Not authenticated |
+| 403 | Missing query:run permission |
 | 500 | Internal error |
 
 ## GET `/api/ws/{workspace}/queries/{id}`

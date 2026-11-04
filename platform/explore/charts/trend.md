@@ -52,7 +52,7 @@ A row that is not valid for the current grouping (for example **Previous month**
 
 ## Display
 
-### Switch positive / negative colours
+### Switch positive / negative colors
 
 A switch with the hint **For a metric where less is better — cost, churn, time to resolve.** Increases are green and decreases red by default; the switch swaps them.
 
@@ -71,7 +71,6 @@ One row for the time dimension and one for the metric. A date format on the dime
 - The trend card needs a time dimension; it has no "ungrouped" mode in the editor.
 - There is no **Sort**; the order is fixed.
 - A comparison against another column of the same row is not available.
-- The switch is named **Switch positive / negative colours** (British spelling), while other panels say **color**.
 
 ## Further reading
 

@@ -44,6 +44,7 @@ Operation id: `list_ws`. Auth: Session cookie. Forbidden (403): Missing platform
 | `created_by` | string, nullable | no |  |
 | `owner_name` | string, nullable | no |  |
 | `features` | string[] | no | Module keys this workspace currently has switched on. Populated wherever a caller reads a workspace's entitlements back (`list_ws`, `get_ws`, `/api/me/workspaces`) via [`dto_with_features`]; left empty by the create/lifecycle handlers,... |
+| `permissions` | string[], nullable | no | The caller's own permissions in this workspace among [`PAGE_PERMISSIONS`]: the ones that decide whether a whole Explore page opens. Only `/api/me/workspaces` fills it, from the same PDP decision the page's routes ask, so the UI can leave... |
 
 | Status | Meaning |
 |---|---|
@@ -75,6 +76,7 @@ Operation id: `create_ws`. Auth: Session cookie and `X-Egret-CSRF` header. Forbi
 | `created_by` | string, nullable | no |  |
 | `owner_name` | string, nullable | no |  |
 | `features` | string[] | no | Module keys this workspace currently has switched on. Populated wherever a caller reads a workspace's entitlements back (`list_ws`, `get_ws`, `/api/me/workspaces`) via [`dto_with_features`]; left empty by the create/lifecycle handlers,... |
+| `permissions` | string[], nullable | no | The caller's own permissions in this workspace among [`PAGE_PERMISSIONS`]: the ones that decide whether a whole Explore page opens. Only `/api/me/workspaces` fills it, from the same PDP decision the page's routes ask, so the UI can leave... |
 
 | Status | Meaning |
 |---|---|
@@ -103,6 +105,7 @@ Operation id: `get_ws`. Auth: Session cookie. Forbidden (403): Missing platform 
 | `created_by` | string, nullable | no |  |
 | `owner_name` | string, nullable | no |  |
 | `features` | string[] | no | Module keys this workspace currently has switched on. Populated wherever a caller reads a workspace's entitlements back (`list_ws`, `get_ws`, `/api/me/workspaces`) via [`dto_with_features`]; left empty by the create/lifecycle handlers,... |
+| `permissions` | string[], nullable | no | The caller's own permissions in this workspace among [`PAGE_PERMISSIONS`]: the ones that decide whether a whole Explore page opens. Only `/api/me/workspaces` fills it, from the same PDP decision the page's routes ask, so the UI can leave... |
 
 | Status | Meaning |
 |---|---|
@@ -284,6 +287,7 @@ Operation id: `transfer_owner`. Auth: Session cookie and `X-Egret-CSRF` header. 
 | `created_by` | string, nullable | no |  |
 | `owner_name` | string, nullable | no |  |
 | `features` | string[] | no | Module keys this workspace currently has switched on. Populated wherever a caller reads a workspace's entitlements back (`list_ws`, `get_ws`, `/api/me/workspaces`) via [`dto_with_features`]; left empty by the create/lifecycle handlers,... |
+| `permissions` | string[], nullable | no | The caller's own permissions in this workspace among [`PAGE_PERMISSIONS`]: the ones that decide whether a whole Explore page opens. Only `/api/me/workspaces` fills it, from the same PDP decision the page's routes ask, so the UI can leave... |
 
 | Status | Meaning |
 |---|---|

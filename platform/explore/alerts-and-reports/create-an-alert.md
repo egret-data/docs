@@ -12,16 +12,18 @@ An alert runs one SQL query on a schedule, looks at the first value of the first
 
 1. Go to **Explore → Alerts & Reports**, stay on the **Alerts** tab and press **+ Alert**.
 2. On **General**, name the alert and choose its owners.
-3. On **Condition**, pick the **Database**, write the **SQL**, and choose the **Condition**.
+3. On **Condition**, pick the **Connection**, write the **SQL**, and choose the **Condition**.
 4. On **Schedule**, choose when it runs. See [Schedules and limits](./schedules).
 5. On **Notification**, add at least one destination. See [Notifications](./notifications).
 6. Press **Create**.
 
 The editor has four tabs, **General**, **Condition**, **Schedule** and **Notification**. A **Create** (or **Save**) and **Cancel** bar sits under the form. Leaving with unsaved changes asks for confirmation. A saved alert opens on the same four tabs, with its **Recent runs** (the last five) underneath.
 
+The open tab is part of the page address, named after the tab: `?section=condition`, `?section=schedule` or `?section=notification` (no `section` for **General**). A report's second tab is `?section=contents`. Send such a link to point a colleague at one part. Older links with `?section=what` still open the second tab, and `condition` and `contents` open it on any kind of item. A name that matches no tab opens **General** with the message *There is no section called “…”, so General is shown. The sections are General, Condition, Schedule, Notification.*; choosing a tab clears it.
+
 ## General
 
-![The General tab of an existing alert, with Recent runs underneath: On grace runs and a Success run with a webhook error](/img/platform/alerts/detail.png)
+![The General tab of an existing alert, with Recent runs underneath](/img/platform/alerts/detail.png)
 
 | Setting | What it does | Default |
 |---|---|---|
@@ -36,7 +38,7 @@ Creating a second alert with a name already used by another alert is refused: `a
 
 | Setting | What it does |
 |---|---|
-| **Database** | The [database connection](../../workspace-settings/databases) the query runs against. |
+| **Connection** | The [connection](../../workspace-settings/databases) the query runs against. In a workspace with no connection, a red line under **SQL** says *This workspace has no connection yet. Add one under Workspace settings → Connections before creating an alert.* |
 | **SQL** | The query to run. **The first column of the first row** is the value the condition is tested against. |
 | **Condition** | What about the value makes the alert fire. |
 
@@ -57,14 +59,14 @@ The alert **Pending orders above 100** uses these settings:
 
 | Setting | Value |
 |---|---|
-| **Database** | `trino-demo` |
+| **Connection** | `trino-demo` |
 | **SQL** | `SELECT count(*) FROM tpch.tiny.orders WHERE orderstatus = 'P'` |
 | **Condition** | **Value meets a comparison**, operator `>`, threshold `100` |
 | **Schedule** | Daily at 08:00, timezone `Asia/Ho_Chi_Minh` |
 | **Grace period** | 3600 seconds |
 | **Notification** | Email `ops@example.com` and a webhook to `https://example.com/egret-hook`, subject `[egret] {{name}} on {{date}}`, an opening and a closing note, and the **Order operations** dashboard attached as a PNG |
 
-Pressing **Run now** from the list ran it once. The sample data has 363 partially shipped orders, so the value `363` passed `> 100`: the run was recorded as **Success**, meaning the alert fired. The email arrived (below). The webhook receiver answered `405`, so the run log's **Detail** reads `webhook returned 405`; see [Run history](./run-history). A second **Run now** a few minutes later, and the next scheduled run, were recorded as **On grace** and sent nothing.
+Pressing **Run now** from the list ran it once. The sample data has 363 partially shipped orders, so the value `363` passed `> 100`: the alert fired. The email arrived (below). The webhook receiver answered `405`, so the run is recorded as **Error** and the run log's **Detail** reads `webhook example.com: webhook returned 405`; see [Run history](./run-history). Because the email reached someone, the grace period started anyway. A second **Run now** a few minutes later, and the next scheduled run, were recorded as **On grace** and sent nothing.
 
 A second alert, **Cancelled orders spike**, counts orders with status `X`. There are none, so the value is `0`, which does not pass `> 0`: each run is recorded as **Not triggered** and nobody is notified.
 
@@ -79,7 +81,7 @@ The email has the alert name as a heading, the **Opening note**, the attached ch
 When a run's value meets the condition, Egret:
 
 1. skips notification and records **On grace** if the alert already fired within its [grace period](./schedules#grace-period-seconds);
-2. otherwise sends the message to every destination and records **Success**.
+2. otherwise sends the message to every destination and records **Success**, or **Error** with each failed destination named if any destination did not take it. See [When delivery fails](./notifications#when-delivery-fails).
 
 The triggering rows are attached to the notification: as a CSV file on email, as JSON in the payload of a webhook. Slack does not receive them. See [Notifications](./notifications).
 

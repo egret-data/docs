@@ -79,7 +79,7 @@ An error answers with the matching HTTP status and a JSON body with one field:
 | `401` | No valid session or token. `{"error":"unauthorized"}` |
 | `403` | Authenticated, but the permission is missing, or the CSRF header is absent (`csrf check failed`, plain text). |
 | `404` | The object does not exist. |
-| `409` | A conflict, for example a name that is already taken: `conflict: a chart with that name already exists`. |
+| `409` | A conflict, for example a name that is already taken: `conflict: a chart with that name already exists`. A write that recompiles policy profiles (a classification's clearance, a classification added to or removed from a catalog object, a classification deleted, a grant or rule write under `/api/control-plane/perm`) answers `{"error": "the policy profiles this write recompiles changed while it ran (profile(s) 12 were bound or created meanwhile); nothing was written, retry", "code": "profile_set_changed", "retryable": true}` when an engine was bound to another profile while it ran. Nothing was written: send it again. |
 | `422` | The JSON body does not match the schema; the text names the field, for example ``source.kind: unknown variant `table`, expected `physical` or `virtual` ``. |
 | `429` | Rate limited: `{"error":"too many requests"}`. |
 | `500` | An internal error. The body is generic; the server log has the detail. |
@@ -112,13 +112,13 @@ described by their auth line here.
 | Authentication and identity | [Current user](rest-api/me) | 1 |
 | Workspaces and members | [Workspace administration](rest-api/admin-workspaces) | 10 |
 | Workspaces and members | [User administration](rest-api/admin-users) | 3 |
-| Workspaces and members | [Workspace members](rest-api/workspace-members) | 9 |
+| Workspaces and members | [Workspace members](rest-api/workspace-members) | 11 |
 | Workspaces and members | [Access requests](rest-api/access-requests) | 4 |
 | Workspaces and members | [Sharing](rest-api/shares) | 6 |
 | Explore (BI) | [Databases](rest-api/databases) | 9 |
-| Explore (BI) | [Queries](rest-api/queries) | 6 |
+| Explore (BI) | [Queries](rest-api/queries) | 7 |
 | Explore (BI) | [SQL Lab](rest-api/sqllab) | 15 |
-| Explore (BI) | [Datasets](rest-api/datasets) | 21 |
+| Explore (BI) | [Datasets](rest-api/datasets) | 22 |
 | Explore (BI) | [Charts](rest-api/charts) | 14 |
 | Explore (BI) | [Dashboards](rest-api/dashboards) | 15 |
 | Explore (BI) | [Folders](rest-api/folders) | 4 |
@@ -126,14 +126,14 @@ described by their auth line here.
 | Explore (BI) | [Data Apps](rest-api/apps) | 19 |
 | Data API | [Data API management](rest-api/data-api) | 29 |
 | Data API | [Data API serving](rest-api/data-api-serving) | 3 |
-| Workflows | [Workflows](rest-api/workflow) | 53 |
-| Data governance | [Permission model](rest-api/perm) | 30 |
-| Data governance | [Policy administration](rest-api/policy-admin) | 14 |
+| Workflows | [Workflows](rest-api/workflow) | 55 |
+| Data governance | [Permission model](rest-api/perm) | 34 |
+| Data governance | [Policy administration](rest-api/policy-admin) | 15 |
 | Data governance | [Ranger-compatible policy service](rest-api/ranger) | 6 |
-| Data governance | [Governance data browser](rest-api/control-plane-governance) | 7 |
+| Data governance | [Governance data browser](rest-api/control-plane-governance) | 11 |
 | Data governance | [Classification tags](rest-api/control-plane-tags) | 8 |
 | Control plane | [Access control](rest-api/control-plane-access) | 26 |
-| Control plane | [Engines](rest-api/control-plane-engines) | 24 |
+| Control plane | [Engines](rest-api/control-plane-engines) | 26 |
 | Control plane | [Catalog registry](rest-api/control-plane-catalog-registry) | 14 |
 | Control plane | [Egret warehouses](rest-api/control-plane-catalog) | 30 |
 | Control plane | [Storage connections](rest-api/control-plane-storage) | 7 |

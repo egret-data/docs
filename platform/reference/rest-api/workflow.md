@@ -8,7 +8,7 @@ description: REST endpoints in the workflow group.
 
 Flow drafts and published versions (W1).
 
-This page lists 53 endpoints (OpenAPI tag `workflow`). It is generated from `openapi.json`; see the [REST API overview](../rest-api) for authentication, CSRF and error conventions.
+This page lists 55 endpoints (OpenAPI tag `workflow`). It is generated from `openapi.json`; see the [REST API overview](../rest-api) for authentication, CSRF and error conventions.
 
 | Method | Path | Operation id | Notes |
 |---|---|---|---|
@@ -31,7 +31,9 @@ This page lists 53 endpoints (OpenAPI tag `workflow`). It is generated from `ope
 | DELETE | `/api/ws/{workspace}/workflows/flows/{id}` | `delete_flow` |  |
 | POST | `/api/ws/{workspace}/workflows/flows/{id}/executions` | `start_flow_execution` |  |
 | GET | `/api/ws/{workspace}/workflows/flows/{id}/graph` | `get_flow_graph` |  |
+| DELETE | `/api/ws/{workspace}/workflows/flows/{id}/permanent` | `purge_flow` |  |
 | POST | `/api/ws/{workspace}/workflows/flows/{id}/publish` | `publish_flow` |  |
+| POST | `/api/ws/{workspace}/workflows/flows/{id}/restore` | `restore_flow` |  |
 | GET | `/api/ws/{workspace}/workflows/flows/{id}/triggers` | `list_flow_triggers` |  |
 | POST | `/api/ws/{workspace}/workflows/flows/{id}/triggers/{trigger_id}/backfill` | `create_trigger_backfill` |  |
 | DELETE | `/api/ws/{workspace}/workflows/flows/{id}/triggers/{trigger_id}/backfill` | `delete_trigger_backfill` |  |
@@ -93,6 +95,7 @@ Operation id: `list_executions`. Auth: Session cookie. Forbidden (403): Missing 
 | `total` | integer (int64) | yes | Every execution matching the filter, not just this page's. Counted by a second statement carrying the same predicates, workspace one included. |
 | `limit` | integer (int64) | yes | The page size actually used, after the clamp. |
 | `offset` | integer (int64) | yes | The offset actually used, after the clamp. |
+| `worker_enabled` | boolean | yes | Whether this deployment runs the workflow worker (`workflow.worker_enabled`, `EGRET_WORKFLOW__WORKER_ENABLED`; off by default). **False: an execution is created and stays `RUNNING`, and nothing runs it until an administrator turns the... |
 
 | Status | Meaning |
 |---|---|
@@ -118,7 +121,7 @@ Operation id: `get_execution`. Auth: Session cookie. Forbidden (403): Missing wo
 | Field | Type | Required | Description |
 |---|---|---|---|
 | `id` | string (uuid) | yes |  |
-| `flow_id` | string (uuid), nullable | no | The draft this execution came from, and `NULL` only if something outside this crate issued a real `DELETE` — **trashing a flow does not clear it**, because `FlowRepo`'s delete is soft and nothing in `egret-workflow/src` issues a `DELETE... |
+| `flow_id` | string (uuid), nullable | no | The draft this execution came from, and `NULL` once that flow was deleted permanently from the trash (`FlowRepo::purge`, KI-119) — **trashing a flow does not clear it**, because `FlowRepo`'s delete is soft. A trashed flow's executions are... |
 | `namespace` | string | yes |  |
 | `flow_key` | string | yes | The YAML's own `id`; `flow_id` is taken by the draft's uuid above. |
 | `state` | string | yes | Kestra's wire spelling — `RUNNING`, `SUCCESS`, `FAILED`, … |
@@ -145,6 +148,7 @@ Operation id: `get_execution`. Auth: Session cookie. Forbidden (403): Missing wo
 | `runs` | TaskRunDto[] | yes | Every task run, in `run_ix` order — the executor's creation order. |
 | `can_manage` | boolean | yes | Whether the caller may resume and replay this execution: they hold `workflow:manage` in this workspace. A detail page hides both actions when this is false; the routes still check for themselves. |
 | `effective_labels` | LabelDto[] | yes | What the run sees as `labels`: the flow's, then `labels`, the later key winning. Empty when the frozen source does not parse. |
+| `worker_enabled` | boolean | yes | Whether this deployment runs the workflow worker (`workflow.worker_enabled`, `EGRET_WORKFLOW__WORKER_ENABLED`; off by default). **False: an execution is created and stays `RUNNING`, and nothing runs it until an administrator turns the... |
 
 | Status | Meaning |
 |---|---|
@@ -279,7 +283,7 @@ Tasks retrying, paused or not yet started end `KILLED` at once; a running task i
 | Field | Type | Required | Description |
 |---|---|---|---|
 | `id` | string (uuid) | yes |  |
-| `flow_id` | string (uuid), nullable | no | The draft this execution came from, and `NULL` only if something outside this crate issued a real `DELETE` — **trashing a flow does not clear it**, because `FlowRepo`'s delete is soft and nothing in `egret-workflow/src` issues a `DELETE... |
+| `flow_id` | string (uuid), nullable | no | The draft this execution came from, and `NULL` once that flow was deleted permanently from the trash (`FlowRepo::purge`, KI-119) — **trashing a flow does not clear it**, because `FlowRepo`'s delete is soft. A trashed flow's executions are... |
 | `namespace` | string | yes |  |
 | `flow_key` | string | yes | The YAML's own `id`; `flow_id` is taken by the draft's uuid above. |
 | `state` | string | yes | Kestra's wire spelling — `RUNNING`, `SUCCESS`, `FAILED`, … |
@@ -306,6 +310,7 @@ Tasks retrying, paused or not yet started end `KILLED` at once; a running task i
 | `runs` | TaskRunDto[] | yes | Every task run, in `run_ix` order — the executor's creation order. |
 | `can_manage` | boolean | yes | Whether the caller may resume and replay this execution: they hold `workflow:manage` in this workspace. A detail page hides both actions when this is false; the routes still check for themselves. |
 | `effective_labels` | LabelDto[] | yes | What the run sees as `labels`: the flow's, then `labels`, the later key winning. Empty when the frozen source does not parse. |
+| `worker_enabled` | boolean | yes | Whether this deployment runs the workflow worker (`workflow.worker_enabled`, `EGRET_WORKFLOW__WORKER_ENABLED`; off by default). **False: an execution is created and stays `RUNNING`, and nothing runs it until an administrator turns the... |
 
 | Status | Meaning |
 |---|---|
@@ -373,7 +378,7 @@ Run a finished execution again.
 | Field | Type | Required | Description |
 |---|---|---|---|
 | `id` | string (uuid) | yes |  |
-| `flow_id` | string (uuid), nullable | no | The draft this execution came from, and `NULL` only if something outside this crate issued a real `DELETE` — **trashing a flow does not clear it**, because `FlowRepo`'s delete is soft and nothing in `egret-workflow/src` issues a `DELETE... |
+| `flow_id` | string (uuid), nullable | no | The draft this execution came from, and `NULL` once that flow was deleted permanently from the trash (`FlowRepo::purge`, KI-119) — **trashing a flow does not clear it**, because `FlowRepo`'s delete is soft. A trashed flow's executions are... |
 | `namespace` | string | yes |  |
 | `flow_key` | string | yes | The YAML's own `id`; `flow_id` is taken by the draft's uuid above. |
 | `state` | string | yes | Kestra's wire spelling — `RUNNING`, `SUCCESS`, `FAILED`, … |
@@ -400,6 +405,7 @@ Run a finished execution again.
 | `runs` | TaskRunDto[] | yes | Every task run, in `run_ix` order — the executor's creation order. |
 | `can_manage` | boolean | yes | Whether the caller may resume and replay this execution: they hold `workflow:manage` in this workspace. A detail page hides both actions when this is false; the routes still check for themselves. |
 | `effective_labels` | LabelDto[] | yes | What the run sees as `labels`: the flow's, then `labels`, the later key winning. Empty when the frozen source does not parse. |
+| `worker_enabled` | boolean | yes | Whether this deployment runs the workflow worker (`workflow.worker_enabled`, `EGRET_WORKFLOW__WORKER_ENABLED`; off by default). **False: an execution is created and stays `RUNNING`, and nothing runs it until an administrator turns the... |
 
 | Status | Meaning |
 |---|---|
@@ -430,7 +436,7 @@ W7b Task 3 fix round 1, the user's ruling of 2026-10-11, after review found the 
 | Field | Type | Required | Description |
 |---|---|---|---|
 | `id` | string (uuid) | yes |  |
-| `flow_id` | string (uuid), nullable | no | The draft this execution came from, and `NULL` only if something outside this crate issued a real `DELETE` — **trashing a flow does not clear it**, because `FlowRepo`'s delete is soft and nothing in `egret-workflow/src` issues a `DELETE... |
+| `flow_id` | string (uuid), nullable | no | The draft this execution came from, and `NULL` once that flow was deleted permanently from the trash (`FlowRepo::purge`, KI-119) — **trashing a flow does not clear it**, because `FlowRepo`'s delete is soft. A trashed flow's executions are... |
 | `namespace` | string | yes |  |
 | `flow_key` | string | yes | The YAML's own `id`; `flow_id` is taken by the draft's uuid above. |
 | `state` | string | yes | Kestra's wire spelling — `RUNNING`, `SUCCESS`, `FAILED`, … |
@@ -457,6 +463,7 @@ W7b Task 3 fix round 1, the user's ruling of 2026-10-11, after review found the 
 | `runs` | TaskRunDto[] | yes | Every task run, in `run_ix` order — the executor's creation order. |
 | `can_manage` | boolean | yes | Whether the caller may resume and replay this execution: they hold `workflow:manage` in this workspace. A detail page hides both actions when this is false; the routes still check for themselves. |
 | `effective_labels` | LabelDto[] | yes | What the run sees as `labels`: the flow's, then `labels`, the later key winning. Empty when the frozen source does not parse. |
+| `worker_enabled` | boolean | yes | Whether this deployment runs the workflow worker (`workflow.worker_enabled`, `EGRET_WORKFLOW__WORKER_ENABLED`; off by default). **False: an execution is created and stays `RUNNING`, and nothing runs it until an administrator turns the... |
 
 | Status | Meaning |
 |---|---|
@@ -477,6 +484,7 @@ Operation id: `list_flows`. Auth: Session cookie. Forbidden (403): Missing workf
 | `folder_id` | query | string (uuid) | no | List only flows in this folder |
 | `namespace` | query | string | no | List only flows in this namespace |
 | `state` | query | string | no | List only flows in this state (draft, live, disabled) |
+| `trashed` | query | boolean | no | `true` lists only the flows in the trash; absent or `false`, only the others |
 
 **Response 200 (application/json)**: array of `FlowListItemDto`
 
@@ -493,6 +501,7 @@ Operation id: `list_flows`. Auth: Session cookie. Forbidden (403): Missing workf
 | `latest_version` | integer (int32), nullable | no | The flow's highest version number; null when it has none. Versions are snapshots to compare and restore: executions run the saved draft (W7a spec §4, §5.3). |
 | `created_at` | string (date-time) | yes |  |
 | `updated_at` | string (date-time) | yes |  |
+| `deleted_at` | string (date-time), nullable | no | When the flow was moved to the trash; null for a flow that is not in it (KI-119: `GET /flows?trashed=true` lists only these). |
 
 | Status | Meaning |
 |---|---|
@@ -535,6 +544,7 @@ Operation id: `create_flow`. Auth: Session cookie and `X-Egret-CSRF` header. For
 | `updated_at` | string (date-time) | yes |  |
 | `validation` | ValidationReportDto | yes | A flow's validation report, over the wire. Errors block publish; warnings do not — see [`ValidationReport`]'s own doc comment. |
 | `can_manage` | boolean | yes | Whether the caller may save, publish, run and delete this flow: they hold `workflow:manage` in this workspace. An editor opens read-only when this is false; every mutating route still checks for itself. |
+| `worker_enabled` | boolean | yes | Whether this deployment runs the workflow worker (`workflow.worker_enabled`, `EGRET_WORKFLOW__WORKER_ENABLED`; off by default). **False: an execution is created and stays `RUNNING`, and nothing runs it until an administrator turns the... |
 
 | Status | Meaning |
 |---|---|
@@ -635,6 +645,7 @@ Operation id: `get_flow`. Auth: Session cookie. Forbidden (403): Missing workflo
 | `updated_at` | string (date-time) | yes |  |
 | `validation` | ValidationReportDto | yes | A flow's validation report, over the wire. Errors block publish; warnings do not — see [`ValidationReport`]'s own doc comment. |
 | `can_manage` | boolean | yes | Whether the caller may save, publish, run and delete this flow: they hold `workflow:manage` in this workspace. An editor opens read-only when this is false; every mutating route still checks for itself. |
+| `worker_enabled` | boolean | yes | Whether this deployment runs the workflow worker (`workflow.worker_enabled`, `EGRET_WORKFLOW__WORKER_ENABLED`; off by default). **False: an execution is created and stays `RUNNING`, and nothing runs it until an administrator turns the... |
 
 | Status | Meaning |
 |---|---|
@@ -685,6 +696,7 @@ With `if_updated_at`, the save happens only if the draft is still the one the ed
 | `updated_at` | string (date-time) | yes |  |
 | `validation` | ValidationReportDto | yes | A flow's validation report, over the wire. Errors block publish; warnings do not — see [`ValidationReport`]'s own doc comment. |
 | `can_manage` | boolean | yes | Whether the caller may save, publish, run and delete this flow: they hold `workflow:manage` in this workspace. An editor opens read-only when this is false; every mutating route still checks for itself. |
+| `worker_enabled` | boolean | yes | Whether this deployment runs the workflow worker (`workflow.worker_enabled`, `EGRET_WORKFLOW__WORKER_ENABLED`; off by default). **False: an execution is created and stays `RUNNING`, and nothing runs it until an administrator turns the... |
 
 | Status | Meaning |
 |---|---|
@@ -741,7 +753,7 @@ Operation id: `start_flow_execution`. Auth: Session cookie and `X-Egret-CSRF` he
 | Field | Type | Required | Description |
 |---|---|---|---|
 | `id` | string (uuid) | yes |  |
-| `flow_id` | string (uuid), nullable | no | The draft this execution came from, and `NULL` only if something outside this crate issued a real `DELETE` — **trashing a flow does not clear it**, because `FlowRepo`'s delete is soft and nothing in `egret-workflow/src` issues a `DELETE... |
+| `flow_id` | string (uuid), nullable | no | The draft this execution came from, and `NULL` once that flow was deleted permanently from the trash (`FlowRepo::purge`, KI-119) — **trashing a flow does not clear it**, because `FlowRepo`'s delete is soft. A trashed flow's executions are... |
 | `namespace` | string | yes |  |
 | `flow_key` | string | yes | The YAML's own `id`; `flow_id` is taken by the draft's uuid above. |
 | `state` | string | yes | Kestra's wire spelling — `RUNNING`, `SUCCESS`, `FAILED`, … |
@@ -768,6 +780,7 @@ Operation id: `start_flow_execution`. Auth: Session cookie and `X-Egret-CSRF` he
 | `runs` | TaskRunDto[] | yes | Every task run, in `run_ix` order — the executor's creation order. |
 | `can_manage` | boolean | yes | Whether the caller may resume and replay this execution: they hold `workflow:manage` in this workspace. A detail page hides both actions when this is false; the routes still check for themselves. |
 | `effective_labels` | LabelDto[] | yes | What the run sees as `labels`: the flow's, then `labels`, the later key winning. Empty when the frozen source does not parse. |
+| `worker_enabled` | boolean | yes | Whether this deployment runs the workflow worker (`workflow.worker_enabled`, `EGRET_WORKFLOW__WORKER_ENABLED`; off by default). **False: an execution is created and stays `RUNNING`, and nothing runs it until an administrator turns the... |
 
 | Status | Meaning |
 |---|---|
@@ -812,6 +825,31 @@ Operation id: `get_flow_graph`. Auth: Session cookie. Forbidden (403): Missing w
 | 422 | The graph, counted after expansion, has more than 5,000 nodes; the message names the count |
 | 500 | Internal error |
 
+## DELETE `/api/ws/{workspace}/workflows/flows/{id}/permanent`
+
+Operation id: `purge_flow`. Auth: Session cookie and `X-Egret-CSRF` header. Forbidden (403): Missing workflow:manage permission, or the workflows module is disabled for this workspace.
+
+| Parameter | In | Type | Required | Description |
+|---|---|---|---|---|
+| `workspace` | path | string | yes | Workspace slug |
+| `id` | path | string (uuid) | yes | Flow id |
+| `workspace` | path | string | yes |  |
+
+**Response 200 (application/json)**: `Ack`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `ok` | boolean | yes |  |
+
+| Status | Meaning |
+|---|---|
+| 200 | A flow in the trash deleted permanently, with its versions and trigger state; its namespace and id are free again. Its executions are kept |
+| 401 | Not authenticated |
+| 403 | Missing workflow:manage permission, or the workflows module is disabled for this workspace |
+| 404 | No such flow in this workspace |
+| 409 | The flow is not in the trash; move it there first |
+| 500 | Internal error |
+
 ## POST `/api/ws/{workspace}/workflows/flows/{id}/publish`
 
 Operation id: `publish_flow`. Auth: Session cookie and `X-Egret-CSRF` header. Forbidden (403): Missing workflow:manage permission, or the workflows module is disabled for this workspace, or the flow calls secret() and the caller lacks workflow:use_secrets.
@@ -848,6 +886,46 @@ Operation id: `publish_flow`. Auth: Session cookie and `X-Egret-CSRF` header. Fo
 | 401 | Not authenticated |
 | 403 | Missing workflow:manage permission, or the workflows module is disabled for this workspace, or the flow calls secret() and the caller lacks workflow:use_secrets |
 | 404 | No such flow in this workspace, or a task references an object that does not exist or belongs to another workspace |
+| 500 | Internal error |
+
+## POST `/api/ws/{workspace}/workflows/flows/{id}/restore`
+
+Operation id: `restore_flow`. Auth: Session cookie and `X-Egret-CSRF` header. Forbidden (403): Missing workflow:manage permission, or the workflows module is disabled for this workspace.
+
+| Parameter | In | Type | Required | Description |
+|---|---|---|---|---|
+| `workspace` | path | string | yes | Workspace slug |
+| `id` | path | string (uuid) | yes | Flow id |
+| `workspace` | path | string | yes |  |
+
+**Response 200 (application/json)**: `FlowDto`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `id` | string (uuid) | yes |  |
+| `folder_id` | string (uuid), nullable | no |  |
+| `namespace` | string | yes |  |
+| `flow_id` | string | yes |  |
+| `source` | string | yes |  |
+| `plan` | object | yes |  |
+| `state` | string | yes |  |
+| `live_version_id` | string (uuid), nullable | no |  |
+| `created_by` | string (uuid), nullable | no |  |
+| `created_by_name` | string, nullable | no | The creator's display name: the profile name, else the email. Null when `created_by` is null or the user no longer exists (W7a spec §7.4). |
+| `latest_version` | integer (int32), nullable | no | The flow's highest version number; null when it has none. Versions are snapshots to compare and restore: executions run the saved draft (W7a spec §4, §5.3). |
+| `created_at` | string (date-time) | yes |  |
+| `updated_at` | string (date-time) | yes |  |
+| `validation` | ValidationReportDto | yes | A flow's validation report, over the wire. Errors block publish; warnings do not — see [`ValidationReport`]'s own doc comment. |
+| `can_manage` | boolean | yes | Whether the caller may save, publish, run and delete this flow: they hold `workflow:manage` in this workspace. An editor opens read-only when this is false; every mutating route still checks for itself. |
+| `worker_enabled` | boolean | yes | Whether this deployment runs the workflow worker (`workflow.worker_enabled`, `EGRET_WORKFLOW__WORKER_ENABLED`; off by default). **False: an execution is created and stays `RUNNING`, and nothing runs it until an administrator turns the... |
+
+| Status | Meaning |
+|---|---|
+| 200 | Flow restored from the trash, with its source, state and versions; its schedules start at their next tick |
+| 401 | Not authenticated |
+| 403 | Missing workflow:manage permission, or the workflows module is disabled for this workspace |
+| 404 | No such flow in this workspace |
+| 409 | The flow is not in the trash |
 | 500 | Internal error |
 
 ## GET `/api/ws/{workspace}/workflows/flows/{id}/triggers`

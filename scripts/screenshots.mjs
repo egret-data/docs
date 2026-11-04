@@ -55,6 +55,8 @@ if (STATE) await ctx.storageState({path: STATE});
 
 for (const s of shots) {
   if (s.id === 'login' || !wanted(s.id)) continue;
+  // A shot that sets a taller viewport in prepare() must not leak it into the next one.
+  await page.setViewportSize({width: 1440, height: 900});
   await page.goto(`${BASE}${s.path}`, {waitUntil: 'networkidle'});
   if (s.prepare) await s.prepare(page);
   await page.waitForTimeout(s.settle ?? 800);

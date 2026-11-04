@@ -60,19 +60,20 @@ with a dataset, charts and a dashboard on Trino's `tpch` sample data. Sign in at
 
 ### Why does the server not start after I copied `.env.example`?
 
-`.env.example` does not set the object-store credentials, and the server requires them even if you never use object storage:
-`the apps API requires [storage] bucket, access_key, secret_key`. Add `EGRET_STORAGE__BUCKET`, `EGRET_STORAGE__ACCESS_KEY` and
-`EGRET_STORAGE__SECRET_KEY`. See the [Quick start](./get-started/quick-start).
+A copy of `.env.example` passes the server's startup checks (a test in the repository keeps it so). If the server still
+refuses with `the apps API requires [storage] bucket, access_key, secret_key`, a variable was removed or misspelled: the log
+shows a `WARN` with *ignored environment variable …* for a name it does not know. Also check that the dependencies run
+(`just up`) and that the `warehouse` bucket exists. See the [Quick start](./get-started/quick-start).
 
 ### What is the administrator password?
 
-The one `egret init` printed, or the one you set with `EGRET_ADMIN_PASSWORD`. The Helm chart's default is `Admin12345!` and
+The one `egret init` generated and printed, or the one you set with `EGRET_ADMIN_PASSWORD` (`init` does not print that one). The Helm chart's default is `Admin12345!` and
 you should change it. On the demo stack it is `Admin12345!` for `admin@egret.local`. See [First login tour](./get-started/first-login-tour).
 
 ### Where do I register a database?
 
-Under **Manage → Workspace settings → Engines**, not under Explore. See [Your first dashboard](./get-started/first-dashboard) and
-[Databases](./workspace-settings/databases).
+Under **Manage → Workspace settings → Connections**, not under Explore. See [Your first dashboard](./get-started/first-dashboard) and
+[Connections](./workspace-settings/databases).
 
 ### Why can I not save a connection with a password?
 
@@ -83,7 +84,8 @@ Under **Manage → Workspace settings → Engines**, not under Explore. See [You
 
 ### Why do I get *429 Too Many Requests* at sign-in?
 
-Local sign-in allows 5 attempts per 5 minutes, and successful attempts count. Wait for the window to pass. See [Cannot sign
+Five failed local sign-ins within 5 minutes lock that address and email out for 5 minutes. The sign-in page says how long
+to wait, and the response carries `Retry-After`. Successful sign-ins do not count. See [Cannot sign
 in](./deploy-operate/troubleshooting/cannot-sign-in).
 
 ### I signed in with SSO and can see nothing. Why?
@@ -105,10 +107,10 @@ OAuth2 client-credentials flow to get a bearer token. See [Data API clients](./d
 
 ## Running queries
 
-### Creating a dataset fails with *502 Bad Gateway*. Why?
+### Creating a dataset fails with *Trino refused the X-Forwarded-Proto header*. Why?
 
-If the engine is Trino you run yourself, it answered HTTP 406 because Egret sends `X-Forwarded-Proto`. Set
-`http-server.process-forwarded=true` on Trino. See [Engine 406 and 502 errors](./deploy-operate/troubleshooting/engine-406-502).
+The engine is a Trino you run yourself, and it answered HTTP 406 because Egret sends `X-Forwarded-Proto` over plain HTTP. Set
+`http-server.process-forwarded=true` in the coordinator's `config.properties`, or connect over https. See [Engine 406 and 502 errors](./deploy-operate/troubleshooting/engine-406-502).
 
 ### Why are there only 1,000 rows?
 
@@ -124,8 +126,8 @@ as `SUM(revenue)`. See [Your first dashboard](./get-started/first-dashboard#4-ad
 
 ### My workflow execution stays in *Running* forever. Why?
 
-The workflow worker is off by default. Set `EGRET_WORKFLOW__WORKER_ENABLED=true`, and `EGRET_WORKFLOW__SCHEDULER_ENABLED=true`
-for schedules and triggers. See [Workflows stuck](./deploy-operate/troubleshooting/workflows-stuck).
+The workflow worker is off by default; the flow page, the Run dialog and the execution then say *The workflow worker is off on
+this server*. Set `EGRET_WORKFLOW__WORKER_ENABLED=true`, and `EGRET_WORKFLOW__SCHEDULER_ENABLED=true` for schedules and triggers. See [Workflows stuck](./deploy-operate/troubleshooting/workflows-stuck).
 
 ## Operating
 
@@ -154,8 +156,41 @@ by default). See [Audit log](./control-plane/audit-log).
 
 ### Does StarRocks enforce tag-based masking?
 
-Not through its Ranger plugin, which supports resource-based policies only. Tag-based masks and row filters are enforced on
-Trino. See [Engines and Ranger setup](./deploy-operate/engines-and-ranger#starrocks).
+Its Ranger plugin supports resource-based policies only, so egret compiles each rule and clearance by classification into
+resource policies for the columns and tables that carry the classification. Masks, row filters and clearances by
+classification are enforced on StarRocks this way, on a column or on a whole table; hand-written tag policies are not. See
+[Engines and Ranger setup](./deploy-operate/engines-and-ranger#starrocks) and [Clearance](./data-governance/classifications/clearance#on-columns-or-on-a-whole-table).
+
+### What happens to classifications when I rename or drop a table?
+
+A rename through egret's Iceberg catalog takes the classifications with it, on the table and on its columns. egret holds the
+rename until the engines serve them under the new name, which takes up to 90 seconds, and refuses it with a 409 if it cannot.
+A drop keeps them for an undrop, and a recursive namespace drop removes them. See [Renames and drops](./data-governance/classifications/tagging#renames-and-drops).
+
+### What happens to grants and rules when I rename a table?
+
+A rename through egret's Iceberg catalog copies the table's deny grants, masks and row filters to the new name before the
+catalog commits it, and keeps the originals on the old name, so a new table there is still restricted. Allow grants and catalog
+grants move to the new name after the commit; for up to about two policy polls an allow holder can be refused on the new name
+(KI-317). A restriction written with a pattern that the new name escapes, or a hand-written policy that names the table with a
+deny, mask, row filter or exclusion list, or reaches it through a pattern the new name escapes, makes the rename fail with a
+409 that names it. A view rename carries the view's grants, rules and catalog grants the same way. See [Renames and drops](./data-governance/data/grants#renames-and-drops).
+
+### Why is a catalog client refused a rename or a commit that its grant seems to allow?
+
+egret authorizes a rename and a commit by the tables they change. A rename needs `write` on the source table, as a drop
+would, and a `catalog` or `namespace` grant on the destination namespace, as a create would; a grant on the destination
+table name is not enough. A commit needs `write` on the table its body names, and a multi-table commit on every table in it.
+A recursive namespace drop needs a `catalog`-level grant. Grants match names case-insensitively, as the catalog does. See
+[What each operation needs](./control-plane/catalogs/catalog-detail#what-each-operation-needs).
+
+### Why can a catalog client read a table but not write to it, with *access denied* from the object store?
+
+The storage credentials the catalog vends follow the client's grant. A role with only `read` on the table (or on its
+namespace or the catalog) gets read-only credentials, so it can scan the table but its writes fail at the object store
+when it uploads the first file; PyIceberg reports `ACCESS_DENIED during CreateMultipartUpload`. Give the role `write` on the
+table, its namespace or the catalog. Engines provisioned by egret hold `catalog · manage` and are not affected. See
+[Storage credentials follow the grant](./control-plane/catalogs/catalog-detail#storage-credentials-follow-the-grant).
 
 ### Why did my StarRocks policies stop applying after a restart?
 

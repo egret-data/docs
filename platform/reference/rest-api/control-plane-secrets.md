@@ -32,6 +32,7 @@ Operation id: `list`. Auth: Session cookie. Forbidden (403): Missing secret:read
 | `used_by` | integer (int64) | yes |  |
 | `type` | string | yes |  |
 | `keys` | string[] | yes |  |
+| `system_managed` | boolean | yes | Minted and managed by egret for an engine or a catalog: it cannot be renamed, rotated or deleted here, and pickers leave it out (KI-207). |
 
 | Status | Meaning |
 |---|---|
@@ -65,6 +66,7 @@ Operation id: `create`. Auth: Session cookie and `X-Egret-CSRF` header. Forbidde
 | `used_by` | integer (int64) | yes |  |
 | `type` | string | yes |  |
 | `keys` | string[] | yes |  |
+| `system_managed` | boolean | yes | Minted and managed by egret for an engine or a catalog: it cannot be renamed, rotated or deleted here, and pickers leave it out (KI-207). |
 
 | Status | Meaning |
 |---|---|
@@ -104,6 +106,7 @@ Operation id: `update`. Auth: Session cookie and `X-Egret-CSRF` header. Forbidde
 | `used_by` | integer (int64) | yes |  |
 | `type` | string | yes |  |
 | `keys` | string[] | yes |  |
+| `system_managed` | boolean | yes | Minted and managed by egret for an engine or a catalog: it cannot be renamed, rotated or deleted here, and pickers leave it out (KI-207). |
 
 | Status | Meaning |
 |---|---|
@@ -112,7 +115,7 @@ Operation id: `update`. Auth: Session cookie and `X-Egret-CSRF` header. Forbidde
 | 401 | Not authenticated |
 | 403 | Missing secret:update permission |
 | 404 | No such secret |
-| 409 | The new name clashes with an existing secret |
+| 409 | The new name clashes with an existing secret, or the secret is managed by egret |
 | 500 | Internal error |
 
 ## DELETE `/api/control-plane/secrets/{id}`
@@ -135,6 +138,6 @@ Operation id: `remove`. Auth: Session cookie and `X-Egret-CSRF` header. Forbidde
 | 401 | Not authenticated |
 | 403 | Missing secret:delete permission |
 | 404 | No such secret |
-| 409 | Secret is still referenced by one or more connections |
+| 409 | Secret is still referenced by one or more connections, or is managed by egret |
 | 500 | Internal error |
 

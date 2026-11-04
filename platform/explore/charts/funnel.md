@@ -25,12 +25,12 @@ A funnel shows how a quantity falls from one stage of a process to the next: vis
 | **Dataset** | The dataset to read. |
 | **Stage (dimension)** | The column holding the stage names. Required. A time column gets a **Group … by** select. |
 | **Metric** | The value at each stage. Required. |
-| **Steps** | The stages in display order, with a show/hide switch each. Appears after the chart has run. |
+| **Steps** | The stages in display order, with a show/hide switch each. Lists the stages after the chart has run; before that it says when they will appear. |
 | **Sort**, **Row limit** | Query controls. |
 
 ### Steps
 
-Drag a stage's handle to change its order and use its switch to leave it out. The note under the list says **A funnel reads left to right in this order — it is not re-sorted by size.** Until you reorder, stages appear in the order the query returned them, so add a **Sort** or reorder the steps; otherwise the stage order follows whatever the database returns. Stage names show with the dimension's column format, but the list's names cannot be edited.
+Before the first run, once a stage column is chosen, the section says *The steps appear here after the first run, to reorder or hide. Until they are ordered here or by a sort, the funnel shows them in the order the database returns them.* After a run it lists the stages. Drag a stage's handle to change its order and use its switch to leave it out. The note under the list says **A funnel reads left to right in this order — it is not re-sorted by size.** Until you reorder, stages appear in the order the query returned them, so add a **Sort** or reorder the steps; otherwise the stage order follows whatever the database returns. Stage names show with the dimension's column format, but the list's names cannot be edited.
 
 ## Display
 
@@ -47,13 +47,13 @@ One row for the dimension and one for the metric. See [Column formatting and num
 
 ## Reading the funnel
 
-- The first stage is the reference. It shows its name, its value in large type and the metric name, and every later stage shows a percentage of it, for example **65.32 %** for 8,100 of 12,400.
+- The first stage is the reference. It shows its name, its value in large type and the metric's title (your **Column title**, else the dataset's **Display name**, else the database name: **Visitors**, as the **Metric** picker shows it), and every later stage shows a percentage of it, for example **65.32 %** for 8,100 of 12,400.
 - The height of each band follows the stage's value relative to the **largest** stage, and the bands fade from dark to light along the funnel.
 - Hiding a stage with its switch removes it from the funnel, and the percentages are recomputed against the new first stage.
 
 ![The same data as a Bar funnel, one column per stage](/img/platform/charts/funnel-bar.png)
 
-With **Bar — a column per step**, each stage is a column on a bar chart with its own legend entry, which is easier to read when stages are many or the values very different.
+With **Bar — a column per step**, each stage is a column on a bar chart with its own legend entry, which is easier to read when stages are many or the values very different. The stage names under the columns follow the same fit rule as a bar chart's X axis: all of them are drawn, upright or rotated, or none when they cannot all fit.
 
 ## Settings at a glance
 
@@ -72,6 +72,7 @@ There is no **Axes** tab.
 - The percentage under each stage is relative to the **first stage in the displayed order**, not to the previous stage.
 - Stage names cannot be renamed here; rename or alias them in the dataset or the query.
 - Clicking a stage opens the drill menu for that stage.
+- **.png** export is offered only with **Bar — a column per step**. The default funnel is not drawn as one image, so it offers **.csv**, **.xlsx** and **.json** only.
 
 ## Further reading
 

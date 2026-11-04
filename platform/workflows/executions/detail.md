@@ -21,11 +21,11 @@ Open an execution to see what happened in a run: its inputs, the tasks that ran 
 | **Replayed from** | Appears on a replay, with the id of the original. A child execution shows its parent instead. |
 | Buttons | **Resume**, **Replay** and **Kill**, each only when it applies. See [Run actions](./actions.md). |
 
-While an execution is not finished, the page polls and updates itself every two seconds. It stops when the execution ends. **Replay** stays disabled until then, with the reason *Replay is available when the execution has finished*.
+While an execution is not finished, the page polls and updates itself every two seconds. It stops when the execution ends. Until then the header offers only the actions that apply to an unfinished execution (**Kill**, and **Resume** when it is paused); **Replay** appears once the execution has finished, as **Kill** disappears.
 
 ![A running execution: the Duration counts up, the Sleep task is Running and the next task has not started](/img/platform/workflows/execution-running.png)
 
-In the topology of a running execution, a task that has not started yet is labelled *Not run*, the same words as a skipped branch on a finished run.
+In the topology of a running execution, a task that has not started yet is labelled *Not started* (on the graph, the collapsed card, the list view, and the note when you select it: *export has not started yet in this execution.*). On a finished execution, a task with no run is labelled *Not run*, as for a branch that was not taken.
 
 ## Overview
 
@@ -39,8 +39,8 @@ The **Overview** tab is the summary. Its sections:
 
 ![A loop's execution lists one child execution per value](/img/platform/workflows/execution-children.png)
 
-:::warning Secret inputs are visible
-A `SECRET` input is stored with the execution and shown here as plain text. See [Inputs and outputs](../flows/inputs-and-outputs.md).
+:::note Secret inputs
+A `SECRET` input shows `******` here, in the logs and in every API answer; the real value is stored encrypted and used only by the tasks. Task outputs are not masked. See [Secret inputs](../flows/inputs-and-outputs.md#secret-inputs).
 :::
 
 ## Topology

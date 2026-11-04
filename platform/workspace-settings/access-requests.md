@@ -32,7 +32,7 @@ Each request shows the requester's email, the requested role, how long ago they 
 ### Approve
 
 1. Press **Approve**. The dialog **Approve request** says *Add \<email\> to the workspace.*
-2. Keep the requested **Role** or choose another.
+2. Keep the requested **Role** or choose another. The picker lists the workspace's roles, as on [Roles & permissions](./roles-and-permissions.md).
 3. Optionally set **Access expires**. *Optional — leave blank for no expiry.*
 4. Press **Confirm**. A toast says *Request approved*.
 

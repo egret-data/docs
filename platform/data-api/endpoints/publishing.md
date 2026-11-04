@@ -6,7 +6,7 @@ sidebar_position: 8
 
 Consumers never see your draft. They see a **version**: a frozen snapshot of the endpoint's contract (SQL, parameters, response settings, cache, limits and rate limit) taken when you press **Publish**. You can edit the draft as much as you like without affecting anyone, and go back to an earlier version in one click.
 
-![The Versions tab of Orders by status: v2 Live with a 1 breaking change badge over its note, and v1 with Roll back](/img/platform/data-api/endpoint-versions.png)
+![The Versions tab of Orders by status: v2 Live with a 1 breaking change badge beside its note, and v1 with Roll back](/img/platform/data-api/endpoint-versions.png)
 
 ## Publish an endpoint
 
@@ -31,7 +31,7 @@ The **Versions** tab, **History** table, lists every version, newest first.
 |---|---|
 | **Version** | `v1`, `v2` …, with a **Live** badge on the one being served. A version published with breaking changes shows a badge such as **1 breaking change** (hover for the detail). A version compared against something other than its predecessor is marked *compared against vN*. |
 | **Note** | The note you wrote when publishing. |
-| **Who** | Who published it. |
+| **Who** | Who published it: the publisher's profile name, else their email, for everyone who can open the tab. A shortened user id is shown only when that account no longer exists. |
 | **When** | When, as a relative time. |
 | Action | **Roll back** on every version except the live one. |
 
@@ -59,9 +59,11 @@ Under the hood the acknowledgement is a token that `POST …/validate` issues fo
 
 The version row keeps the record. **1 breaking change** on `v2` of the walk-through endpoint *Orders by status* shows that someone acknowledged the removal of the `orders` column.
 
-:::caution Changing the path moves the live URL
-Saving a new **Path** changes the URL served at once, before any publish. See [Endpoints](../endpoints#the-editor). Treat it as breaking even though it only becomes visible as such when you publish.
-:::
+### A new method or path
+
+A new method or path takes effect when you publish, not when you save it. Until then the endpoint is served on its live URL, which the generated OpenAPI document and **Try it** use too. On publish the new URL starts serving and the old one answers `404 not_found`. There is no redirect, so tell your callers before you publish.
+
+Only one endpoint can be served at a URL. An endpoint keeps its published URL until it is published again, even when its draft has moved on. Publishing a second endpoint at that URL is refused with `409 conflict`: *another endpoint in this workspace is served at GET /x; an endpoint keeps its published URL until it is published again, so choose another path or publish the move of the endpoint that holds it first*. A disabled or trashed endpoint keeps its claim on its URL.
 
 ## Roll back
 
@@ -76,6 +78,8 @@ Rolling back makes an earlier version the live one again. Consumers calling the 
 A message confirms *Rolled back to vN*. Nothing is deleted. The draft is untouched, so the header may read **Live · v1 · unpublished changes** when the draft is ahead of the version being served.
 
 Rollback re-checks the rules whose inputs are live now, such as whether the connection is governed, and refuses if the old version could not be served safely today.
+
+The rolled-back version is served at the URL it was published at. If its method or path differs from the current one, callers must switch URLs. A rollback is refused with `409 conflict` when another endpoint is now served at that URL.
 
 ## Pin a consumer to a version
 
@@ -104,8 +108,7 @@ An endpoint in the trash cannot be edited, published, rolled back, enabled or di
 ## Limits and known issues
 
 - The **Roll back** button needs the endpoint to be out of the trash.
-- Saving a changed **Path** moves live traffic before publish.
-- The breaking-change badge can overlap the version's note text in a narrow **Version** column.
+- A draft can be saved at a URL that another endpoint still serves; only its publish is refused.
 
 ## Further reading
 

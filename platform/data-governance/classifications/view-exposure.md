@@ -6,9 +6,9 @@ sidebar_position: 3
 
 A classification's clearance stops a direct read of a classified column. A **view** reads the same data indirectly, so without more care it could read straight through the clearance. The tag page shows, per classification, the views that read classified data and what the engine does about them. This page explains those sections and what clearance does and does not protect through views.
 
-![The View exposure tab of Personal data (PII): no materialized views, and one DEFINER view whose lineage could not be computed](/img/platform/admin/gov-tag-exposure.png)
+![The Views tab of Personal data (PII): no materialized views, and one DEFINER view, revenue_by_country, whose cleared owner reads classified data](/img/platform/admin/gov-tag-exposure.png)
 
-The sections need **tag:read**. They are on the **View exposure** tab of a tag's page in **Governance → Classifications**.
+The sections need **tag:read**. They are on the **Views** tab of a tag's page in **Governance → Classifications**.
 
 ## What is protected
 
@@ -21,8 +21,9 @@ The sections need **tag:read**. They are on the **View exposure** tab of a tag's
 ### StarRocks
 
 - A column carries a clearance mask: **Nullify** for an uncleared user. A direct read returns `NULL` for that column, provided the query also reads another column the user may select.
+- A table that carries the classification as a whole gets the same mask on every column, plus a select deny on the table: an uncleared user is refused every direct read of it and reads `NULL` through a view. Egret rewrites the masks when the table's columns change (see [Clearance](./clearance.md#on-columns-or-on-a-whole-table)).
 - A base-column mask applies through plain and nested views, so an uncleared reader gets `NULL`. Through an INVOKER view the uncleared reader is refused.
-- New materialized views are denied on a StarRocks profile with a classified column, because a materialized view stores real values and a mask does not follow stored data.
+- New materialized views are denied on a StarRocks profile with a classified column or a classified table, because a materialized view stores real values and a mask does not follow stored data.
 
 ## What is not protected
 
@@ -74,7 +75,7 @@ A view change on a catalog whose profile has a classified column is held until t
 
 ## Limits and known issues
 
-- On the demo stack the view `demo_warehouse.analytics.revenue_by_country` (a DEFINER view over the tagged `sessions` table) is listed with *clearance unknown* and *may read classified data*, because egret could not compute its lineage: reading the view through the engine was refused (*Access Denied: Cannot access catalog demo_warehouse*). The row says *lineage could not be computed; egret has not judged this view. Run the lineage sweep, whose report names the reason.* The console has no button for the sweep; it is the API call `POST /api/control-plane/classifications/lineage-sweep`.
+- A view whose lineage egret could not compute is listed with *clearance unknown* and *may read classified data*. The row says *lineage could not be computed; egret has not judged this view. Run the lineage sweep, whose report names the reason.* The console has no button for the sweep; it is the API call `POST /api/control-plane/classifications/lineage-sweep`. Lineage is computed only through a provisioned Trino engine in JWT delegation mode (see [Lineage](../lineage.md#how-egret-computes-lineage)); on the demo stack, the sweep through such an engine recorded the lineage of `demo_warehouse.analytics.revenue_by_country`.
 - A view created before its base table was tagged waited no time; the hold applies only once the catalog has a classified column.
 - The Trino list has a 15 second deadline. If egret's views cannot all be read, the page shows an error instead of a partial list.
 

@@ -24,9 +24,9 @@ The new column appears at the bottom of the table with a *calculated* tag and a 
 Before saving, Egret asks the engine to run `SELECT <your formula> AS _egret_expr FROM <the dataset's source>` with no rows, and uses the answer to learn the column's type.
 
 - An empty formula, or one with a semicolon outside quotes (a second statement), is refused with *expression must be a single statement*.
-- A formula the engine cannot parse or resolve is refused with the engine's message, shown in an error toast, for example `engine: line 2:24: mismatched input '*'. Expecting: <expression>`. The line number counts the line Egret adds in front.
+- A formula the engine cannot parse or resolve is refused with the engine's message, shown in an error toast, for example `engine: line 1:24: mismatched input '*'. Expecting: <expression>`. The position counts from the start of the check query (`SELECT <formula> …`), so the column number is larger than the position in your formula.
 - A name that is already taken is refused with *column name already exists*.
-- An empty name or formula shows *Name and expression required* in the dialog.
+- An empty name or formula shows *Name and expression required* in the dialog. Through the API, a name that is empty or only spaces is refused with *column name is required*.
 
 The inferred type decides the icon and the format choices. A formula that returns a date or timestamp turns **Time** on automatically.
 
@@ -58,7 +58,9 @@ The other settings of a calculated column (role, switches, format, display name,
 
 ## Delete a calculated column
 
-Press **Delete** on its row. The column is removed immediately, with no confirmation. Charts that group by or filter on it will fail until you edit them, so check the dataset's [Usage](./usage-and-preview#usage) tab first.
+Press **Delete** on its row. A dialog asks *Delete calculated column “name”?* and says *Charts that use this column will stop running until it is removed from them. This cannot be undone.* Type `delete` and press **Delete column**. The toast says *Deleted column name*.
+
+The dialog does not list the charts that use the column, so check the dataset's [Usage](./usage-and-preview#usage) tab first.
 
 ## How calculated columns behave
 
@@ -71,7 +73,7 @@ Press **Delete** on its row. The column is removed immediately, with no confirma
 
 - A formula can only be a single line in the **Add** dialog. The **Edit** dialog is multi-line.
 - Calculated columns cannot reference each other.
-- Deleting one does not warn you about charts that use it.
+- Deleting one asks for confirmation but does not name the charts that use it.
 
 ## Further reading
 

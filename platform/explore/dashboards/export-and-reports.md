@@ -19,7 +19,7 @@ You can take a dashboard's data out of Egret in three ways: download the data of
 | **.csv** | A comma-separated file with a header row. Values that contain commas, quotes or line breaks are quoted. |
 | **.xlsx** | An Excel workbook. Numbers and dates keep their types. |
 | **.json** | A list with one object per row, keyed by the column headers. |
-| **.png** | A picture of the chart as it is drawn on the card. Offered only for cards that draw a chart, not for tables. |
+| **.png** | A picture of the chart as it is drawn on the card. Offered only for cards drawn as one chart image: not for a table, pivot table, Big number, Progress, Trend, Object detail or the default funnel. See [Export](../charts/the-chart-editor#export) for the full list. |
 
 **Keep the data formatted** is on by default. On, the file has the values as the card shows them, for example "September 6, 2026" and "$187.50". Off, it has the raw values, for example `2026-09-06` and `187.50`. The hint under the checkbox changes with the choice. The checkbox does not apply to PNG.
 
@@ -29,9 +29,7 @@ The file is named after the card title, with the characters `\ / : * ? " < > |` 
 
 The download is built in your browser from the result already shown on the card, so it reflects the dashboard filters you have applied and any rename or format set in the card's visualization settings. Nothing is queried again.
 
-:::note
-The popover says "The maximum download size is 1 million rows." The result a card holds is limited by the chart's row limit, which Egret caps at 10,000 rows, so a file never has more rows than the card loaded.
-:::
+For the table formats the popover says "The maximum download size is 10,000 rows." The result a card holds is limited by the chart's row limit, which Egret caps at 10,000 rows, so a file never has more rows than the card loaded.
 
 The download button is not shown while the card is loading, has an error, is blocked by a required filter, or returned no columns. It is not shown in edit mode.
 
@@ -61,22 +59,28 @@ This page is for the rendering service, not for people. It has no navigation and
 
 What the page draws:
 
-- the dashboard name as the page title, then **one block per chart card**, in the dashboard's card order, each with the chart's name and the chart in a box 384 px high;
+- the dashboard name as the page title, then **one block per chart card**, in the dashboard's card order, each with the chart's name and the chart. A chart is drawn in a box 384 px high and cut off at its bottom edge if it is taller; a table, pivot table or object detail card gets a box as tall as its rows, so it never runs into the next card. The table itself still stops at its own maximum height (60 % of the renderer's window) and shows its *Showing N rows* line, so a long table is cut off inside its card;
 - the chart as saved, with filters set to each filter's **default value** (a report has nobody to choose values), including date windows relative to the moment of rendering;
 - nothing for heading, text, link and iframe cards, and nothing for tabs: all tabs' chart cards are stacked together;
-- the chart's name and settings, not the card's title override or visualization override.
+- the chart's name and settings, not the card's title override or visualization override. Columns are named and formatted as on the dashboard: the dataset's **Display names** and column formats apply under the chart's own settings, and a **Column title** set in the chart still wins. A chart whose dataset is outside the report's workspace is drawn with its own settings only.
+
+The size of the page depends on the format:
+
+- A **PDF** is printed on **A4** sheets. The renderer opens the page exactly as wide as the sheet (794 px), so the layout prints at full size and is not shrunk to fit. A single object gets 10 mm margins at the top and bottom; when it is taller than a sheet it continues on the next one. In a PDF of several objects each object is captured at the sheet's width and placed on a sheet of its own, and an object taller than one sheet is scaled down to fit it. A PDF ignores **Image width (px)** and **Image height (px)**.
+- A **PNG** keeps the requested width: 1200 px for a dashboard and 800 px for a chart, or **Image width (px)** when an alert attachment sets both sizes. The picture is as tall as the page's content.
 
 The page tells the renderer it is ready only when every chart has finished drawing and fonts have loaded, so images are not captured half-drawn. If a chart fails to draw or the data cannot be fetched, the page stays blank and the render is reported as failed rather than delivering a partial image.
 
-This is what a PDF of **Sales performance** (two tabs, a heading, a text card and six chart cards, filters with defaults) looked like on the demo stack: the title *Sales performance*; the cards **Revenue trend**, **Revenue by priority** and **Priority mix** on the first sheet and **Top clerks** and **Largest orders** (from the **Orders** tab) on the second; the line chart starting in January 1995 because the **Order date** filter defaults to 1995–1996; no heading or text card; and **Top clerks** under the chart's name, not the card title "Top 10 clerks". A table taller than its 384 px box ran past the bottom of the box (KI-168). The whole render took about 20 seconds.
+This is what a PDF of **Sales performance** (two tabs, a heading, a text card and six chart cards, filters with defaults) looked like on the demo stack before platform #754 laid PDFs out at the sheet's width (where the sheets break and how many table rows fit has changed since): the title *Sales performance*; the cards **Revenue trend**, **Revenue by priority** and **Priority mix** on the first sheet and **Top clerks** and **Largest orders** (from the **Orders** tab) on the second; the line chart starting in January 1995 because the **Order date** filter defaults to 1995–1996; no heading or text card; and **Top clerks** under the chart's name, not the card title "Top 10 clerks". The **Largest orders** table had a sheet of its own, inside its card, with the first 26 of its 50 rows and the line *Showing 50 rows*. The whole render took about 20 seconds.
 
 ## Limits and known issues
 
 - There is no whole-dashboard export button; reports (PNG, PDF) are the way to get the dashboard as one file.
 - Rendered reports ignore card title and visualization overrides, text cards and tabs.
 - The download popover's row limit text does not match the real limit (10,000 rows).
-- PNG and PDF report rendering needs the rendering service. A large dashboard takes about 20 seconds to render, and a multi-dashboard PDF fails when the renders together exceed 30 seconds (KI-167).
-- A table card overflows its box on the rendered page (KI-168).
+- PNG and PDF report rendering needs the rendering service. A large dashboard takes about 20 seconds to render. Egret allows 30 seconds per dashboard plus 30 seconds for the whole render, and a page that does not finish drawing within 20 seconds fails.
+- A table card in a PNG or PDF report shows only the rows that fit the table's own maximum height; use a CSV report for every row.
+- A PDF is always A4: there is no choice of paper size or orientation.
 
 ## Further reading
 

@@ -24,16 +24,31 @@ Choose how often the item runs. The form builds a cron expression from your choi
 
 An N-hour schedule counts from midnight, so every four hours runs at 00:30, 04:30, 08:30 and so on. Monthly stops at day 28 so the schedule exists in every month.
 
-A new item defaults to **Daily** at `09:00`. The line under the form shows what you chose, for example *Runs 0 9 * * * in Asia/Saigon*, with a link **Write the cron expression instead**.
+A new item defaults to **Daily** at `09:00`. The line under the form shows what you chose in words, with the cron expression beside them and the timezone, for example *Runs every day at 09:00 (`0 9 * * *`) in Asia/Saigon.*, and a link **Write the cron expression instead**.
 
 ### Cron expression
 
-The link switches to a **Cron expression** box. It takes five fields, as in crontab: minute, hour, day-of-month, month, day-of-week. Use it for a schedule the form cannot express, such as every weekday at 08:30 (`30 8 * * 1-5`). An invalid expression is refused when you save: `invalid crontab: Invalid pattern: Pattern must have between 5 and 7 fields.` An existing item that was saved with a custom expression opens in this box.
+The link switches to a **Cron expression** box. It takes five fields, as in crontab: minute, hour, day-of-month, month, day-of-week. Use it for a schedule the form cannot express, such as every weekday at 08:30 (`30 8 * * 1-5`). An invalid expression is refused when you save: `invalid crontab: Invalid pattern: Pattern must have between 5 and 7 fields.` An existing item that was saved with a custom expression opens in this box. While the expression is one Egret can put into words, the line under the box says it, for example *Runs every Monday to Friday at 08:30 (`30 8 * * 1-5`) in Asia/Ho_Chi_Minh.*
 
-The list shows each item's schedule in words (`Every 15 minutes`, `Every day at 08:00`) and its **Next run**.
+### How a schedule is shown
+
+The list, the item's page header (**Runs**) and the editor's line describe a schedule with the same words:
+
+| Cron | Shown as |
+|---|---|
+| `*/15 * * * *` | *Every 15 minutes* |
+| `0 * * * *` | *Every hour at minute 0* |
+| `15 */6 * * *` | *Every 6 hours, at minute 15* |
+| `0 8 * * *` | *Every day at 08:00* |
+| `30 8 * * 1-5` | *Every Monday to Friday at 08:30* |
+| `0 8 * * 1,3,5` | *Every Monday, Wednesday, and Friday at 08:00* |
+| `0 9 1 * *` | *Every month on day 1 at 09:00* |
+| `0 8 1 1 *` | *Every year on 1 January at 08:00* |
+
+An expression that has no plain wording is shown as written, for example a list of minutes or hours (`0,30 * * * *`), a day of the month together with a weekday, or a range in the day-of-month field. The words never guess: when in doubt, you see the cron itself. In the list, hover the schedule for the raw expression; the list also shows each item's **Next run**.
 
 :::note
-The scheduler checks for due items on a fixed interval, 30 seconds by default (`automation.tick_interval_secs`). An item runs at its next tick after it becomes due, so a run can start up to one interval late. Items that fall due together run one after another: on the demo stack twelve items due at 12:10:00 started between 12:10:18 and 12:11:21, the slow PNG and PDF renders holding up the rest. While an item waits its turn the list shows **Working**.
+The scheduler checks for due items on a fixed interval, 30 seconds by default (`automation.tick_interval_secs`). An item runs at its next tick after it becomes due, so a run can start up to one interval late. Items that fall due together run side by side, up to four at a time, so a slow PNG or PDF render no longer holds up the other alerts: on the demo stack five items due at 02:37:00 were picked up together, the three quick ones finished within half a second and the two PDFs after 28.7 and 36.9 seconds. A tick picks up at most 20 due items; the rest wait for the next tick. While an item runs or waits its turn the list shows **Working**.
 :::
 
 ### Timezone
@@ -48,7 +63,7 @@ After an alert fires, it stays quiet for this long so a condition that stays tru
 
 The default in the editor is 14,400 seconds (four hours). Set `0` to notify on every run that meets the condition. Reports ignore the grace period.
 
-A run counts as having fired once the condition was met, even if delivery then failed. A destination that was down therefore still starts the grace period.
+The grace period starts from the last run that reached at least one destination. A run whose every destination failed starts none, so the next run tries again; a run that reached some destinations and failed on others starts it, so the recipients who got the message are not sent it again on every run. Both are recorded as **Error**; see [Notifications](./notifications#when-delivery-fails).
 
 ### Working timeout (seconds)
 
@@ -60,7 +75,7 @@ How long a finished run stays in the [run log](./run-history). Default 90 days.
 
 ## What a manual run does
 
-**Run now** in the list runs the item immediately through the same code the scheduler uses. It is subject to the same condition test and the same grace period.
+**Run now** in the list runs the item immediately through the same code the scheduler uses. It is subject to the same condition test and the same grace period. Its result updates **Last run** and the status badge, but not **Next run**.
 
 ## Limits and known issues
 

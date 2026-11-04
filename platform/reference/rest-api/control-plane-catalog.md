@@ -758,18 +758,20 @@ Operation id: `assign_resource_tag`. Auth: Session cookie and `X-Egret-CSRF` hea
 | `column` | string, nullable | no | Empty / omitted ⇒ a table-level tag. |
 | `tag_id` | string (uuid) | yes |  |
 
-**Response 200 (application/json)**: `Ack`
+**Response 200 (application/json)**: `AssignResourceTagResponse`
 
 | Field | Type | Required | Description |
 |---|---|---|---|
 | `ok` | boolean | yes |  |
+| `notices` | AssignNotice[] | yes |  |
 
 | Status | Meaning |
 |---|---|
-| 200 | Tag assigned to the catalog resource (idempotent) |
+| 200 | Tag assigned to the catalog resource (idempotent). `notices` lists what the author should know about an assignment that succeeded: `clearance_masks_pending_table` when a whole-table classification with a clearance is attached to a table a... |
 | 400 | The coordinate cannot be stored (an empty schema or table, or `*`/`?` in any level — see migration 0177), or the tag is being attached to a whole TABLE while a tag-addressed mask names it, which would make that table unreadable rather than... |
 | 401 | Not authenticated |
 | 403 | Missing catalog_registry:update permission |
+| 404 | `code` is `warehouse_not_found` (no warehouse has `warehouse_id`; the body adds `warehouseId`) or `tag_not_found` (no classification has `tag_id`; the body adds `tagId`) |
 | 409 | A rule overlap: the assignment would make two mask (or two row-filter) policies decide one column differently (compiled rules, hand-written tag policies, or one of each), or a profile it recompiles already holds such a pair. The body adds... |
 | 500 | Internal error |
 
@@ -801,6 +803,7 @@ Operation id: `unassign_resource_tag`. Auth: Session cookie and `X-Egret-CSRF` h
 | 200 | Tag removed from the catalog resource (idempotent) |
 | 401 | Not authenticated |
 | 403 | Missing catalog_registry:update permission |
-| 409 | A rule overlap that the unassignment does not remove: a profile it recompiles already holds two mask (or two row-filter) rules that decide one request differently. Same body as the assignment's 409 |
+| 404 | `code` is `warehouse_not_found` or `tag_not_found`, as for the assignment |
+| 409 | A rule overlap that the unassignment does not remove: a profile it recompiles already holds two mask (or two row-filter) rules that decide one request differently. Same body as the assignment's 409. Or `code: "profile_set_changed"` with... |
 | 500 | Internal error |
 

@@ -6,9 +6,9 @@ sidebar_position: 3
 
 Most policies in a profile are compiled by egret from your grants and rules. A **hand-written policy** is a raw Apache Ranger policy you write yourself in the **Advanced** tab. Use it for the few things the permission model cannot express, and prefer [grants](../data/grants.md), [rules](../data/masks-and-filters.md) and [engine permissions](./engine-permissions.md) for everything else.
 
-![The Advanced tab of docs-trino: egret compiles this profile, so new hand-written policies are refused](/img/platform/admin/gov-engine-advanced.png)
+![The Advanced tab of the provisioned engine docs-lake: egret compiles this profile, so new hand-written policies are refused; its Tag service section names docs-lake_tag](/img/platform/admin/gov-engine-advanced.png)
 
-The tab opens with a fixed warning: *Hand-written policies are outside egret's model: egret does not recompile them, does not check overlaps with grants, and Data and People pages will mark them hand-written. Prefer Engine permissions or grants on Data.*
+The tab opens with a fixed warning: *Manual policies are outside egret's model: egret does not recompile them, does not check overlaps with grants, and Data and People pages will mark them manual. Prefer Engine permissions or grants on Data.*
 
 Creating, editing and deleting need **policy:create**, **policy:update** and **policy:delete**. An engine that downloads no profile shows *This engine downloads no policy profile, so it has no policy.*
 
@@ -19,12 +19,12 @@ Creating, editing and deleting need **policy:create**, **policy:update** and **p
 3. Fill the editor (below) and press **Save**.
 
 :::note
-Once egret compiles a profile, new hand-written policies on it are refused: *egret compiles this profile, so new hand-written policies are refused. Existing ones can still be edited, enabled, disabled and deleted.* Hand-written policies are therefore mainly for profiles of engines that egret does not compile for, and for policies that existed before.
+Once egret compiles a profile, new hand-written policies on it are refused: *egret compiles this profile, so new manual policies are refused. Existing ones can still be edited, enabled, disabled and deleted.* Hand-written policies are therefore mainly for profiles of engines that egret does not compile for, and for policies that existed before.
 :::
 
-**Seed default policies** adds egret's default Trino set (*group admin: all access*). Existing policies are not changed. If the profile already has policies, egret says *No default policy was added: the profile already has policies.* On an empty unbound Trino profile it added 13 policies (`all - catalog`, `all - function` and so on). They are listed on the **Policies** tab as **egret-seeded**, not under **Hand-written policies**, and the button gives no confirmation, so the Advanced tab looks unchanged.
+**Seed default policies** adds egret's default Trino set (*group admin: all access*). Existing policies are not changed. On an empty unbound Trino profile it adds 13 policies (`all - catalog`, `all - function` and so on), and the tab says *Added 13 default policies. They are egret-seeded, so they are listed on the Policies tab, not here.* If the profile already has policies, it says *No default policy was added: the profile already has policies.* The sentence stays on the tab after the toast is gone. The seeded policies are listed on the **Policies** tab as **egret-seeded**, not under **Manual policies**: with no hand-written policy, the list reads *This profile has no manual policy.* and *Its 13 egret-seeded policies are listed on the Policies tab.* (or the egret-compiled ones, for a profile egret compiles).
 
-The **Hand-written policies** table lists each policy with its **Name**, **Type**, **Resource** (for example `finance_pg.*.*.*`) and whether it is **Enabled**. Select a name to open it in the editor.
+The **Manual policies** table lists each policy with its **Name**, **Type**, **Resource** (for example `finance_pg.*.*.*`) and whether it is **Enabled**. Select a name to open it in the editor.
 
 ### Example: a hand-written access policy
 
@@ -37,6 +37,28 @@ On the demo stack, on the unbound Trino profile `docs-legacy-trino` (created thr
 5. **Save**. You return to **Advanced**, and the profile now has a **Migrate** tab.
 
 A policy that also allows `use` and `show` is listed on **Migrate** as **Blocked**, because the permission model has only read and write (see [Migrate policies](./migrate.md)).
+
+## Tag service
+
+A Trino profile's **Advanced** tab ends with a **Tag service** section: the Tag profile that holds this profile's tag-based policies (classification masks, row filters and clearances). The section says *The tag profile that holds this profile's tag-based policies. Only a profile of type Tag can be named.*, and, while there is none, *This profile has no tag service, so no engine can be bound to it: classification masks and row filters would reach nothing.*
+
+To set, change or remove it on an unbound profile you created:
+
+1. Open the profile and select **Advanced**.
+2. Under **Tag service**, choose a Tag profile, or **None** to remove it. With no Tag profile yet, the section says *There is no tag profile yet. Create one with New profile on Engine & policy, type Tag.*
+3. Press **Save tag service**. The section says *Tag service set to lake-trino_tag.* or *Tag service removed.*
+
+This needs **policy:update** (`PUT /api/control-plane/policies/services/{service}/tag-service`, body `{"tagService": "<tag profile>"}` or `{"tagService": null}`). The change raises the profile's policy version and the tag versions of the old and new tag services, and **Recent changes** on the Governance overview records it as *Administrator set the tag service of profile lake-trino to lake-trino_tag* (or *changed … from … to …*, *removed the tag service … of profile …*).
+
+The section is read-only, showing *Tag service:* and the current value, in three cases:
+
+| Case | What it says |
+|---|---|
+| An engine downloads the profile | *An engine downloads this profile, so its tag service is not changed here. Unbind the engine to change it.* The API answers 409: *profile … is downloaded by …: changing its tag service would swap the tag policies that engine enforces. Unbind the engine, change the tag service, then bind it again* |
+| Egret compiles the profile (a provisioned engine's) | *egret compiles this profile, so its tag service is not changed here.* The API answers 409: *profile … is compiled by egret's permission model, which files its tag rules into the tag service it names; its tag service is not changed by hand* |
+| You lack **policy:update** | The current value only. |
+
+The API also refuses a tag service on a profile that is not a Trino profile, an empty name, and a name that is not a Tag profile, and changes nothing.
 
 ## The policy editor
 
@@ -59,6 +81,8 @@ The text above the fields says *The resource this policy applies to. Use \* for 
 
 - **By resource**: set the levels **Catalog**, **Schema**, **Table** and **Column**. The first level is required, and the help says *Name a catalog. It is required: \* here would cover every catalog this profile serves.* Type a value or `*` and press Enter to add it; a level can hold several values. The icon beside each level adds include or exclude and recursive options. **Add resource** adds another resource to the policy. The resource shown above the fields is the compact path, for example `catalog.*.*.*`.
 - **By tag**: pick a classification tag (*Select a tag…*). The help says *The classification tag this policy applies to. Ranger resolves the tag service from this profile automatically.*
+
+A tag policy whose tag value holds a wildcard, for example one written through the API, applies to more tags than the pattern reads: the engines pick tag policies by the text before the first `*`, `?` or `{`, so `*i` applies to every tag and `p*x` to every tag that starts with `p`. A recursive or exclude tag value widens it too. A classification's **Manual policies** tab lists such a policy with **Wider than its pattern** (see [Manual policies](../classifications/index.md#manual-policies)).
 
 ### Permissions
 
@@ -98,6 +122,9 @@ Deleting a hand-written policy asks *This policy will be permanently removed fro
 
 - Egret does not check hand-written policies against grants, so they can overlap compiled rules. The **Overlaps** tab reports mask and row-filter collisions with them.
 - Migrating hand-written policies into the permission model is covered in [Migrate policies](./migrate.md).
+- egret never rewrites a hand-written policy. A rename of a table or view that an enabled hand-written policy names literally with a deny, a mask, a row filter or an exclusion list is refused with a 409 naming the policy (*hand-written Ranger policies name sales.orders with a deny, mask, row filter or exclusion list: …; egret does not rewrite hand-written policies: edit or migrate them first.*). Edit the policy, or [migrate it](./migrate.md) into grants and rules, which follow renames, and rename again. A policy that only allows the table by its literal name does not refuse the rename: it keeps naming the old name, and **Recent changes** records *… hand-written policy lake-trino/orders-read still names sales.orders*. See [Renames and drops](../data/grants.md#renames-and-drops).
+- A hand-written policy that reaches a table only through a pattern is checked at a rename with Ranger's own matching: when it has a deny, a mask, a row filter or an exclusion list and reaches the old name but not the new one, the rename is refused with a 409 naming it (*hand-written Ranger policies with a deny, mask, row filter or exclusion list reach sales.orders through a name pattern and would not reach sales.archive the same way: …*). A policy with an exclusion list that would newly reach the new name refuses it too. A pattern policy that only allows is recorded in **Recent changes**.
+- A hand-written tag policy with a wildcard, recursive or exclude value applies to every tag that starts with the text before its first wildcard (every tag for a leading wildcard or an exclude). This is how Ranger looks up tag policies, not an egret limit. See [How the engines pick tag policies](../classifications/index.md#how-the-engines-pick-tag-policies).
 
 ## Further reading
 

@@ -222,8 +222,7 @@ So a flow cannot run SQL on an egret database, send a report or post a message t
 
 ## Limits and known issues
 
-- The served schema's `DependsOn` definition lists `condition` and `inputs`; a Flow trigger's `dependsOn` entries actually take `namespace`, `flowId`, `states`, `labels` and `when`. See [Triggers](../triggers/flow-and-webhook.md).
-- An unknown property on a task is accepted without a message.
+- An unknown property on a task of a Kestra type saves with an `unknown_property` warning; on an egret-only task type it is accepted without a message.
 
 ## Further reading
 

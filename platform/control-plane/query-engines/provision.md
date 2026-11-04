@@ -18,10 +18,10 @@ You need **engine:create** and **engine:provision**. Egret runs the engine where
 4. Under **Configuration**, adjust what you need. Leave a field blank to use the default.
 5. Press **Create engine**.
 
-The engine page opens with the status **provisioning**. It turns **running** when the coordinator answers. Measured on the demo stack: 72 seconds for the first engine on a Docker host that already had the image, and 38 seconds for a restart.
+The engine page opens with the status **Provisioning**. It turns **Running** when the coordinator answers. Measured on the demo stack: 72 seconds for the first engine on a Docker host that already had the image, and 38 seconds for a restart.
 
 :::tip Single-node engine
-For a small engine, open **Worker** and set **Replicas** to `0`: the coordinator then schedules the work itself. Left blank, the engine gets the default worker count. On the demo stack a blank value started one worker container next to the coordinator.
+For a small engine, open **Worker** and set **Replicas** to `0`: the coordinator then schedules the work itself, and the Overview strip shows *Worker 0*. Left blank, the engine gets one worker: on the demo stack a blank value started one worker container next to the coordinator.
 :::
 
 ## The Configuration sections (Trino)
@@ -50,7 +50,7 @@ The form shows *Cluster-wide, coordinator, and worker Trino config. Leave fields
 | **Password users** | *Each user signs in with a username and the password held in the selected egret secret (hashed server-side).* For clients that cannot use JWT. |
 | **JWT authentication** | *Also accept egret-issued JWTs (e.g. from notebooks) as client credentials.* An engine needs JWT before it can be assigned to a workspace. |
 | **Per-user delegation** | How queries from SQL Lab, charts and dashboards run as the calling user (below). |
-| **Ingress exposure** | *Create a Kubernetes Ingress for the coordinator. TLS terminates at the ingress.* With **Expose via ingress** on you set **Host**, **Ingress class**, **Ingress TLS cert** and **Annotations**. |
+| **Ingress exposure** | *Create a Kubernetes Ingress for the coordinator. TLS terminates at the ingress.* With **Expose via ingress** on you set **Host**, **Ingress class**, **Ingress TLS cert** and **Annotations**. **Host** is required: without it the field says *Enter the host the ingress serves, or turn off Expose via ingress.* and **Create** stays disabled. |
 
 The delegation modes:
 
@@ -59,7 +59,7 @@ The delegation modes:
 | **Auto — JWT, else impersonate (recommended)** | The default. Egret uses a per-user JWT when the coordinator can verify it, and otherwise falls back to impersonation. |
 | **JWT (per-user)** | Each query carries the caller's own short-lived JWT. No shared credential. OIDC users only. |
 | **Impersonate (service user)** | Egret connects as a trusted service account and runs the query as the caller. Works for any signed-in user. |
-| **None (open engine)** | Every query runs with the connection's own credential. |
+| **None (open engine)** | Every query runs with the connection's own credential. On an engine bound to a policy profile every query currently fails with *Principal … cannot become user …* (KI-333). |
 
 On the demo stack the default mode ran queries as the signed-in person in both cases: an SSO user (`member-sso`) and the local `admin@egret.local` account. `SELECT current_user` returned `member-sso` for the SSO user, and the grants, masks and row filters written in Governance applied to each of them (see [Masks and row filters](../../data-governance/data/masks-and-filters.md)).
 
@@ -70,8 +70,8 @@ A StarRocks engine has its own configuration screen with sections such as **Repl
 ## What happens next
 
 1. Egret starts the cluster, creates a **policy profile** with the engine's name (for example `docs-trino`, with the tag service `docs-trino_tag`) and binds it.
-2. The attached catalogs are applied to the engine (state **applied** on the **Catalogs** tab).
-3. Assign the engine to a workspace on its **Workspaces** tab. It then appears in the workspace's SQL Lab as a database with the engine's name, and in **Workspace settings → Engines** under **Provisioned by egret**.
+2. The attached catalogs are applied to the engine (state **Applied** on the **Catalogs** tab). For an egret warehouse, egret creates a Catalog Client for the engine under the warehouse's `engine` role, which holds `catalog · manage`, so the engine reads and writes every table.
+3. Assign the engine to a workspace on its **Workspaces** tab. It then appears in the workspace's SQL Lab as a connection with the engine's name, and in **Workspace settings → Connections** under **Provisioned by egret**.
 4. The Governance area lists the engine under **Engine & policy**, and grants on its catalogs reach it.
 
 If the engine fails to start, its page shows *The engine failed to start.* with the reason, and the Governance overview raises an **engine failed** finding.
@@ -87,7 +87,7 @@ The Docker provisioner runs the same Trino image with the same configuration fil
 | CPU and memory **requests**, health probes, placement | Yes | Accepted, no effect |
 | Ingress, autoscaling, ConfigMap and Secret mounts, init and sidecar containers, image pull secrets, additional exposed ports, `shareProcessNamespace` | Yes | Refused with an error that names the setting |
 | StarRocks engines | Yes | Refused |
-| Pod logs, log follow and the shell (**Logs**, **Exec**) | Yes | Not available (see [Engine detail](./engine-detail.md#kubernetes-only-features)) |
+| Pod logs, log follow and the shell (**Logs**, **Exec**) | Yes | Not shown; use `docker logs` (see [Engine detail](./engine-detail.md#kubernetes-only-features)) |
 
 :::note Demo stack
 The demo's Docker provisioner only starts images from `trinodb/trino`, with no published ports, no mounts and all capabilities dropped, on the network `egret-demo_default`. Read an engine's log with `docker logs egret-engine-egret-engines-<name>-coordinator`.
@@ -96,8 +96,8 @@ The demo's Docker provisioner only starts images from `trinodb/trino`, with no p
 ## Limits and known issues
 
 - A Trino catalog attach or detach restarts the coordinator, so queries in flight are lost.
-- Right after creation the Overview strip can show the default worker count (`Worker 2`) even when you set **Replicas** to `0`; it shows the real count after the first save of the settings.
-- The engine monitor lists no queries on Trino 483 engines (see [Engine detail](./engine-detail.md#monitor)).
+- The Ingress section is offered on the Docker provisioner, which refuses any ingress (KI-264).
+- egret reuses an existing role named `engine` on the warehouse without checking its grants. If that role was narrowed to **read**, the engine can query but its writes fail at the object store with *access denied*, because the catalog vends read-only storage credentials (see [Storage credentials follow the grant](../catalogs/catalog-detail.md#storage-credentials-follow-the-grant)).
 
 ## Further reading
 

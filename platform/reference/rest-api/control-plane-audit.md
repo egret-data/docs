@@ -24,6 +24,7 @@ Operation id: `list_audit`. Auth: Session cookie. Forbidden (403): Requires plat
 | `action` | query | string | no |  |
 | `kind` | query | string | no |  |
 | `decision` | query | string | no |  |
+| `hideAllowed` | query | boolean | no | `true` leaves out authorization decisions that allowed the call (routine reads): what is left is changes and denials. |
 | `workspace` | query | string (uuid) | no |  |
 | `from` | query | string (date-time) | no |  |
 | `to` | query | string (date-time) | no |  |

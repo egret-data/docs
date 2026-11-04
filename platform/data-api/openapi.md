@@ -101,7 +101,7 @@ The error statuses documented on every operation are `400`, `401`, `403`, `404`,
 
 ## Limits and known issues
 
-- The document is generated from the **published** version. Draft changes do not appear.
+- The document is generated from the **published** version. Draft changes do not appear, including a new method or path: each endpoint is listed at the URL it is served on until you publish the move.
 - It is generated on demand, so a very large workspace can hit the generation limit; Egret answers `500 internal` rather than an incomplete document.
 - Two columns that collapse onto one key under **Naming** make an endpoint refuse to document (`503 output_naming_collision`); republish after fixing it.
 

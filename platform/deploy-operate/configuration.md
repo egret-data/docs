@@ -35,7 +35,9 @@ does not: run `set -a; source .env; set +a` first. The server does not read `.en
 
 The server validates the result before it listens. A missing or malformed required value stops the process with one line
 naming the key; see [Startup checks](../reference/configuration-keys#startup-checks). Unknown keys are ignored, so a
-misspelled variable leaves the default in place without any message.
+misspelled variable leaves the default in place, but the server logs a `WARN` for each one at start, with the closest real
+key (`ignored environment variable EGRET_SERVER__PORTT: … (did you mean EGRET_SERVER__PORT?)`). The warning never stops the
+start.
 
 ## The keys you set first
 

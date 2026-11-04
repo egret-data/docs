@@ -64,12 +64,13 @@ Open [http://egret.localtest.me:8080](http://egret.localtest.me:8080).
 | SSO member | **Sign in with SSO** | `member-sso` / `Member12345!` |
 
 Use the local administrator first: it is the account the seed uses, and it sees the `default` workspace and everything in it. An
-SSO user has no workspace until an administrator adds them, and Egret only knows an SSO user after their first sign-in. Sign in
-once with the SSO user (the first screen says *No workspaces yet. Ask an admin to add you to one.*), then add them to a workspace
-as the local administrator under **Manage → Workspace settings → Members**. The [First login tour](./first-login-tour) explains both
+SSO user has no workspace until an administrator adds them. As the local administrator, add the SSO user's email under
+**Manage → Workspace settings → Members** before or after their first sign-in: an email nobody has signed in with yet is
+listed under **Waiting for first sign-in** and becomes a membership when that user first signs in (the demo realm's users
+have verified emails). An SSO user with no workspace sees a **No workspaces yet** card. The [First login tour](./first-login-tour) explains both
 kinds of sign-in.
 
-Local sign-in allows 5 attempts per 5 minutes for each address and email, successful ones included.
+Five failed local sign-ins within 5 minutes lock that address and email out for 5 minutes; successful ones do not count.
 
 ## What runs and where
 
@@ -178,7 +179,7 @@ Everything in the user docs except the items under [Not available on Docker](#no
 
 | Feature | Why | Instead |
 |---|---|---|
-| An engine's **Logs** and **Exec** buttons | They need Kubernetes; they answer *not available with the Docker engine provisioner*. | `docker logs egret-engine-egret-engines-<name>-coordinator` |
+| An engine's **Logs** and **Exec** buttons | They need Kubernetes, so the engine page does not show them for an engine Docker runs. | `docker logs egret-engine-egret-engines-<name>-coordinator` |
 | StarRocks and RisingWave engines, ingress, autoscaling, extra mounts or containers, image pull secrets, extra ports | The Docker provisioner refuses them with an error that names the option. | A Kubernetes install; see [Kubernetes](../deploy-operate/kubernetes). |
 | CPU and memory requests, probes, placement | They have no Docker meaning. CPU and memory *limits* become container limits. | |
 | Workflow tasks that run containers or scripts | No container runner is configured; plain tasks such as `Log` run. | A Kubernetes install. |
@@ -190,8 +191,9 @@ Everything in the user docs except the items under [Not available on Docker](#no
 | `just demo-down` | Stops and removes the containers, including the engines Egret started (containers labelled `egret.managed=true` and `egret.project=egret-demo`). **Keeps the data volumes**, so `just demo-up` brings your content back. Mail in Mailpit is lost. |
 | `just demo-reset` | The same, and **deletes the data volumes** (PostgreSQL, the object store, the Data Apps files). The next `just demo-up` starts from an empty, freshly seeded stack. |
 
-An engine that was running before `just demo-down` stays listed as `provisioning` after `just demo-up`, with no containers behind
-it. Delete it and add it again.
+An engine that was running before `just demo-down` is listed as `provisioning` after `just demo-up`, with no containers behind
+it. Open it and press **Restart**: Egret creates its containers again from the stored settings, and the engine returns to
+`running`.
 
 ## Security
 
@@ -218,10 +220,10 @@ Production installs use the Kubernetes launcher for apps and the Kubernetes engi
 | SSO fails with an issuer mismatch or a redirect error | The browser address is not exactly `DEMO_URL`: use `egret.localtest.me`, not `localhost`, on the same port. After changing the port, run `just demo-reset && just demo-up`. |
 | `egret.localtest.me` or `apps.localtest.me` does not resolve | You are offline or a DNS filter blocks the name. Add the `/etc/hosts` line from [Host names](#host-names). |
 | The page does not load, or `wait.sh` times out | Check the services with `docker compose … ps` (above) and read the log of the unhealthy one with `just demo-logs <service>`. `curl http://egret.localtest.me:8080/readyz` does not help here: the edge sends that path to the web app, which answers with its HTML page. |
-| The sign-in form answers *Too many attempts* | 5 attempts per 5 minutes per address and email. Wait. |
-| An SSO user sees *No workspaces yet* | Expected for a new SSO user. Add them to a workspace as the local administrator. |
+| The sign-in form answers *Too many failed sign-in attempts* | 5 failed attempts within 5 minutes per address and email. Wait the time it gives. |
+| An SSO user sees *No workspaces yet* | Expected for a new SSO user nobody has added. Add their email to a workspace as the local administrator, then press **Check again**. |
 | The app editor is blank or says *Not connected to a runtime* | Wait for the first start (about 30 seconds), then **Reload editor**. Check that you are on `egret.localtest.me`, then read `just demo-logs egret`. |
-| An engine stays `provisioning` | `docker ps -a --filter label=egret.engine=<name>` lists its containers and `docker logs egret-engine-egret-engines-<name>-coordinator` shows why. A container that exited is often short of memory: give Docker 1.5 to 2 GB per engine and prefer single-node engines. |
+| An engine stays `provisioning` | After `just demo-down` and `just demo-up`, press **Restart** on the engine. Otherwise `docker ps -a --filter label=egret.engine=<name>` lists its containers and `docker logs egret-engine-egret-engines-<name>-coordinator` shows why. A container that exited is often short of memory: give Docker 1.5 to 2 GB per engine and prefer single-node engines. |
 | No mail arrives | Open Mailpit at `http://localhost:8025`. The seed points the `default` workspace's mail server at it; another workspace needs its own **Notifications** settings. |
 
 ## Further reading

@@ -31,7 +31,7 @@ For an egret warehouse the tab says *egret manages this catalog's configuration 
 2. Optionally press **Test** to check the catalog first. For a catalog with a host, egret only checks that it can open a TCP connection, for example *Reachability check — egret could not open a TCP connection to finance-db.internal:5432. Even a connection that had succeeded would not verify credentials, TLS or permissions.* Once the catalog is attached to a provisioned Trino engine, **Test** runs a query there instead.
 3. Press **Attach**.
 
-The table lists the engine with its status badge, its type, whether it is **Primary**, and the **Apply** and **Applied** states, with **Retry** and **Detach**. An external engine shows the state *declared*: egret recorded that the engine serves the catalog and applied nothing. A provisioned engine shows whether the apply succeeded (*applied*).
+The table lists the engine with its status badge, its type, whether it is **Primary**, and the **Apply** and **Applied** states, with **Retry** and **Detach**. An external engine shows the state *declared*: egret recorded that the engine serves the catalog and applied nothing. A provisioned engine shows whether the apply succeeded (*Applied*).
 
 :::note
 **Apply** is this catalog's state on that engine, not the engine's own health. An engine that has since failed still reads applied here, because the catalog did apply before it broke.
@@ -66,6 +66,60 @@ Assigning a catalog to a workspace also writes a grant in the data-plane model: 
 
 The table shows each role's **Consumer**, **Grants** (for example `catalog · manage` or `analytics.orders · read`) and the number of **Clients**. Provisioning an engine creates the role `engine` (*Auto-created role for query engines*) with a catalog-wide `manage` grant, and a client for the engine.
 
+A grant on one table follows the table when it is renamed through the catalog, for example `analytics.orders · read` becomes `analytics.orders_v2 · read`, in the same or another namespace, at any namespace depth. egret moves it right after the catalog commits the rename, with no wait, because egret reads the role's grants on every request; the vended credentials follow with it. If the role already holds the same privilege on the new name, the two are merged. A client that then loads the old name gets 403, not 404, since no grant covers it and a refusal does not tell whether a table exists. A grant on a namespace or on the whole catalog stays where it is. A rename that changes only upper and lower case moves nothing, because grants already match both spellings. **Recent changes** on the Governance overview records each move, for example *Catalog client engine-docs-trino moved catalog grant read of role analysts from analytics.orders to analytics.orders_v2 (table renamed)*, for a reader who also holds **catalog_registry:read**.
+
+A recursive drop of a namespace deletes the table grants in it and in its child namespaces (*… removed catalog grant read of role analysts on analytics.orders (namespace dropped)*); namespace grants stay. A grant on a view (a table grant with the view's name) follows a view rename the same way. Grants that renames before this version left on old names, and grants on tables that were never created, are reported on the Governance overview as *catalog grants on tables that do not exist*. See [Renames and drops](../../data-governance/data/grants.md#renames-and-drops).
+
+### What each operation needs {#what-each-operation-needs}
+
+egret checks every Iceberg request a Catalog Client sends against its role's grants before the catalog sees it. A grant on the catalog covers every namespace and table; a grant on a namespace covers the tables and views directly in it, not those in a child namespace (a grant on `corp` does not cover `corp.fin.ledger`); a grant on a table covers that table or view only. **write** and **manage** both permit writes.
+
+| Operation | What the role needs |
+|---|---|
+| Load a table, view or namespace | Any grant covering it. |
+| List namespaces, tables or views | Any grant. The answer is cut to what the role can see: a namespace with a grant on it, above it or under it (a table grant shows its table's namespace and the ones above, not the namespaces beside it), and a table or view the role could load. A catalog grant lists everything. A page can come back short or empty while it still has a `next-page-token`; Iceberg clients follow the token. |
+| Create a namespace | **write** or **manage** on its **parent** namespace (a grant on exactly the parent, or on the catalog). A top-level namespace needs a catalog-level **write** or **manage** grant. A grant on the namespace itself does not create it. |
+| Create a table or view, or stage a create | **write** or **manage** on the catalog, or on the namespace it is created in. A grant on a table name never creates that table. |
+| Commit to one table (`POST …/namespaces/{ns}/tables/{t}`) | **write** or **manage** covering the table the commit changes: the table named by the body's `identifier` when it has one, otherwise the table in the path. A view commit is decided on the view in its path. |
+| Commit to several tables (`POST …/transactions/commit`) | **write** or **manage** covering **every** table in the commit. One table that is not covered refuses the whole commit, and nothing is committed. |
+| Rename a table or view | On the **source**, what a drop needs: **write** or **manage** covering the source table or view. On the **destination**, what a create needs: **write** or **manage** on the catalog, or on the destination namespace. A grant on the destination table name is not enough. |
+| Drop a table or view | **write** or **manage** covering it. |
+| Drop a namespace recursively (with everything in it) | **write** or **manage** on the **catalog**. A namespace grant still drops an empty namespace, or the namespace's tables one by one. |
+| Remote S3 request signing (`…/aws/s3/sign`) | Not used by egret: refused with 403 whatever the grants. Clients read and write table files with vended credentials. |
+
+An engine's client holds `catalog · manage`, so it can do all of these. For example, a role with **write** on the namespace `sales` and on the namespace `stage` can rename `sales.orders` to `stage.orders`; a role with **write** on the table `sales.orders` and a grant on the table `stage.orders` cannot, because the destination needs a namespace grant.
+
+**Names match the way the catalog resolves them.** The catalog treats table and namespace names case-insensitively (and also equates width forms and invisible characters, but not accents), so a grant does too: a grant on `sales.Secret` covers `sales.secret` and `SALES.SECRET`, but not `sales.secrét`. Two grants that differ only in case are the same grant.
+
+**Refusals.** egret answers in the Iceberg REST error format, `{"error": {"message", "type", "code"}}`, so a client such as PyIceberg raises a typed error (`ForbiddenError` for a 403). A refusal names the side that failed and repeats only the names the client sent, so it does not tell whether a table exists:
+
+| Code | When | Example message |
+|---|---|---|
+| 403 | The grant does not cover the operation | *role 'etl' may not rename sales.orders: renaming needs write on the source, as dropping it would* |
+| 403 | A rename destination without a namespace grant | *role 'etl' may not rename into stage.orders: renaming needs write on namespace stage, as creating a table there would* |
+| 403 | A multi-table commit with an uncovered table | *role 'etl' may not commit to sales.orders: a multi-table commit needs write on every table it changes, as updating it alone would; nothing was committed* |
+| 403 | A namespace create without write on its parent | *role 'etl' may not create namespace stage.child: it needs write on namespace stage, its parent*, or for a top-level namespace *… a top-level namespace needs a catalog-level write or manage grant* |
+| 403 | A recursive namespace drop without a catalog grant | *role 'etl' may not drop namespace corp recursively: a recursive drop deletes every child namespace and table, so it needs a catalog-level write or manage grant* |
+| 400 | A rename, commit or namespace create body egret cannot read | *malformed rename request: …*, *malformed multi-table commit: …*, *malformed table commit: …*, *malformed namespace create: …* |
+| 408 | A request body that has not fully arrived 30 seconds after the request, however slowly it trickles in | *the body of the rename request did not arrive within 30 s; nothing was changed* |
+| 413 | A rename or namespace create body over 1 MiB, or a commit body over 16 MiB | *the body of a rename request is larger than 1048576 bytes* |
+
+### Storage credentials follow the grant {#storage-credentials-follow-the-grant}
+
+When a client loads a table, the catalog hands it short-lived S3 credentials scoped to that table's location, so it can read the table's files without static object-store keys. What those credentials allow depends on the role's grant on the table:
+
+| The role's grant covering the table | Vended credentials |
+|---|---|
+| **read** (on the catalog, the namespace or the table) | Read-only: `s3:GetObject` and `s3:GetObjectVersion` on the table's location. The client can scan the table but cannot write, overwrite or delete any of its files. |
+| **write** or **manage** | Read, write and delete on the table's location. |
+| None | No credentials: the load itself is refused with 403. |
+
+The same rule applies with the `X-Iceberg-Access-Delegation: vended-credentials` header, without the header, and on `GET …/tables/{t}/credentials`. Only `X-Iceberg-Access-Delegation: client-managed` asks for no credentials. A role with several grants gets the widest one that covers the table: **read** on the namespace `sales` plus **write** on `sales.orders` vends read-write-delete on `sales.orders` and read-only on every other table in `sales`. Creating or staging a table (which needs **write** on the namespace) vends read-write-delete on the new table's location. A view load vends read-only credentials on the view's metadata location.
+
+An engine or client with only **read** grants can therefore read but not write. Its writes fail at the object store with *access denied* when it uploads the first data file, before anything reaches the catalog. PyIceberg, for example, raises `OSError: … AWS Error ACCESS_DENIED during CreateMultipartUpload operation: Access Denied` on an append. Engines provisioned by egret hold `catalog · manage` and write as before.
+
+The credentials stay valid for 15 minutes, set by the configuration key [`catalog.sts_token_validity_seconds`](../../reference/configuration-keys#catalog) (default 900, from 900 to 43200). egret writes the lifetime into every S3 warehouse when it creates it, and into the existing ones each time it starts. The catalog reuses one key for every caller with the same permission on the same table, for at most half its lifetime, so a key is handed out with at least about 7.5 minutes left. Revoking or narrowing a grant stops new credentials at once, but does not cancel the ones already handed out: they keep working for up to 15 minutes (KI-315). Trino loads fresh credentials with each table load, and was checked to keep reading and writing past the lifetime; StarRocks was not checked.
+
 ## Catalog Clients (warehouse)
 
 *Machine credentials (client id + secret) an engine or notebook uses to authenticate.*
@@ -82,11 +136,13 @@ The list shows **Name**, **Consumer**, **Role**, **Client ID** and **Revoke**. A
 
 A tree of **Namespaces** (with a count) and a **Recycle bin** for dropped tables, with a search field (*Search tables & views…*). Select a table to see its **Format** version, **Columns**, **Snapshots**, **Updated** time and **Location**, with the tabs **Schema**, **Properties** and **Snapshots**. Each table and column has a tag control, which assigns a [classification tag](../../data-governance/classifications/tagging.md).
 
+A dropped table keeps its classifications in the **Recycle bin**, and **Undrop** brings it back classified. The catalog does not rename another table onto the name of a table in the Recycle bin; for a classified table egret refuses that rename at once and says so. A classified table or column renamed through the catalog is held until the engines serve its classifications under the new name. See [Renames and drops](../../data-governance/classifications/tagging.md#renames-and-drops).
+
 ## Connect (warehouse)
 
 ![The Connect tab of demo_warehouse with the REST catalog URI and the PyIceberg snippet](/img/platform/admin/cp-catalog-connect.png)
 
-*egret exposes this warehouse as an Iceberg REST catalog. Point any Iceberg-compatible engine at it using a Catalog Client's credentials.* The tab shows the **CATALOG URI**, **WAREHOUSE** and **OAUTH TOKEN URL**, and ready-made snippets for **PyIceberg**, **Trino** and **StarRocks**. Replace the `<CLIENT_ID>:<CLIENT_SECRET>` placeholders with a client's values, and the example table `demo_ns.events` with one of yours. If the engine runs in Docker, use the egret host reachable from that container instead of the public address. On the demo stack the snippet's `s3.endpoint` is `http://rustfs:9000`, an address that resolves only inside the Docker network. The snippets ask egret to vend short-lived, table-scoped S3 credentials, so no static object-store keys are needed.
+*egret exposes this warehouse as an Iceberg REST catalog. Point any Iceberg-compatible engine at it using a Catalog Client's credentials.* The tab shows the **CATALOG URI**, **WAREHOUSE** and **OAUTH TOKEN URL**, and ready-made snippets for **PyIceberg**, **Trino** and **StarRocks**. Replace the `<CLIENT_ID>:<CLIENT_SECRET>` placeholders with a client's values, and the example table `demo_ns.events` with one of yours. If the engine runs in Docker, use the egret host reachable from that container instead of the public address. On the demo stack the snippet's `s3.endpoint` is `http://rustfs:9000`, an address that resolves only inside the Docker network. The snippets ask egret to vend short-lived, table-scoped S3 credentials, so no static object-store keys are needed. A client whose role holds only **read** grants gets read-only credentials; see [Storage credentials follow the grant](#storage-credentials-follow-the-grant).
 
 ## Settings (warehouse) {#settings-warehouse}
 
@@ -107,6 +163,9 @@ A tree of **Namespaces** (with a count) and a **Recycle bin** for dropped tables
 
 - A catalog test before attaching checks only that the host answers on its port; a TPC-H catalog has no host to check.
 - Attach and detach on Trino restart the coordinator.
+- Vended credentials outlive a revoked or narrowed grant by up to 15 minutes, and callers with the same permission on a table share one key (KI-315).
+- Two warehouses that share a location can let a namespace writer in one of them obtain read-write credentials on a table of the other. egret refuses a new warehouse that overlaps an existing one, but cannot tell that two host names, or a host name and an IP address, are the same store (KI-316). Give each warehouse its own bucket or key prefix.
+- Adding or deleting a grant here records no entry in the Governance overview's **Recent changes**; only the moves and removals that renames and namespace drops make do.
 
 ## Further reading
 

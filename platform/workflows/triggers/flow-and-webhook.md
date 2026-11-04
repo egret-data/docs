@@ -45,8 +45,6 @@ Upstream flows that live in the same workspace are resolved when you save. A flo
 
 ![The details drawer of a flow trigger: states heard, listening, mode, window and the dependsOn condition](/img/platform/workflows/trigger-flow-details.png) The **Dependencies** tab of a namespace draws the link as a dashed arrow ([Namespaces](../namespaces/index.md)).
 
-The editor's schema lists `condition` and `inputs` for a `dependsOn` entry; the keys above are what the engine reads.
-
 ## Webhook triggers
 
 ```yaml

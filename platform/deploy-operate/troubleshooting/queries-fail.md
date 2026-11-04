@@ -42,7 +42,7 @@ Kubernetes, use the address as seen from the Egret pod.
 seconds to become healthy); the connection says `https` but the engine speaks `http`, or the reverse; a self-signed engine
 certificate (Egret verifies certificates; the `EGRET_ENGINE_TLS_INSECURE` override is for development only).
 
-Use **Test** on the connection in **Manage → Workspace settings → Engines** to repeat the check; it reports the error and the
+Use **Test** on the connection in **Manage → Workspace settings → Connections** to repeat the check; it reports the error and the
 latency.
 
 ## `engine: http 406 Not Acceptable`, or *502 Bad Gateway*
@@ -51,7 +51,12 @@ See [Engine 406 and 502 errors](./engine-406-502).
 
 ## The query times out
 
-The per-query timeout is `engine.query_timeout_secs` (default 60 seconds). Data Apps have their own limit
+The per-query timeout is `engine.query_timeout_secs` (default 60 seconds). In SQL Lab a query that runs longer fails with
+*timeout: the query ran longer than the 60 s limit for SQL Lab queries and was stopped. The limit is the server setting
+`engine.query_timeout_secs`.* (or with Trino's *exceeded maximum time limit* and the same hint). A schema change (a statement
+that starts with `ALTER`, `CREATE`, `DROP`, `RENAME` or `TRUNCATE`) adds *This is a schema change: SQL Lab stopped waiting
+for it, but the engine may still complete it …*: a held rename can still commit, so check **Recent changes** on the
+Governance overview, or list the tables, before you run it again. Data Apps have their own limit
 (`apps.timeout_secs`, 60). Raise the key if long queries are legitimate, or make the query cheaper. The key must stay at
 least 1.
 
@@ -65,7 +70,8 @@ least 1.
 | Row limit on a chart | The chart's Data tab | 1,000 (up to 10,000) |
 | `apps.max_rows` | Data Apps gateway | 10,000 |
 
-A result that hit a cap is marked as truncated in the query's status (`"truncated": true`).
+A result that hit a cap is marked as truncated in the query's status (`"truncated": true`), and SQL Lab shows the chip
+*Results were limited to n rows.*
 
 ## *Missing query:run permission* (403)
 
@@ -90,4 +96,4 @@ configured for JWT. A user signed in with the local break-glass account has no i
 ## Further reading
 
 - [SQL Lab](../../explore/sql-lab)
-- [Databases](../../workspace-settings/databases)
+- [Connections](../../workspace-settings/databases)

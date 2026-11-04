@@ -1,6 +1,7 @@
 // Screenshots for the Dashboards docs (platform/explore/dashboards/*). Run scripts/seed-dashboards.mjs first.
 // Every prepare() starts from the Dashboards list, opens a dashboard by name and drives the UI from there.
-const ws = '/explore/default';
+// DOCS_WS picks the workspace the Explore objects live in (default: `default`).
+const ws = `/explore/${process.env.DOCS_WS ?? 'default'}`;
 const link = (page, name) => page.getByRole('link', {name, exact: true}).first();
 const open = (name) => async (page) => {
   // The auto-apply switch is a per-dashboard browser preference; start every shot from the default (on).
@@ -102,7 +103,8 @@ export const shots = [
     prepare: async (page) => {
       await open(SP)(page);
       await page.getByRole('button', {name: 'Time grouping', exact: true}).click();
-      await page.getByLabel('Time grouping value').selectOption('quarter');
+      await page.getByRole('combobox', {name: 'Time grouping value'}).click();
+      await page.getByRole('option', {name: 'Quarter', exact: true}).click();
       await settle(page, 2500);
     },
   },
@@ -246,6 +248,24 @@ export const shots = [
     prepare: async (page) => { await page.getByRole('button', {name: 'Trash'}).click(); await settle(page, 1200); },
     // One trashed dashboard: crop the empty lower half.
     clip: {x: 0, y: 0, width: 1440, height: 330},
+  },
+  {
+    id: 'dashboards/confirm-trash', path: `${ws}/dashboards`,
+    prepare: async (page) => {
+      await page.getByRole('row', {name: /Sales performance/}).getByRole('button').last().click();
+      await page.getByRole('menuitem', {name: 'Move to Trash'}).click();
+      await settle(page, 600);
+    },
+  },
+  {
+    id: 'dashboards/card-not-set-up', path: `${ws}/dashboards`,
+    // A copy of Executive summary with a bar chart saved without an X-axis (u5-bar-no-x), left by platform #739.
+    prepare: async (page) => {
+      // Taller, so the card below the line chart is whole.
+      await page.setViewportSize({width: 1440, height: 1100});
+      await open('u5-executive-summary')(page);
+    },
+    settle: 2500,
   },
   {
     id: 'dashboards/view', path: `${ws}/dashboards`,

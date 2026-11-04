@@ -6,7 +6,7 @@ sidebar_position: 4
 
 **Governance → Engine & policy** is where data-access policy reaches the query engines. Each engine downloads one **policy profile**, a named bundle of Apache Ranger policies that egret compiles from the grants and rules you write. This page lists the engines and profiles; each engine has its own page for engine permissions, policies, overlaps, the Ranger plugin and advanced policies.
 
-![Engine and policy: the provisioned docs-trino and the external trino-demo-ext, and four profiles without an engine](/img/platform/admin/gov-engines-index.png)
+![Engine and policy: the provisioned docs-trino, the external docs-trino-ext (no profile) and trino-demo-ext, and seven profiles without an engine](/img/platform/admin/gov-engines-index.png)
 
 The area needs the **policy:read** permission. Writes are checked per control.
 
@@ -40,20 +40,29 @@ Provisioned engines get their profile automatically: provisioning `docs-trino` c
 
 1. Press **New profile**.
 2. Enter a **Name**, for example `starrocks-prod`.
-3. Choose the **Type**: **Trino** or **StarRocks**.
-4. Press **Create profile**.
+3. Choose the **Type**: **Trino**, **StarRocks** or **Tag**. A Tag profile holds a Trino profile's tag-based policies; no engine is bound to it.
+4. For a Trino profile, choose its **Tag service**: one of the existing Tag profiles, or **None**. The dialog says *An engine can be bound to a Trino profile only once it names a tag service: the tag profile its classification masks and row filters live in.*
+5. Press **Create profile**.
+
+![The New profile dialog: name lake-trino, type Trino, and the Tag service picker](/img/platform/admin/gov-new-profile.png)
+
+To create the Tag profile at the same time, press **New tag profile** beside the picker. The dialog switches to a Tag profile named `<name>_tag` (for `lake-trino`, `lake-trino_tag`). Press **Create profile**: the dialog says *Tag profile lake-trino_tag created.* and comes back to the Trino profile with the new Tag profile picked, and a second **Create profile** creates it. These are two separate creates, so a refusal never leaves half a pair.
 
 The profile appears under **Profiles without an engine**, with origin **Manual**. Bind it to an engine on the engine's **Settings** tab in the Control Plane (see [Register an external engine](../../control-plane/query-engines/register-external.md)).
 
 ![The unbound profile docs-external-policy with the 13 policies added by Seed default policies](/img/platform/admin/gov-profile.png)
 
-:::warning
-A profile you create here cannot be bound to a Trino engine: egret refuses with *policy profile … has no usable tag service … so every tag-based column mask and row filter would silently compile to nothing*. A Trino profile needs a tag service, which the console cannot set. Use a profile created by provisioning, or create the profile pair through the API: a profile of type `tag` and a Trino profile whose `config` names it in `tagService`.
-:::
+### Give a profile a tag service
+
+A Trino profile with no tag service cannot be bound to an engine: egret refuses with *policy profile … has no usable tag service … so every tag-based column mask and row filter would silently compile to nothing*, and the engine pickers list such a profile disabled. To give an existing profile one, open it and use the **Tag service** section of its **Advanced** tab (see [Hand-written policies](./policy-editor.md#tag-service)). Only an unbound profile you created can be changed there; for a profile an engine downloads, unbind the engine first.
 
 ## The engine page
 
 Select an engine to open its page. The header shows the engine name, its **Type** badge, **Provisioned** or **External**, the bound **Profile**, the **Ranger plugin** version, and **Open in Control plane**. For an external engine a note reads *egret compiles this engine's policies but cannot see whether the external engine downloads them.*
+
+For a StarRocks engine bound to a profile, a warning under the header says that official StarRocks images serve the metadata tables of Iceberg tables (`$files`, `$partitions`, `$snapshots` and the others) without asking Ranger, so anyone who can log in to the engine can read row counts, partition values, data file paths and each column's lowest and highest values for every table of an attached Iceberg catalog, whatever the profile's grants, masks, row filters and classifications say, and apply no mask or row filter to prepared statements; official images and Egret's earlier patched images also apply none through the HTTP SQL API or Arrow Flight SQL, let anyone read object storage through `FILES()` and let a masked or filtered user store a table's rows in the clear in a materialized view; images before `4.1.7-egret.4` also show a filtered user the statistics of hidden rows through `EXPLAIN COSTS` and let anyone reach object storage with the cluster's own identity through loads, exports and `SELECT INTO OUTFILE` without keys (KI-340, KI-345 to KI-348, KI-350, KI-351). It advises running the engine on Egret's patched image `ghcr.io/egret-data/egret-starrocks-fe` `4.1.7-egret.4` or later, or giving StarRocks logins only to people who may see these values and serving masked or filtered data through Trino (since platform #822, widened in #827 and #832). With **engine:read**, it is not shown for a provisioned engine on Egret's patched image `ghcr.io/egret-data/egret-starrocks-fe` `4.1.7-egret.4` or later (the default for new engines since platform #832), which fixes all of them; it is shown for an engine still on `4.1.7-egret.1` or `4.1.7-egret.3`; an external engine always shows it, because Egret does not know its image.
+
+![The Governance page of the external StarRocks engine docs-starrocks: the warning that official StarRocks images serve Iceberg metadata tables without asking Ranger and apply no mask or row filter to prepared statements, above the tabs](/img/platform/admin/gov-engine-starrocks-warning.png)
 
 The tabs are:
 
@@ -63,7 +72,7 @@ The tabs are:
 | **Policies** | Every policy in the profile, by source. | [Policies and overlaps](./policies-and-overlaps.md) |
 | **Overlaps** | Mask and row-filter rules that collide. | [Policies and overlaps](./policies-and-overlaps.md#the-overlaps-tab) |
 | **Plugin** | Files and settings to install the Ranger plugin. | [Ranger plugin](./ranger-plugin.md) |
-| **Advanced** | Hand-written policies and default policies. | [Hand-written policies](./policy-editor.md) |
+| **Advanced** | Hand-written policies, default policies and, for a Trino profile, its tag service. | [Hand-written policies](./policy-editor.md) |
 | **Migrate** | Move hand-written policies into the permission model. | [Migrate policies](./migrate.md) |
 
 **Migrate** appears only while the profile holds a hand-written policy. An unbound profile has its own page with the frame of an engine page, but without **Engine permissions** and **Plugin**. A bound profile has no page of its own: its URL redirects to its engine.
@@ -79,6 +88,8 @@ Policies reach an engine only for the catalogs it serves. In **Control plane →
 1. You save a grant, rule, clearance or engine permission.
 2. Egret recompiles every profile it touches, in the same transaction. A compile that fails rolls the write back.
 3. The engine's plugin polls egret on an interval (30 seconds by default) and downloads the new policy set. Until then the engine enforces the previous one. The engine's **Plugin** tab shows the version each plugin last reported; confirmation takes two polls, about a minute.
+
+On StarRocks a table change recompiles too: a create, rename, register, undrop or column change of a table that carries a classification with a clearance on the whole table recompiles the StarRocks profiles bound to its catalog, and a change whose recompile would be refused is refused at the Iceberg commit (see [Clearance](../classifications/clearance.md#on-columns-or-on-a-whole-table)). A rename of a classified table or column, on either engine, recompiles Trino and StarRocks and is held until their plugins serve the result (see [Renames and drops](../classifications/tagging.md#renames-and-drops)). So is a rename that copies a deny grant, mask or row filter to the new name; its allow grants move after the commit and reach the engines at their next poll (see [Renames and drops](../data/grants.md#renames-and-drops) on the Grants page). Egret also recompiles, at every start and one profile at a time, each StarRocks profile that reaches a whole-table classification with a clearance or one selected by a row-filter rule; a refusal there keeps the profile's previous compile and shows as **Profile compile failed** on the Governance overview.
 
 Changing the profile bound to an engine recompiles both the old and the new profile. If that would leave two mask or row-filter rules deciding one column differently, egret refuses and changes nothing.
 

@@ -13,7 +13,7 @@ Two separate things decide whether you can use SQL Lab: whether the module is sw
 The switch describes what the module is: *Write and run free-form SQL, browse engine schemas, and save queries.* When it is off:
 
 - The **SQL Lab** item disappears from the sidebar.
-- The page `/explore/<workspace>/sql-lab` shows **403 — Forbidden**.
+- The page `/explore/<workspace>/sql-lab` shows *403 — Forbidden* and *You don't have access to this page.* inside the app, with **Go back** and **Open \<workspace\>**. It does not say that the module is off.
 - The server refuses every `sqllab/…` request, and refuses `POST /queries`, the call that submits free-form SQL, with a 403 whose code is `feature_disabled`. This applies to every member including platform admins.
 - Reading a past run, cancelling it and listing history stay available, because the chart builder uses the same calls.
 
@@ -25,7 +25,7 @@ A workspace role is a set of permissions. These are the permissions that matter 
 
 | Permission | What it allows | `ws_viewer` | `ws_editor` | `ws_admin` |
 |---|---|:---:|:---:|:---:|
-| `query:run` | Run queries. Also needed to browse catalogs, schemas, tables and columns, to search objects, to read History and results, to cancel a run and to download CSV. | no | yes | yes |
+| `query:run` | Run queries. Also needed to browse catalogs, schemas, tables and columns, to search objects, to read and clear your own History, to read results, to cancel a run and to download CSV. | no | yes | yes |
 | `saved_query:read` | List and open saved queries and snippets. | yes | yes | yes |
 | `saved_query:manage` | Create, edit, delete and move saved queries; create, edit and delete snippets. | no | yes | yes |
 | `dataset:manage` | Create a dataset, which **Save as dataset** does. | no | yes | yes |
@@ -43,11 +43,19 @@ What this means in practice:
 
 ## Which databases you can use
 
-The database picker lists only the connections that are granted to the workspace; see [Databases](../../workspace-settings/databases). A request for any other database is refused with *database not granted to workspace*.
+The database picker lists only the connections that are granted to the workspace; see [Connections](../../workspace-settings/databases). A request for any other database is refused with *database not granted to workspace*.
 
-:::warning Only workspace admins see the picker's list
-The picker is filled from `GET /api/ws/{ws}/databases`, which answers 403 to everyone who is not a workspace admin. A member with `ws_editor`, `ws_viewer` or a custom role that has `query:run` therefore sees an empty picker ("Select a database") even though the connection is granted, and nothing says why. Queries sent through the API with a `database_id` do run. See [Known issues](../../known-issues) (KI-159).
-:::
+The picker is filled from `GET /api/ws/{ws}/databases`. What that list holds depends on your role in the workspace:
+
+| You hold | You get |
+|---|---|
+| Workspace admin (`workspace:manage_members`) | Every granted connection with its full settings |
+| `query:run` or `dataset:read` (for example `ws_editor`, `ws_viewer` or a custom role) | Every granted connection, with only its id, name, engine and whether it uses per-user delegation. Host, port, options, secret and status are left out. |
+| Neither | A 403 |
+
+Creating, editing, deleting, testing and opening one connection stay with workspace admins.
+
+When no connection is granted to the workspace, the Explorer says *No connection is granted to this workspace. Ask a workspace admin.* If the list is refused (403), it says *You can't list this workspace's connections. Ask a workspace admin for a role that can run queries.*
 
 ## What the engine allows
 
@@ -75,4 +83,4 @@ The Explorer and the search use the same identity as running queries, so a table
 
 - [Roles and permissions](../../workspace-settings/roles-and-permissions)
 - [Workspaces](../../control-plane/workspaces)
-- [Databases](../../workspace-settings/databases)
+- [Connections](../../workspace-settings/databases)

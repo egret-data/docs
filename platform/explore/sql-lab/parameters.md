@@ -50,7 +50,7 @@ Do not wrap a string parameter in quotes yourself. Write `WHERE orderstatus = {{
 
 The type defaults to **str**, so a numeric comparison needs the type changed to **num**. Comparing a number column with a quoted string fails in the engine with a type error.
 
-An empty value is a valid value: a **str** parameter you leave blank is sent as the empty string `''`, and a query that filters on it returns no rows. A query that returns zero rows shows *No rows match “”.* in the grid, which is the grid's text for any empty result.
+An empty value is a valid value: a **str** parameter you leave blank is sent as the empty string `''`, and a query that filters on it returns no rows. A query that returns zero rows shows *The query returned no rows.* in the grid.
 
 ## Where parameters work
 
@@ -102,14 +102,14 @@ With the value `TRUE` the result is `true`.
 
 | You see | Cause |
 |---|---|
-| A toast `Error: {"error":"invalid input: parameter 'min_total' is not a number: abc"}` | A **num** parameter holds text that is not a number. The toast appears in the bottom-right corner and the query is not run. |
+| **Query not started** with `invalid input: parameter 'min_total' is not a number: abc` | A **num** parameter holds text that is not a number. The message appears in the **Results** panel and the query is not run. |
 | *invalid input: missing value for parameter: name* | The request named a placeholder that no parameter supplies. The editor always sends every placeholder it finds, so you meet this only if you call the [REST API](../../reference/rest-api) yourself. |
 | `unterminated '{{' in query template` | A `{{` has no closing `}}`. |
 | An engine error about `{` | The placeholder was not replaced, for example because it was typed with unsupported characters. |
 
 ## Limits and known issues
 
-- Parameter values are kept only while the tab is open and its result panel is mounted; switching to another tab and back clears them (see [The query editor](./editor#tabs)).
+- Parameter values are kept per tab while the page is open, also when you switch to another tab and back, but not across a page reload (see [The query editor](./editor#tabs)).
 - Substitution is plain text interpolation with escaping, done by Egret. It is not a prepared-statement bind.
 - Placeholders in comments and string literals are also substituted. Remove a `{{name}}` you do not want replaced.
 

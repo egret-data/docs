@@ -42,19 +42,30 @@ Egret proves migrations and explains access only for Trino with plugin 2.5.0 or 
 
 ### Policy profile
 
-*Bind a Trino profile now, or leave it and bind one later from the engine's Settings tab. A profile can belong to one engine.* The list shows **No profile yet**, then each Trino profile, marking those already taken (for example *docs-trino — bound to docs-trino*). It does not say which profiles have a tag service, so a profile you created with **New profile** is offered although it cannot be bound. A profile already bound to another engine cannot be chosen again. If binding would make two mask or row-filter rules decide one column differently, egret refuses and changes nothing, and the form says *Nothing was changed. Resolve one of the two, then try again.*
+*Bind a Trino profile now, or leave it and bind one later from the engine's Settings tab. A profile can belong to one engine.* The list shows **No profile yet**, then each Trino profile, marking those already taken (for example *docs-trino — bound to docs-trino*). A Trino profile with no tag service is listed but cannot be chosen, marked *… — no tag service: give it one on its Advanced tab*, because egret would refuse to bind it. A profile already bound to another engine cannot be chosen again. If binding would make two mask or row-filter rules decide one column differently, egret refuses and changes nothing, and the form says *Nothing was changed. Resolve one of the two, then try again.*
+
+For a StarRocks engine, picking a profile shows a warning under the picker (since platform #822): official StarRocks images serve the metadata tables of Iceberg tables without asking Ranger, so anyone who can log in to the engine can read row counts, partition values, data file paths and column bounds of every table in its Iceberg catalogs, whatever the profile says, and apply no mask or row filter to prepared statements; official images and Egret's earlier patched images also apply none through the HTTP SQL API or Arrow Flight SQL, let anyone read object storage through `FILES()` and let a masked or filtered user store a table's rows in the clear in a materialized view; images before `4.1.7-egret.4` also show a filtered user the statistics of hidden rows through `EXPLAIN COSTS` and let anyone reach object storage with the cluster's own identity through loads, exports and `SELECT INTO OUTFILE` without keys (KI-340, KI-345 to KI-348, KI-350, KI-351; widened in platform #827 and #832). Run the external engine on Egret's patched image `ghcr.io/egret-data/egret-starrocks-fe` `4.1.7-egret.4` or later, which fixes all of them; the warning stays, because Egret cannot see which image an external engine runs.
+
+![Register external engine with type StarRocks and a profile picked: the StarRocks security warning under Policy profile](/img/platform/admin/cp-register-sr-warning.png)
 
 :::note
-A Trino profile created in the console has no tag service and cannot be bound. Use a profile with a tag service (see [Engines and policy](../../data-governance/engines-and-policy/index.md#create-a-policy-profile)).
+A Trino profile needs a tag service to be bound. Pick one when you create the profile with **New profile**, or set it later on the profile's **Advanced** tab (see [Engines and policy](../../data-governance/engines-and-policy/index.md#create-a-policy-profile)).
 :::
 
 ### Catalogs
 
 *Declare which registry catalogs this engine serves, so grants on them reach its profile. egret does not create these catalogs on your engine — create them there with the same names.* Without **catalog_registry:read** the list is replaced by *Listing catalogs needs the catalog_registry:read permission, which your account does not have. You can register the engine now and declare catalogs later.*
 
+For an egret warehouse, you create the catalog on your engine yourself with a Catalog Client from the catalog's **Connect** tab. The client's role decides what the engine may do: with only **read** grants, the storage credentials the catalog vends are read-only, so the engine can query the tables but its writes fail at the object store with *access denied*. Give the role **write** or **manage** if the engine writes. See [Storage credentials follow the grant](../catalogs/catalog-detail.md#storage-credentials-follow-the-grant).
+
 ## After you register
 
-You land on the engine's **Plugin config** tab. Without a profile it says *conflict: engine \<name\> is bound to no policy profile: bind a profile first Bind a policy profile on the Settings tab, then come back.* The tabs are **Overview**, **Catalogs**, **Plugin config** and **Settings**. Then:
+A dialog, *Engine registered: save its Ranger credential*, shows the engine's Ranger credential once: *Copy it now: egret shows this password once.* Its button depends on the profile:
+
+- With a profile bound, **Open plugin configuration** takes you to the engine's **Plugin config** tab.
+- Without one, **Bind a policy profile** takes you to the engine's **Settings** tab, because the plugin configuration names the profile's Ranger service and cannot be shown yet. **Plugin config** on such an engine says *No policy profile is bound to this engine yet. The plugin configuration names the profile's Ranger service, so bind a profile first.* with an **Open Settings** button.
+
+The tabs are **Overview**, **Catalogs**, **Plugin config** and **Settings**. Then:
 
 1. **Settings**: bind a policy profile that has a tag service, and press **Save changes**.
 2. **Plugin config**: copy the files to your engine and restart it (see [Ranger plugin](../../data-governance/engines-and-policy/ranger-plugin.md)).
@@ -71,13 +82,12 @@ On the Docker demo stack the seeded Trino (`trino-demo`, port `8080`) can be reg
 2. **Plugin version** `2.8.0`, **Policy profile** **No profile yet**, tick `tpch_bench` under **Catalogs**.
 3. **Register engine**.
 
-Binding the console-created Trino profile `docs-external-policy` at this point fails with *bad request: policy profile 5 (docs-external-policy) has no usable tag service …*, so the example binds a profile pair created through the API (a `tag` profile and a Trino profile whose `config.tagService` names it) afterwards on **Settings**. The demo Trino has no Ranger plugin installed, so the record is for policy authoring only: nothing is enforced on that engine.
+Bind a Trino profile that has a tag service afterwards on **Settings**, for example one created with **New profile** and **New tag profile**. A profile with no tag service, such as `docs-external-policy`, is listed disabled with *— no tag service: give it one on its Advanced tab* until you give it one on its **Advanced** tab. The demo Trino has no Ranger plugin installed, so the record is for policy authoring only: nothing is enforced on that engine.
 
 ## Limits and known issues
 
 - Egret holds a record only: it does not monitor the engine, so the page shows no health status.
 - An engine name cannot be changed after registration; remove the record and register again.
-- The message after registering keeps the raw `conflict:` prefix of the API error.
 
 ## Further reading
 

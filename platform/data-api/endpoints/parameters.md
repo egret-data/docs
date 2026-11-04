@@ -6,12 +6,12 @@ sidebar_position: 2
 
 Parameters let a caller change what an endpoint returns: filter by a status, pick a date, choose a sort column. You declare each parameter on the **Query** tab and refer to it in the SQL as `{{ name }}`. Egret checks every value before the query runs and sends it to the engine as a bound value, never as pasted text.
 
-![The Query tab of Orders by status with Database and parameters open: priority (enum) and min_total (number, 0 to 1000000)](/img/platform/data-api/endpoint-params.png)
+![The Query tab of Orders by status with Connection and parameters open: priority (enum) and min_total (number, 0 to 1000000)](/img/platform/data-api/endpoint-params.png)
 
 ## Declare a parameter
 
 1. Open the endpoint and stay on the **Query** tab.
-2. Open **Database and parameters (N)** and press **Add parameter**.
+2. Open **Connection and parameters (N)** and press **Add parameter**. Closed, the strip names its contents: the connection and the parameter names (*warehouse · region, limit*), or *No connection chosen* and *no parameters*. It stays closed by default so the SQL editor keeps its height.
 3. Fill in the row, then refer to the name in the SQL as `{{ name }}`.
 4. Press **Save**, then **Preview unsaved draft** to test.
 
@@ -31,8 +31,8 @@ Every parameter is read from the query string, for `GET` and `POST` endpoints al
 
 | Type | Accepted values | Notes |
 |---|---|---|
-| `string` | Any text. | Use **min length**, **max length** and **pattern** to constrain it. |
-| `number` | `-?digits` with an optional decimal part, such as `12`, `-3` or `12.5`. | Exponent notation (`1e3`), a leading `+`, and non-numbers are refused. A value outside **minimum** and **maximum** is refused. |
+| `string` | Any text. | Use **Min length**, **Max length** and **Pattern (regex)** to constrain it. |
+| `number` | `-?digits` with an optional decimal part, such as `12`, `-3` or `12.5`. | Exponent notation (`1e3`), a leading `+`, and non-numbers are refused. A value outside **Minimum** and **Maximum** is refused. |
 | `boolean` | `true`, `false`, `TRUE`, `1`, `0`. | Anything else, such as `yes`, is `400 param_invalid`. |
 | `date` | `YYYY-MM-DD`. `1998-6-1` is also read. | A timestamp or `06/01/1998` is refused. |
 | `timestamp` | `YYYY-MM-DDTHH:MM:SS` or `YYYY-MM-DD HH:MM:SS`, with optional fractional seconds. No time zone. | A trailing `Z` or an offset is refused. Use **not before** and **not after** to bound it, written in the same form. |
@@ -42,14 +42,14 @@ An empty value (`?priority=`) is not treated as absent. It is checked like any o
 
 ### Constraints
 
-Constraints are checked on every call, before the query runs and before the cache is consulted. They also appear in the OpenAPI document, so a client generator can enforce them.
+In the editor the constraint boxes sit under the parameter's type, each with its own label. Constraints are checked on every call, before the query runs and before the cache is consulted. They also appear in the OpenAPI document, so a client generator can enforce them.
 
 | Type | Constraint fields | Meaning |
 |---|---|---|
-| `string` | **min length**, **max length** | Length in Unicode characters, not bytes. |
-| `string` | **pattern (regex)** | The value must match. |
-| `number` | **minimum**, **maximum** | Inclusive bounds. Stored as text so decimals are compared exactly. |
-| `date`, `timestamp` | **not before**, **not after** | Inclusive bounds. |
+| `string` | **Min length**, **Max length** | Length in Unicode characters, not bytes. |
+| `string` | **Pattern (regex)** | The value must match. |
+| `number` | **Minimum**, **Maximum** | Inclusive bounds. Stored as text so decimals are compared exactly. |
+| `date`, `timestamp` | **Not before**, **Not after** | Inclusive bounds. |
 | `enum` | **allowed values** | The closed list. |
 
 Changing a parameter's type clears the constraints that no longer apply. A constraint on a type that cannot carry it is refused at publish.
@@ -143,7 +143,6 @@ The **Preview** panel under the editor has one input per declared parameter. Fil
 
 - Parameter errors never name the parameter.
 - A parameter name may be referenced from several statements; a key sent once is a list wherever any statement loops over it.
-- Number constraint boxes in the editor show their value without a label; they are **minimum** then **maximum** in that order.
 
 ## Further reading
 

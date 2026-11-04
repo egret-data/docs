@@ -71,8 +71,8 @@ One row for the category and one for the value column. See [Column formatting an
 
 ## Axes
 
-- **X-axis**: **Show label** (switch plus an **Auto** text box) and **Show lines and tick marks** (**Hide**, **Show**, **Rotate 45°**, **Rotate 90°**).
-- **Y-axis**: **Show label** (switch plus text box), **Auto y-axis range** (off reveals **Y min** and **Y max**), **Unpin from zero** (a switch, offered while the range is automatic), **Scale** (**Linear**, **Log**), **Show lines and tick marks** and **Number of tick marks**.
+- **X-axis**: **X label** (switch plus an **Auto** text box) and **Show lines and tick marks** (**Hide**, **Show**, **Rotate 45°**, **Rotate 90°**).
+- **Y-axis**: **Y label** (switch plus text box), **Auto y-axis range** (off reveals **Y min** and **Y max**), **Unpin from zero** (a switch, offered while the range is automatic), **Y scale** (**Linear**, **Log**), **Show lines and tick marks** and **Number of tick marks**.
 
 **Unpin from zero** matters more here than elsewhere: a distribution of values between 40 and 60 spends most of a zero-based axis on empty space below the lowest whisker.
 
