@@ -76,6 +76,12 @@ A SQL boolean expression over the table's columns, for example `region = 'us'` o
 | **Path** | **Scope**: catalog (required), schema, table, and column for a mask. | A row filter by path needs catalog, schema and table together, and never a column; the dialog shows no column field and blocks saving until the three are set. A line below the fields reads *Applies to demo_warehouse.analytics.sessions*. |
 | **Classification** | **Classification**: pick a classification. | The rule applies to every table or column carrying the tag. The tag is stored by its key, shown as *stored as personal-data-pii*. **Change** picks another. A tag rule is catalog-unscoped. |
 
+A mask by **Path** that leaves **Column** empty masks every column below the path: every column of the table, of every
+table in the schema, or of every table in the catalog. On Trino and StarRocks it compiles to a masking policy with `*` at
+each level left empty (since platform #837). A mask on a whole catalog leaves the catalog's own `information_schema`
+alone, so `SHOW TABLES`, `SHOW COLUMNS`, `DESCRIBE` and JDBC metadata calls keep returning real names. The engine's
+**Policies** tab lists such a mask as, for example, `wh.!information_schema.*.*` (`!` marks an excluded value).
+
 ### Exempt
 
 The principals the rule does not apply to. The picker offers **user** and **group** only, and no **Exclude** list, because Ranger's mask and row-filter items cannot express a role or an exclusion. Egret refuses both at compile time.
@@ -90,7 +96,7 @@ A StarRocks table has two hidden columns, `_file` (the object-store path of each
 mask, egret refuses them to a reader who does not see the real value in every masked column of the table. That reader's
 `SELECT *` on the table fails with error 5204 on `_file`. Name the columns you need, or read through a view over the table:
 a view shows the masked values and no path. A reader who sees the real value in every masked column can still use
-`SELECT *`.
+`SELECT *`. This covers every table that a mask on a whole table, schema or catalog reaches.
 
 A change to the masks takes effect on the next compile of the profile. To apply it at once, compile the profile with
 `POST /api/control-plane/perm/compile/{profile_id}`.
@@ -143,7 +149,7 @@ The local platform admin `admin@egret.local` got the same masked values: platfor
 - A rule that selects by path is copied to the new name when its table or column is renamed, and the original stays on the old name; a rule that selects by tag follows because classifications do. A rule that selects by a pattern the new name escapes refuses the rename. See [Renames and drops](./grants.md#renames-and-drops).
 - A row filter or custom mask expression that names a renamed column is not rewritten (KI-321).
 - On official StarRocks images, masks and row filters do not reach a table's Iceberg metadata tables (`orders$files`, `orders$partitions`, …), which StarRocks serves to any login without asking Ranger, so column bounds, partition values and counts are readable regardless of rules (KI-340); they do not apply to prepared statements, so a Data API endpoint with parameters returns rows and values in the clear (KI-345); they do not apply to the HTTP SQL API or Arrow Flight SQL (KI-346), nor to `FILES()`, which reads the data files directly (KI-347); a materialized view stores its rows past its creator's masks and row filters (KI-348); and `EXPLAIN COSTS` shows a filtered person each column's lowest and highest value over the rows the filter hides (KI-350). Egret's patched image `ghcr.io/egret-data/egret-starrocks-fe` `4.1.7-egret.4`, the default for new engines, fixes all of them; on an official image, do not give StarRocks logins to people who must not see the values.
-- On Trino, a table's metadata tables (`orders$files`, `orders$partitions`, …) follow its masks, row filters and denies (since platform #821): a person a mask, row filter or deny on the table restricts gets *Access Denied* on every one of them, and a person it exempts or does not restrict reads them as before. A tag rule or clearance does the same for each table that carries the classification. Profiles that egret's permission model does not compile get no such deny (KI-341).
+- On Trino, a table's metadata tables (`orders$files`, `orders$partitions`, …) follow its masks, row filters and denies (since platform #821), including a mask on the table's schema or catalog (since platform #837): a person a mask, row filter or deny on the table restricts gets *Access Denied* on every one of them, and a person it exempts or does not restrict reads them as before. A tag rule or clearance does the same for each table that carries the classification. Profiles that egret's permission model does not compile get no such deny (KI-341).
 - On StarRocks, `SELECT *` on an Iceberg table shows the hidden `_file` and `_pos` columns to a user with a row filter (KI-337). List the columns instead.
 
 ## Further reading

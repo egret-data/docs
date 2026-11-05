@@ -81,6 +81,7 @@ If the profiles changed since the preview, a migration reports *Migrating found 
 - Migration is proven for Trino with plugin 2.5.0 or 2.8.0 and StarRocks with 2.8.0 or 2.9.0. For another plugin version the tab refuses.
 - A policy naming a group or role in a way the model cannot express is **Blocked**.
 - A policy that names a tag egret has no tag for is **Blocked**: the migration never creates tags. Create a tag whose key and name are both the policy's tag, or keep the policy hand-written (KI-326).
+- A hand-written masking policy that names no `column` level, or stops higher, masks nothing on Trino or StarRocks and is **Blocked**. To mask every column below its path, set the missing levels to `*` in the policy editor; that takes effect at once, and the policy can then be migrated. A policy with a gap (for example, a catalog and a table but no schema) is told to name the missing level, or to set only that level to `*`.
 - A hand-written tag access policy is **Blocked** and never becomes a clearance; recreate it as a classification clearance (KI-327).
 - Policies egret's own plumbing writes (engine delegation, admin access, query limits and the policies **Seed default policies** adds) are **Locked** and are not rewritten (KI-328).
 
