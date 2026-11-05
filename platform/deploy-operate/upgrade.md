@@ -501,6 +501,50 @@ There is no migration and no API change.
   differs, recompile the profile first ([`POST /api/control-plane/perm/compile/{service_id}`](../reference/rest-api/perm.md)) to bring them in line, then
   migrate again.
 
+### Masks on a whole table, schema or catalog take effect (platform #NNN)
+
+Before platform #NNN, a mask rule by path that left **Column** empty compiled without the column level, and Trino and
+StarRocks applied it to no column. Those columns came back unmasked although the rule was listed as live. From #NNN the
+rule masks every column below its path, as the rule dialog says.
+
+There is no migration. At its first start the new version recompiles each policy profile that still serves such a mask,
+and the plugins download the new policies once. Later starts skip profiles already repaired.
+
+**Before upgrading**, run `GET /api/control-plane/perm/overlaps` (or open each engine's **Overlaps** tab). It lists every
+pair of masks or row filters stored in a profile's download that can decide the same request two ways. Resolve every
+pair in which one member is a mask by path with an empty **Column**: delete one of the two, or narrow one so they no
+longer meet. Such a pair has no effect today, because one member masks nothing. After the upgrade, recompiling the
+profile would make the pair real, so egret refuses the recompile:
+
+- the profile keeps serving its previous compile, so its whole-table, schema and catalog masks stay **inert**;
+- every write that recompiles the profile is refused with a 409 conflict naming the pair until the pair is resolved.
+  That includes grants, rules, catalog grants, workspace membership and role changes on the profile's catalogs, and
+  **any classification (tag) rule write in the installation**, which recompiles every profile;
+- the server logs the refusal at error level at every start. On the Governance overview, **Needs attention** lists a
+  **Critical** finding, *The last compile of 1 profile failed; engines keep the previous compile. The refusal names rules
+  A and B.*, with the profile's line reading *Refused at boot: masks with no column stay inert (previous compile
+  served); writes recompiling this profile are refused until these rules are resolved.* and links to both rules.
+
+The pair's coordinate on the **Overlaps** tab does not say which member has an empty Column; open each rule to see. If
+the recompile fails because of a database error or a lock timeout, the line reads *Boot recompile failed: masks with no
+column stay inert (previous compile served); the next boot retries.*, and writes are not blocked by it. Any other
+refusal, such as an expansion ceiling, shows the same line but keeps refusing writes until it is fixed, as it did
+before the upgrade.
+
+**What readers notice after the upgrade:**
+
+- columns under a whole-table, schema or catalog mask are masked for everyone the rule does not exempt;
+- on Trino, the metadata tables (`$files`, `$partitions`, `$snapshots`, …) of every table under a schema or catalog mask
+  are denied to the same people;
+- on StarRocks, `SELECT *` on those tables is refused to them (error 5204);
+- a rule migrated earlier from a hand-written masking policy that named no column now masks; the original never did.
+  Review migrated mask rules with an empty Column.
+
+A mask on a whole catalog does not apply to the catalog's `information_schema`. The engine's **Policies** tab lists it
+as, for example, `wh.!information_schema.*.*` (`!` marks an excluded value). A mask on a whole table lists as
+`wh.sales.orders.*`. A hand-written masking policy that names no column is left as it is and still masks nothing;
+migrating it is refused until its missing levels are set (see [Migrate policies](../data-governance/engines-and-policy/migrate.md)).
+
 ## Rolling back
 
 There is no supported in-place rollback. Restore the database from the backup taken in step 2, then start the previous
