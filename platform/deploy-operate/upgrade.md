@@ -545,6 +545,15 @@ as, for example, `wh.!information_schema.*.*` (`!` marks an excluded value). A m
 `wh.sales.orders.*`. A hand-written masking policy that names no column is left as it is and still masks nothing;
 migrating it is refused until its missing levels are set (see [Migrate policies](../data-governance/engines-and-policy/migrate.md)).
 
+### Trino on OPA, preview (platform #838)
+
+Migration 0213 adds `mechanism` to every policy profile, with the default `ranger`, and `applied_mechanism` to every
+engine. Nothing changes until `[governance.opa] enabled` is turned on, which it is not by default, and a profile is
+switched. See [Trino on OPA (preview)](../data-governance/engines-and-policy/trino-on-opa.md).
+
+- **API addition:** `ProfileDto.mechanism`, `PATCH /api/control-plane/policies/services/{service}` and
+  `GET /api/control-plane/engines/{id}/opa-plugin-config`.
+
 ## Rolling back
 
 There is no supported in-place rollback. Restore the database from the backup taken in step 2, then start the previous
