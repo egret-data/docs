@@ -152,6 +152,12 @@ The S3-compatible object store used for the catalog warehouse, query results, wo
 | `auth_mode` | `EGRET_RANGER__AUTH_MODE` | `required` | `required`: every request under `/ranger` needs an engine credential or the operator token. `anonymous`: requests without a credential are served, for a throwaway local stack only. |
 | `auth_token` | `EGRET_RANGER__AUTH_TOKEN` | empty | The operator's bearer token for the policy service. Empty accepts no bearer. Engines do not use it: each presents its own credential. |
 
+## governance.opa
+
+| Key | Environment variable | Default | Meaning |
+|---|---|---|---|
+| `enabled` | `EGRET_GOVERNANCE__OPA__ENABLED` | `false` | Preview. Serve the OPA decision routes for Trino and allow a policy profile to switch to OPA. Needs `ranger.enabled`. See [Trino on OPA (preview)](../data-governance/engines-and-policy/trino-on-opa.md). |
+
 ## engine
 
 Limits for queries run from the application.
