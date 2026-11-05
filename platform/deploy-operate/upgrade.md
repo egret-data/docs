@@ -501,10 +501,10 @@ There is no migration and no API change.
   differs, recompile the profile first ([`POST /api/control-plane/perm/compile/{service_id}`](../reference/rest-api/perm.md)) to bring them in line, then
   migrate again.
 
-### Masks on a whole table, schema or catalog take effect (platform #NNN)
+### Masks on a whole table, schema or catalog take effect (platform #837)
 
-Before platform #NNN, a mask rule by path that left **Column** empty compiled without the column level, and Trino and
-StarRocks applied it to no column. Those columns came back unmasked although the rule was listed as live. From #NNN the
+Before platform #837, a mask rule by path that left **Column** empty compiled without the column level, and Trino and
+StarRocks applied it to no column. Those columns came back unmasked although the rule was listed as live. From #837 the
 rule masks every column below its path, as the rule dialog says.
 
 There is no migration. At its first start the new version recompiles each policy profile that still serves such a mask,
