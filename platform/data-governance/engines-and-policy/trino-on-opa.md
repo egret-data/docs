@@ -114,7 +114,12 @@ Until a provisioned engine has been re-applied, Egret keeps answering OPA for it
 
 Egret does not restart or reconfigure an external engine. Its operator installs the files.
 
-**Ranger to OPA.** The engine keeps enforcing the Ranger policies until its operator installs the OPA plugin files:
+**Ranger to OPA.** The engine keeps enforcing the Ranger policies until its operator installs the OPA plugin files.
+
+:::warning
+**An external Trino engine bound to its own compiled profile cannot run any query on OPA.** Such a profile gets no infrastructure rows (query execution, self-impersonation), so Trino's per-query checks are refused and every query fails. Egret does **not** refuse that switch: it answers 200 and lists the engine in `external_engines_unchanged`. Keep such a profile on Ranger (KI-354, see [Known issues](../../known-issues.md)).
+:::
+
 
 1. Get the two files. In the console, open **Control plane → Engines → \<engine\> → Plugin config**: for an engine whose profile is on OPA it shows the OPA files, their warnings and what you must supply. Through the API, `GET /api/control-plane/engines/{id}/opa-plugin-config` answers `{files, warnings, adminMustSupply}`. It answers 409 for a provisioned engine, for an engine bound to no profile, and for a profile on Ranger (use `ranger-plugin-config` there). Nothing is minted.
 2. The files are `access-control.properties` and `egret-opa-context.properties`, with the engine id filled in and a placeholder where the secret goes.
@@ -126,9 +131,7 @@ The engine's **Plugin** tab in **Governance → Engine & policy** has **Download
 
 ![The Trino config dialog of opa_e2e on OPA: the install note, the opa.log-requests warning, the Trino 483 note, and the two files with Download buttons](/img/platform/admin/gov-opa-trino-config.png)
 
-:::warning
 **Keep `opa.policy.batched-uri`.** Egret's `access-control.properties` sets it, and the files carry the warning *Do not remove opa.policy.batched-uri from access-control.properties: without it Trino sends one request per object, and a listing of about a thousand tables, such as information_schema.columns, failed in testing.* Measured: without it, `information_schema.columns` over a catalog of 1 003 tables failed in 30 of 30 runs with *Failed to query OPA backend*, because the plugin's own HTTP client overflowed its queue of 1 024 requests. With it, the same query took 1 024 requests and succeeded.
-:::
 
 **OPA to Ranger.** An external engine still running the OPA plugin **fails every query** until its operator re-installs the Ranger plugin files (see [Ranger plugin](./ranger-plugin.md)), because its profile is no longer on OPA and Egret refuses the plugin's requests. One still running the Ranger plugin is unaffected. The warning says *Any of them running the OPA plugin fails every query until its operator re-installs the Ranger plugin files from GET /api/control-plane/engines/{id}/ranger-plugin-config; one still running the Ranger plugin is unaffected.*
 
@@ -146,12 +149,12 @@ The engine's Ranger plugin credential is the OPA secret, and the plugin sends it
 
 Every failure path denies or fails the query. None of them allows.
 
-- **A refused request to the row-filter or mask endpoints answers 403**, so the plugin fails the query rather than returning unmasked or unfiltered data. `allow` answers `false` and `batch` answers `[]`.
-- **A profile whose stored state stops being expressible denies every query until it is fixed**: a hand-written or `all - …` policy, or a stored overlap. The reason is on the Governance overview as a failed compile, *The last compile of 1 profile failed; engines keep the previous compile.*, with the profile's run recorded as `OPA snapshot: …` (see [Overview](../overview.md)). That entry can linger after the profile has recovered.
+- **A refused request to the row-filter or mask endpoints answers 403**, so the plugin fails the query rather than returning unmasked or unfiltered data. `allow` answers `{"result": false}` and `batch` answers `{"result": []}`.
+- **A profile whose stored state stops being expressible denies every query until it is fixed**: a hand-written or `all - …` policy, or a stored overlap. The reason is on the Governance overview as a failed compile, *The last compile of 1 profile failed; engines keep the previous compile.*, with the profile's run recorded as `OPA snapshot: …` (see [Overview](../overview.md)). On an OPA profile the engines do not keep a previous compile: no snapshot is built, so every query is denied until the cause is fixed. That entry can linger after the profile has recovered.
 
 | Situation | What the engine sees |
 |---|---|
-| Refused request (no credential, credential refused, engine bound to no profile on OPA, profile not on OPA) | `allow` answers `false`, `batch` answers `[]`, and `row_filters`, `batch_column_masks` and `column_mask` answer 403 `{"error": …}`. |
+| Refused request (no credential, credential refused, engine bound to no profile on OPA, profile not on OPA) | `allow` answers 200 `{"result": false}`, `batch` answers 200 `{"result": []}`, and `row_filters`, `batch_column_masks` and `column_mask` answer 403 `{"error": …}`. |
 | No snapshot yet, or the build failed | The same refusal (*no snapshot: building*, *no snapshot: build failed*). |
 | The profile holds a row OPA would ignore (hand-written, `all - …`, stored overlap) | The snapshot is not built, and the profile denies everything. |
 | A model that does not lower | The engine is served the previous data with fresh infrastructure, and explain says so. |
@@ -180,7 +183,7 @@ Measured on the end-to-end stack (one Egret restarted with `docker compose resta
 | Last success to next success | 0.30 s | n/a | 0.29 s |
 | Statements that failed on the Ranger engine | 0 | 0 | 0 |
 
-So an Egret restart showed up as one refused statement, or one that stalled for about 1.2 s. The statement after the refused one took 1.1 to 1.2 s. These figures are from a small database: after a restart, each OPA profile's snapshot is built on the refresher's first tick, and every request is refused until that build finishes. In the rebuild measurement, a build took between about 60 ms and 810 ms (profiles of 902 to 11 000 statements beside up to 21 other profiles; the 810 ms ran on table statistics Postgres had not yet analyzed after a bulk insert).
+So an Egret restart showed up as one refused statement, or one that stalled for about 1.2 s. The statement after the refused one took 1.1 to 1.2 s. These figures are from a small database: after a restart, each OPA profile's snapshot is built on the refresher's first tick, and every request is refused until that build finishes. In the rebuild measurement, a build took between about 60 ms and 810 ms (profiles of 902 to 11 000 statements, beside 9 other compiled profiles: 22 services in the database, tag services included; the 810 ms ran on table statistics Postgres had not yet analyzed after a bulk insert).
 
 ## Known differences from Ranger
 
@@ -196,8 +199,7 @@ Egret compares OPA with a real Ranger 2.8.0 plugin twice: on 2032 generated case
 
 What readers notice on an OPA engine:
 
-- **A deny of another privilege hides a table they can read.** If a user may read `s1.t2` but a deny of **write** covers it, `SELECT` from `s1.t2` works on both mechanisms, but on OPA `SHOW TABLES` and `information_schema` (and so JDBC metadata and catalog browsers) do not list `t2`. On Ranger they list it (KI-352).
-- **Listings hide what the user may not read.** `SHOW COLUMNS` and `information_schema.columns` hide columns a user is denied or not cleared for, and `SHOW SCHEMAS` and `SHOW TABLES` hide a schema or table a deny covers. On Ranger they are listed.
+- **Listings hide anything a deny covers, whatever the deny's privilege.** `SHOW SCHEMAS`, `SHOW TABLES`, `SHOW COLUMNS` and `information_schema` (and so JDBC metadata and catalog browsers) hide a schema, table or column that any deny or withheld classification covers; on Ranger they are listed. This includes a table the user can read: if a user may read `s1.t2` but a deny of **write** covers it, `SELECT` from `s1.t2` works on both mechanisms, yet on OPA `t2` is not listed (KI-352).
 - **Lineage capture through EXPLAIN does not work.** A view-lineage `EXPLAIN` by `egret-lineage` on an OPA engine fails closed, so lineage capture through an OPA engine is a gap (KI-353).
 - **`information_schema`.** On both mechanisms, a user needs a read on `<catalog>.information_schema` for `SHOW TABLES` and `SHOW COLUMNS`. A mask on a whole catalog does not reach that catalog's `information_schema`.
 - `count(*)` is a read of the table, as on Ranger.
@@ -238,7 +240,7 @@ Two keys of `[governance.opa]` tune the request bodies:
 
 A value outside its range stops Egret at startup, for example *governance.opa.batch_body_limit_bytes must be between 4194304 (4 MiB) and 67108864 (64 MiB), got 0*.
 
-- **One batch per schema.** The plugin sends a listing of a whole schema as one `/batch` request, about 73 bytes per table with short names. The default 24 MiB holds about 340 000 such tables, or 170 000 to 210 000 tables with 20- to 30-character names. A larger body is answered 413, and `SHOW TABLES` and `information_schema` reads on that schema fail closed. Raise `batch_body_limit_bytes` for larger schemas. Every other route keeps a fixed 4 MiB.
+- **One batch per schema.** The plugin sends a listing of a whole schema as one `/batch` request, about 73 bytes per table with short names. At that size the default 24 MiB holds about 340 000 tables; with 20- to 30-character names, an estimate (not measured) is about 170 000 to 210 000. A larger body is answered 413, and `SHOW TABLES` and `information_schema` reads on that schema fail closed. Raise `batch_body_limit_bytes` for larger schemas. Every other route keeps a fixed 4 MiB.
 - **Body deadline.** An admitted request must deliver its whole body within `body_read_timeout_ms`, or it gets 408. 5 s covers a 24 MiB body at about 40 Mbit/s; a 64 MiB body needs about 110 Mbit/s. Raise it on a slow link.
 - **In flight and parsing.** Egret counts bodies in 4 MiB units: at most 64 units (256 MiB) in flight before authentication, and 16 units (64 MiB) being parsed at once. A request reserves its declared `Content-Length`, or its route's whole limit when it declares none. A request that cannot get its units within 1 s gets 503 `{"error": "busy"}`, and its body is never read. A larger `batch_body_limit_bytes` lets one body take more of the same budget; it does not raise the memory bound.
 - **Rebuild delay.** Snapshots are rebuilt within about 1 s of a policy change.
