@@ -549,10 +549,23 @@ migrating it is refused until its missing levels are set (see [Migrate policies]
 
 Migration 0213 adds `mechanism` to every policy profile, with the default `ranger`, and `applied_mechanism` to every
 engine. Nothing changes until `[governance.opa] enabled` is turned on, which it is not by default, and a profile is
-switched. See [Trino on OPA (preview)](../data-governance/engines-and-policy/trino-on-opa.md).
+switched. See [Trino on OPA](../data-governance/engines-and-policy/trino-on-opa.md).
 
 - **API addition:** `ProfileDto.mechanism`, `PATCH /api/control-plane/policies/services/{service}` and
   `GET /api/control-plane/engines/{id}/opa-plugin-config`.
+
+### Trino on OPA, console and limits (platform #NNN)
+
+No migration. `[governance.opa] enabled` stays `false` by default. See [Trino on OPA](../data-governance/engines-and-policy/trino-on-opa.md).
+
+- **Console:** the **Access control** section on a Trino profile's **Advanced** tab switches between Ranger and OPA;
+  **Download Trino config** and an external engine's **Plugin config** tab show the OPA files for a profile on OPA.
+- **New keys:** `[governance.opa] batch_body_limit_bytes` (default 24 MiB, 4 to 64 MiB; it was a fixed 4 MiB) and
+  `body_read_timeout_ms` (default 5000, 1 to 60000). A value outside its range stops Egret at startup.
+- **API additions:** `external_engines_warning` on the 200 and 502 answers of the switch, `external_engines_unchanged`
+  on the 502, and `engines_not_reapplied` on an explain profile.
+- **Behaviour:** an OPA request whose body does not arrive within `body_read_timeout_ms` is answered 408 and counted in
+  the new `egret_opa_unread_total`. Restrict `/opa/` to the engines' network: it is now required.
 
 ## Rolling back
 

@@ -297,6 +297,6 @@ implement Ranger's role download, and the plugin ignores it.
 ## Further reading
 
 - [Data governance: engines and policy](../data-governance/engines-and-policy)
-- [Trino on OPA (preview)](../data-governance/engines-and-policy/trino-on-opa.md): let Egret answer Trino's OPA plugin instead of the Ranger plugin
+- [Trino on OPA](../data-governance/engines-and-policy/trino-on-opa.md): let Egret answer Trino's OPA plugin instead of the Ranger plugin
 - [Storage and catalog setup](./storage-and-catalog)
 - [Kubernetes](./kubernetes)
