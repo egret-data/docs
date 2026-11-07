@@ -614,7 +614,7 @@ binary. Object storage is not changed by migrations, but files written by the ne
 
 ### Trino engines authenticate and refuse plain-HTTP identity
 
-From platform #TBD every provisioned Trino engine authenticates, and its coordinator refuses authentication over plain HTTP
+From platform #842 every provisioned Trino engine authenticates, and its coordinator refuses authentication over plain HTTP
 (`http-server.authentication.allow-insecure-over-http=false`). There is a migration (`0215`, one column that records which
 security revision an engine was last applied with) and one API field, `securityReapplyNeeded`.
 
@@ -628,7 +628,7 @@ configuration of its last apply.
   with no password gets 403 *Authentication over HTTP is not enabled*. Point such clients at the engine's ingress, or at HTTPS
   on port 8443 where the engine serves it (delegation-capable engines), with a password or a JWT. An engine with neither has no
   direct client path, only Egret's own.
-- `/v1/info` stays open. Egret's monitor sends `X-Forwarded-Proto: https` with a password; delegated queries use HTTPS on
+- `/v1/info` stays open. Egret's monitor sends `X-Forwarded-Proto: https` with a credential; delegated queries use HTTPS on
   port 8443. The ingress sends the header too (simulated with a hand-set header; not measured against a real ingress controller).
 - External engines are not changed by Egret.
 
