@@ -161,7 +161,7 @@ outputs:
 - **`SECRET` outputs.** The value is stored encrypted with `secrets.master_key`, is shown as `******` in the API and in every log line, and is revealed only to the execution's own expressions. A deployment without a master key fails the output and names the setting. `secret()` is refused in an output's `value:`.
 - **Size.** All outputs of an execution together may serialise to at most 16 MiB; beyond that the execution fails with a message that points to a `FILE` output.
 
-A flow that ended before it was changed to add `outputs:` has none: only executions that end after the upgrade evaluate them.
+An execution that ended before the upgrade has no outputs: only executions that end after it evaluate them.
 
 ## Limits and known issues
 
