@@ -127,6 +127,7 @@ Operation id: `get_execution`. Auth: Session cookie. Forbidden (403): Missing wo
 | `state` | string | yes | Kestra's wire spelling — `RUNNING`, `SUCCESS`, `FAILED`, … |
 | `history` | string[] | yes | The state timeline, as stored: an array of state NAMES, e.g. `["CREATED","RUNNING","SUCCESS"]`. It carries no timestamps — see [`TaskRunDto::history`], which is written by the same function. |
 | `inputs` | object | yes |  |
+| `outputs` | object | no | The flow's `outputs:` as evaluated when the execution ended; absent when none were. A `SECRET` value is `******`. Only the single-execution `GET` fills it; the executions list does not carry it. |
 | `seq` | integer (int64) | yes |  |
 | `execution_trigger` | object, nullable | no | The trigger record, `NULL` for an API start. |
 | `trigger_execution_id` | string (uuid), nullable | no |  |
@@ -289,6 +290,7 @@ Tasks retrying, paused or not yet started end `KILLED` at once; a running task i
 | `state` | string | yes | Kestra's wire spelling — `RUNNING`, `SUCCESS`, `FAILED`, … |
 | `history` | string[] | yes | The state timeline, as stored: an array of state NAMES, e.g. `["CREATED","RUNNING","SUCCESS"]`. It carries no timestamps — see [`TaskRunDto::history`], which is written by the same function. |
 | `inputs` | object | yes |  |
+| `outputs` | object | no | The flow's `outputs:` as evaluated when the execution ended; absent when none were. A `SECRET` value is `******`. Only the single-execution `GET` fills it; the executions list does not carry it. |
 | `seq` | integer (int64) | yes |  |
 | `execution_trigger` | object, nullable | no | The trigger record, `NULL` for an API start. |
 | `trigger_execution_id` | string (uuid), nullable | no |  |
@@ -384,6 +386,7 @@ Run a finished execution again.
 | `state` | string | yes | Kestra's wire spelling — `RUNNING`, `SUCCESS`, `FAILED`, … |
 | `history` | string[] | yes | The state timeline, as stored: an array of state NAMES, e.g. `["CREATED","RUNNING","SUCCESS"]`. It carries no timestamps — see [`TaskRunDto::history`], which is written by the same function. |
 | `inputs` | object | yes |  |
+| `outputs` | object | no | The flow's `outputs:` as evaluated when the execution ended; absent when none were. A `SECRET` value is `******`. Only the single-execution `GET` fills it; the executions list does not carry it. |
 | `seq` | integer (int64) | yes |  |
 | `execution_trigger` | object, nullable | no | The trigger record, `NULL` for an API start. |
 | `trigger_execution_id` | string (uuid), nullable | no |  |
@@ -442,6 +445,7 @@ W7b Task 3 fix round 1, the user's ruling of 2026-10-11, after review found the 
 | `state` | string | yes | Kestra's wire spelling — `RUNNING`, `SUCCESS`, `FAILED`, … |
 | `history` | string[] | yes | The state timeline, as stored: an array of state NAMES, e.g. `["CREATED","RUNNING","SUCCESS"]`. It carries no timestamps — see [`TaskRunDto::history`], which is written by the same function. |
 | `inputs` | object | yes |  |
+| `outputs` | object | no | The flow's `outputs:` as evaluated when the execution ended; absent when none were. A `SECRET` value is `******`. Only the single-execution `GET` fills it; the executions list does not carry it. |
 | `seq` | integer (int64) | yes |  |
 | `execution_trigger` | object, nullable | no | The trigger record, `NULL` for an API start. |
 | `trigger_execution_id` | string (uuid), nullable | no |  |
@@ -759,6 +763,7 @@ Operation id: `start_flow_execution`. Auth: Session cookie and `X-Egret-CSRF` he
 | `state` | string | yes | Kestra's wire spelling — `RUNNING`, `SUCCESS`, `FAILED`, … |
 | `history` | string[] | yes | The state timeline, as stored: an array of state NAMES, e.g. `["CREATED","RUNNING","SUCCESS"]`. It carries no timestamps — see [`TaskRunDto::history`], which is written by the same function. |
 | `inputs` | object | yes |  |
+| `outputs` | object | no | The flow's `outputs:` as evaluated when the execution ended; absent when none were. A `SECRET` value is `******`. Only the single-execution `GET` fills it; the executions list does not carry it. |
 | `seq` | integer (int64) | yes |  |
 | `execution_trigger` | object, nullable | no | The trigger record, `NULL` for an API start. |
 | `trigger_execution_id` | string (uuid), nullable | no |  |

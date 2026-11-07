@@ -150,11 +150,63 @@ The `If` and `Switch` above, with the `Parallel` and `Sequential` examples, make
 | `values` | A YAML list, a map, a JSON array in a string, or an expression such as `"{{ inputs.regions }}"`. An internal-storage URI runs one iteration per line of the file. | required |
 | `concurrencyLimit` | `1` runs iterations one at a time, in order. `N` runs up to N together. `0` runs them all together. | `1` |
 | `transmitFailed` | Whether a failed iteration fails the `Loop`. | `true` |
+| `outputs` | Values to collect from each iteration. See [Loop outputs](#loop-outputs). | none |
+| `fetchType` | `FETCH`, `STORE` or `AUTO`: how the collected outputs are kept. | `AUTO` |
+| `retry` | A retry policy that the tasks of each iteration inherit. See [Loop retry](#loop-retry). | none |
 | `tasks` | The body, run once per item. | required |
 
-**Each iteration is its own execution.** The parent execution shows only the `Loop` task. Each item starts a *child execution* with the flow's tasks inside the loop, and the parent's **Overview** tab lists them under **Child executions** with the iteration number and value. The tasks inside the body have no task runs in the parent, so their outputs are not reachable from tasks after the loop.
+**Each iteration is its own execution.** The parent execution shows only the `Loop` task. Each item starts a *child execution* with the flow's tasks inside the loop, and the parent's **Overview** tab lists them under **Child executions** with the iteration number and value. The tasks inside the body have no task runs in the parent, so their outputs are not reachable from tasks after the loop unless the `Loop` collects them with `outputs:`.
 
 ![The Overview tab of a loop's execution listing three child executions, one per value](/img/platform/workflows/execution-children.png)
+
+### Loop outputs
+
+Declare `outputs:` on the `Loop`, with the same `id`, `type` and `value` as [flow outputs](./inputs-and-outputs.md#flow-outputs), to collect a result from each iteration. The expressions are evaluated at the end of every iteration, after its `errors:` and `finally:`, and can read the iteration's task outputs and `{{ item }}`.
+
+```yaml
+- id: per_region
+  type: io.kestra.plugin.core.flow.Loop
+  values: ["emea", "apac", "amer"]
+  outputs:
+    - id: size
+      type: INT
+      value: "{{ outputs.count.value }}"
+  tasks:
+    - id: count
+      type: io.kestra.plugin.core.output.OutputValues
+      values:
+        value: 1
+- id: total
+  type: io.kestra.plugin.core.log.Log
+  message: "{{ outputs.per_region.iterationCount }} iterations ran"
+```
+
+After the loop, `outputs.per_region.outputs` is a list with one entry per iteration:
+
+```text
+{item: {value: "emea", iteration: 0}, outputs: {size: 1}}
+```
+
+`item.value` is the iteration's value as a string, `iteration` its zero-based index, and `key` is present only when `values` is a map. The list is in the order the iterations ended, which is index order with `concurrencyLimit: 1`. An iteration with no outputs adds no entry.
+
+Every `Loop` run, with or without `outputs:`, also has the counters `iterationCount`, `runningIterations` and `terminatedIterations` (a map from state to count) under `outputs.<id>`.
+
+| `fetchType` | What the list holds |
+|---|---|
+| `FETCH` | The outputs map of each iteration. |
+| `STORE` | One Ion file per iteration, `outputs.ion` in the iteration's storage; the entry holds `{uri: "kestra:///…"}` instead of the map. |
+| `AUTO` (default) | `STORE` when `values:` is a string that renders to a `kestra://` URI, otherwise `FETCH`. The choice is made once per run. |
+
+Failure and limits:
+
+- An output that fails to render or convert fails its iteration: the iteration's history gets `FAILED` after its terminal state (`CREATED RUNNING SUCCESS FAILED`). With `transmitFailed: true` (the default) the `Loop` ends `FAILED` and that iteration's outputs are not added. An output with `required: false` that fails is `null` and logs a warning.
+- One iteration's outputs may serialise to at most 1 MiB and the whole list to 16 MiB. Beyond either, the iteration fails with a message that points to `fetchType: STORE`. With `transmitFailed: false`, an iteration refused by the 16 MiB total is not added and counts under `FAILED` in `terminatedIterations`, although its own execution shows `SUCCESS`; the reason is in the `Loop` run's log.
+- `SECRET` and `FILE` outputs follow the [flow output rules](./inputs-and-outputs.md#flow-outputs). A `SECRET` output with `fetchType: STORE` (or `AUTO` over a file) is refused when you save, because the file would hold the value in clear. Duplicate output ids inside a `Loop` are refused (`duplicate_output_id`).
+- The parent flow's own `outputs:` are not evaluated inside a `Loop` iteration.
+
+### Loop retry
+
+A `retry:` on a `Loop`, or on a task that contains it, applies to every task and `Subflow` inside each iteration. When several policies could apply to a task, the nearest wins: the task's own `retry:`, then one on an ancestor inside the iteration, then the `Loop`'s or its ancestors', then the flow's. The `Loop` run itself is never retried. A `retry:` with `behavior: CREATE_NEW_EXECUTION` that reaches a task inside a `Loop` is saved with a `not_honoured` warning and refused when it runs.
 
 ## LoopUntil
 
@@ -190,7 +242,7 @@ This run logged `Check number 1`, `2` and `3` and then succeeded. `checkFrequenc
     b: 22
 ```
 
-The subflow's id and namespace must exist in the workspace. A subflow that calls itself is refused (`self_subflow`). The task's outputs are `executionId`, `state` and `outputs`. Today `outputs` is always empty, because flow-level `outputs:` are not computed. With `transmitFailed: true` (default) a failed subflow fails the parent. A Subflow appears in the topology as a node you can expand.
+The subflow's id and namespace must exist in the workspace. A subflow that calls itself is refused (`self_subflow`). The task's outputs are `executionId`, `state` and `outputs`. With `wait: true`, `outputs` is the called flow's [flow-level outputs](./inputs-and-outputs.md#flow-outputs), so `{{ outputs.sub.outputs.total }}` reads them. A called flow that declares outputs which were not stored (it ended before it ran, or its outputs failed) fails the `Subflow` run with `Failed to extract outputs with the error: …`. A `retry:` on the `Subflow` or on an ancestor applies to it. With `transmitFailed: true` (default) a failed subflow fails the parent. A Subflow appears in the topology as a node you can expand.
 
 The called flow:
 
@@ -268,7 +320,6 @@ Script tasks need a container runner (`workflow.container_runner = docker`) and 
 ## Limits and known issues
 
 - Flow-level `finally:` and `afterExecution:` never run. On flowable tasks only `AllowFailure` runs `finally`. See [Retries, errors and timeouts](./error-handling.md).
-- A `Loop` does not expose its own `outputs:` yet.
 - `Pause` cannot hold child tasks, `errors` or `onPause`.
 - `LoopUntil` bounds must be literals.
 

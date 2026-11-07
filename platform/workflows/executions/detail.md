@@ -88,13 +88,13 @@ The **Outputs** tab lists the task runs that produced outputs. Select one to see
 
 ![The Outputs tab showing the Return task's value and its expression](/img/platform/workflows/execution-outputs.png)
 
-*No outputs* means no task run of the execution produced any. Flow-level outputs are not shown because they are not computed yet.
+*No outputs* means no task run of the execution produced any. The tab lists task runs only: the flow's own [outputs](../flows/inputs-and-outputs.md#flow-outputs) are not shown here. `GET /api/ws/{workspace}/workflows/executions/{id}` returns them in an `outputs` field (a `SECRET` value is `******`); the executions list does not carry it.
 
 ## Limits and known issues
 
 - The **Overview** tab does not list inputs that came from `defaults:`.
 - Tasks inside a `Loop` have task runs in the child executions, not in the parent. Open a child to see them.
-- Flow `outputs:` are not shown anywhere.
+- Flow `outputs:` are not shown in the UI; read them from the execution API.
 
 ## Further reading
 

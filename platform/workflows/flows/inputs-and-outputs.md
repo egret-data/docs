@@ -142,14 +142,33 @@ The **Outputs** tab of an execution lists each task run that produced outputs, w
 
 ### Flow outputs
 
-A flow can declare `outputs:` with an `id`, a `type` and a `value`. The engine accepts them but does not compute them yet: no output appears on the execution, and a parent flow that calls the flow as a `Subflow` sees `outputs` as an empty map, so `{{ outputs.sub.outputs.total }}` fails. Pass data between flows with the KV store ([KV store](../namespaces/kv-store.md)) or with namespace files until this is implemented.
+A flow can declare `outputs:` with an `id`, a `type` and a `value`. The engine evaluates them once, when the execution reaches its end, and stores the result on the execution.
+
+```yaml
+outputs:
+  - id: total
+    type: INT
+    value: "{{ outputs.add.value }}"
+  - id: report
+    type: FILE
+    value: "{{ outputs.write.uri }}"
+```
+
+- **Where you read them.** `{{ execution.outputs }}` holds the map in every render after the end (before any `afterExecution:`). A parent flow that calls the flow as a `Subflow` with `wait: true` reads them as `{{ outputs.sub.outputs.total }}`. A Flow trigger reads them as `{{ trigger.outputs }}` in its `inputs:` (see [Flow and webhook triggers](../triggers/flow-and-webhook.md)). `GET /api/ws/{workspace}/workflows/executions/{id}` returns them in an `outputs` field.
+- **Types.** Each value is converted by its `type`, with the same rules as inputs. An output with `required: false` that fails to render becomes `null` and a warning is logged; any other failure fails the execution.
+- **Failure.** If an output cannot be rendered or converted, the execution ends `FAILED`: its history reads `CREATED RUNNING SUCCESS FAILED`, and the error is in the execution's log.
+- **`FILE` outputs.** The value must be a `kestra:///` URI of a file that belongs to the execution itself or to its `Loop` iterations. A file of another execution, a trigger's or replay source's file, a namespace file, an `nsfile://` or `file://` URI or a malformed value is refused with `egret refuses output <id>: <uri> is not a file of this execution`. A parent cannot re-publish its `Subflow` child's file as its own `FILE` output, though it can read it.
+- **`SECRET` outputs.** The value is stored encrypted with `secrets.master_key`, is shown as `******` in the API and in every log line, and is revealed only to the execution's own expressions. A deployment without a master key fails the output and names the setting. `secret()` is refused in an output's `value:`.
+- **Size.** All outputs of an execution together may serialise to at most 16 MiB; beyond that the execution fails with a message that points to a `FILE` output.
+
+A flow that ended before it was changed to add `outputs:` has none: only executions that end after the upgrade evaluate them.
 
 ## Limits and known issues
 
 - Only the run form validates inputs. Server-side validation of `required`, types and `values` is not implemented.
 - The outputs and rendered values of a task that uses a `SECRET` input are not masked; only the inputs and the logs are (KI-246).
 - `YAML` inputs are not parsed into an object in expressions.
-- Flow `outputs:` are not evaluated.
+- The UI does not show flow outputs: the **Outputs** tab lists task runs only. Read them from the API or from a parent flow.
 
 ## Further reading
 

@@ -48,7 +48,7 @@ errors:
 | `variables` | map | Works | Constants for the flow, read as `{{ vars.name }}`. |
 | `tasks` | list, at least one | Works | The steps. See [Task catalogue](./task-catalogue.md) and [Flow control](./flow-control.md). |
 | `errors` | list of tasks | Works | Tasks that run when a task fails. See [Retries, errors and timeouts](./error-handling.md). |
-| `outputs` | list | Accepted, not evaluated | Declared outputs of the flow. A flow's own outputs are not computed or shown, and a parent flow reading a subflow's `outputs` gets an empty map. |
+| `outputs` | list | Works | Declared outputs of the flow, evaluated when the execution ends. Read as `{{ execution.outputs }}`, by a parent `Subflow` and from the execution API. A failure ends the execution `FAILED`. See [Inputs and outputs](./inputs-and-outputs.md#flow-outputs). |
 | `triggers` | list | Works for `Schedule`, `Flow` and `Webhook` | What starts the flow. See [Triggers](../triggers/index.md). |
 | `retry` | retry policy | Works | Runs the whole flow again as a new execution when it fails. See below. |
 | `disabled` | boolean, default `false` | Works | A disabled flow cannot be run and its triggers do not fire. |
