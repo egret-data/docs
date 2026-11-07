@@ -628,8 +628,8 @@ configuration of its last apply.
   with no password gets 403 *Authentication over HTTP is not enabled*. Point such clients at the engine's ingress, or at HTTPS
   on port 8443 where the engine serves it (delegation-capable engines), with a password or a JWT. An engine with neither has no
   direct client path, only Egret's own.
-- `/v1/info` stays open. Egret's own monitor and query paths send `X-Forwarded-Proto: https` with a credential and keep working
-  (simulated with a hand-set header; not measured against a real ingress controller).
+- `/v1/info` stays open. Egret's monitor sends `X-Forwarded-Proto: https` with a password; delegated queries use HTTPS on
+  port 8443. The ingress sends the header too (simulated with a hand-set header; not measured against a real ingress controller).
 - External engines are not changed by Egret.
 
 See [Security & Exposure](../control-plane/query-engines/provision.md#security--exposure) and KI-355 in

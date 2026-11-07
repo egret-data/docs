@@ -64,7 +64,7 @@ The coordinator also refuses authentication over plain HTTP (`http-server.authen
 | The delegator over HTTPS 8443 | Accepted. |
 | `GET /v1/info`, no credential | `200`. Health checks keep working. |
 
-Egret's own monitor and query paths, and the engine's ingress, send `X-Forwarded-Proto: https` with a credential, so they keep working. That was simulated with a hand-set header; it was not measured against a real ingress controller or kube proxy.
+Egret's monitor sends `X-Forwarded-Proto: https` with a password; delegated queries use HTTPS on port 8443. The engine's ingress sends the header too. The header was simulated by hand; it was not measured against a real ingress controller or kube proxy.
 
 A client that dials `http://<engine>:8080` directly with no password, for example `trino --server http://<engine>:8080 --user x`, no longer works. Connect through the engine's ingress, or on HTTPS 8443 on engines that serve it (delegation-capable engines: impersonate mode, and JWT mode with a JWT block), with a password or JWT. An engine with neither an ingress nor port 8443 has no direct client path, only Egret's own. Impersonation does not make plain HTTP safe: the earlier belief that an impersonate engine was safe over plain HTTP because only the delegator could impersonate was measured to be false, and is why the flag is now off.
 
