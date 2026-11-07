@@ -22,6 +22,8 @@ A summary strip counts **engines**, how many are **running** and **not running**
 | **Status** | The lifecycle status of a provisioned engine (**Provisioning**, **Running**, **Failed**). **External** for a registered one: egret does not monitor it. |
 | Actions | **Details** opens the engine. |
 
+A provisioned Trino engine can also carry an amber **Re-apply needed** badge (the API field is `securityReapplyNeeded` on the engine). Its tooltip says *This engine still accepts unauthenticated requests on port 8080. Re-apply it to turn on authentication.* The engine was applied before platform #TBD and still runs the old configuration. The badge clears after the next successful apply. An engine with JWT only and no password users never shows it, because it was already closed. See [Provision an engine](./provision.md#security--exposure).
+
 ## Add an engine
 
 Two buttons sit at the top right:

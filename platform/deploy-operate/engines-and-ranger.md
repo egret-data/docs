@@ -119,7 +119,7 @@ names them, and the engine's **Logs** and **Exec** buttons answer *not available
 | Engine | Requirement |
 |---|---|
 | Trino | `http-server.process-forwarded=true`. Egret sends `X-Forwarded-Proto`; without the setting Trino answers *406* and Egret reports *502*. See [Engine 406 and 502 errors](./troubleshooting/engine-406-502). |
-| Trino | For per-user delegation, JWT authentication (`http-server.authentication.type=JWT`) with `principal-field=preferred_username` and `required-audience=trino`, **over HTTPS**. Over plain HTTP Trino accepts a valid JWT but does not require one. |
+| Trino | For per-user delegation, JWT authentication (`http-server.authentication.type=JWT`) with `principal-field=preferred_username` and `required-audience=trino`, **over HTTPS**. Over plain HTTP Trino accepts a valid JWT but does not require one. Engines Egret provisions set `allow-insecure-over-http=false` themselves (platform #TBD); for an engine you run, set it too, or a plain-HTTP client can claim any user. |
 | StarRocks | A security integration of type `authentication_jwt` for per-user delegation, with `required_issuer` equal to Egret's issuer and `required_audience` `starrocks`. The `jwks_url` must start with `http://` or `https://`. |
 | Both | A network path from the engine to Egret for policy downloads, and to the catalog if you use it. |
 
