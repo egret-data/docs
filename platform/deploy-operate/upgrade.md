@@ -554,7 +554,7 @@ switched. See [Trino on OPA](../data-governance/engines-and-policy/trino-on-opa.
 - **API addition:** `ProfileDto.mechanism`, `PATCH /api/control-plane/policies/services/{service}` and
   `GET /api/control-plane/engines/{id}/opa-plugin-config`.
 
-### Trino on OPA, console and limits (platform #NNN)
+### Trino on OPA, console and limits (platform #839)
 
 No migration. `[governance.opa] enabled` stays `false` by default. See [Trino on OPA](../data-governance/engines-and-policy/trino-on-opa.md).
 
