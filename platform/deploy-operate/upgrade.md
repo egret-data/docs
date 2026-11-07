@@ -567,7 +567,7 @@ No migration. `[governance.opa] enabled` stays `false` by default. See [Trino on
 - **Behaviour:** an OPA request whose body does not arrive within `body_read_timeout_ms` is answered 408 and counted in
   the new `egret_opa_unread_total`. Restrict `/opa/` to the engines' network: it is now required.
 
-### Workflow outputs: Loop outputs, Loop retry and flow outputs (platform #TBD)
+### Workflow outputs: Loop outputs, Loop retry and flow outputs (platform #840)
 
 One migration adds columns for execution and task-run outputs; it only adds columns and applies at boot. There is no backfill: an
 execution that ended before the upgrade has no outputs. **Behaviour change for stored flows:** a flow saved earlier can give a
