@@ -618,16 +618,18 @@ From platform #TBD every provisioned Trino engine authenticates, and its coordin
 (`http-server.authentication.allow-insecure-over-http=false`). There is a migration (`0215`, one column that records which
 security revision an engine was last applied with) and one API field, `securityReapplyNeeded`.
 
-Upgrading does not change a running engine: it keeps the configuration of its last apply, and still accepts unauthenticated
-requests on port 8080 until you re-apply it.
+The new settings take effect when an engine is next applied (re-apply, or any change that applies it). Until then it keeps the
+configuration of its last apply.
 
 - **Re-apply every provisioned Trino engine** after the upgrade. In **Control plane → Engines** the engines that still need it
-  show an amber **Re-apply needed** badge; the badge clears after the next successful apply. An engine with JWT only and no
+  show a **Re-apply needed** badge; the badge clears after the next successful apply. An engine with JWT only and no
   password users never shows it.
 - **Direct plain-HTTP clients stop working** once an engine is re-applied: `trino --server http://<engine>:8080 --user x`
-  with no password gets 403 *Authentication over HTTP is not enabled*. Point such clients at the engine's ingress (HTTPS) or
-  at HTTPS on port 8443, with a password or a JWT.
-- `/v1/info` stays open, and Egret's own monitor and query paths are unaffected.
+  with no password gets 403 *Authentication over HTTP is not enabled*. Point such clients at the engine's ingress, or at HTTPS
+  on port 8443 where the engine serves it (delegation-capable engines), with a password or a JWT. An engine with neither has no
+  direct client path, only Egret's own.
+- `/v1/info` stays open. Egret's own monitor and query paths send `X-Forwarded-Proto: https` with a credential and keep working
+  (simulated with a hand-set header; not measured against a real ingress controller).
 - External engines are not changed by Egret.
 
 See [Security & Exposure](../control-plane/query-engines/provision.md#security--exposure) and KI-355 in
