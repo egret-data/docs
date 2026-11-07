@@ -52,6 +52,24 @@ The form shows *Cluster-wide, coordinator, and worker Trino config. Leave fields
 | **Per-user delegation** | How queries from SQL Lab, charts and dashboards run as the calling user (below). |
 | **Ingress exposure** | *Create a Kubernetes Ingress for the coordinator. TLS terminates at the ingress.* With **Expose via ingress** on you set **Host**, **Ingress class**, **Ingress TLS cert** and **Annotations**. **Host** is required: without it the field says *Enter the host the ingress serves, or turn off Expose via ingress.* and **Create** stays disabled. |
 
+Every provisioned Trino engine authenticates, since platform #842. An engine created or updated with no authentication setting has `{"password":{}}` stored (password authentication with no users) and applied; an existing engine gains it at its next apply. Egret still provisions its own `egret-monitor` account and, in impersonate mode, the `egret_delegator` account. External engines are not affected: Egret does not render their configuration.
+
+The coordinator also refuses authentication over plain HTTP (`http-server.authentication.allow-insecure-over-http=false`). Measured on Trino 483:
+
+| Request to the coordinator | Result |
+|---|---|
+| Plain HTTP on port 8080, no `X-Forwarded-Proto: https` header | `403`, *Authentication over HTTP is not enabled*, before any identity is read. A client cannot claim to be another user by setting `X-Trino-User`. |
+| The same with `X-Forwarded-Proto: https` and no credential | `401`. |
+| The same with `X-Forwarded-Proto: https` and a Basic credential | Accepted. |
+| The delegator over HTTPS 8443 | Accepted. |
+| `GET /v1/info`, no credential | `200`. Health checks keep working. |
+
+Egret's monitor sends `X-Forwarded-Proto: https` with a credential; delegated queries use HTTPS on port 8443. The engine's ingress sends the header too. The header was simulated by hand; it was not measured against a real ingress controller or kube proxy.
+
+A client that dials `http://<engine>:8080` directly with no password, for example `trino --server http://<engine>:8080 --user x`, no longer works. Connect through the engine's ingress, or on HTTPS 8443 on engines that serve it (delegation-capable engines: impersonate mode, and JWT mode with a JWT block), with a password or JWT. An engine with neither an ingress nor port 8443 has no direct client path, only Egret's own. Impersonation does not make plain HTTP safe: the earlier belief that an impersonate engine was safe over plain HTTP because only the delegator could impersonate was measured to be false, and is why the flag is now off.
+
+An engine that was applied before this release still runs the old configuration. See **Re-apply needed** in [the engine list](./index.md#the-engine-list) (the badge) and the [upgrade notes](../../deploy-operate/upgrade.md#trino-engines-authenticate-and-refuse-plain-http-identity).
+
 The delegation modes:
 
 | Mode | What it does |

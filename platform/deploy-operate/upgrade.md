@@ -612,6 +612,29 @@ returned by the API; keep `SECRET` values in `SECRET` outputs and inputs.
 There is no supported in-place rollback. Restore the database from the backup taken in step 2, then start the previous
 binary. Object storage is not changed by migrations, but files written by the newer version stay in the bucket.
 
+### Trino engines authenticate and refuse plain-HTTP identity
+
+From platform #842 every provisioned Trino engine authenticates, and its coordinator refuses authentication over plain HTTP
+(`http-server.authentication.allow-insecure-over-http=false`). There is a migration (`0215`, one column that records which
+security revision an engine was last applied with) and one API field, `securityReapplyNeeded`.
+
+The new settings take effect when an engine is next applied (re-apply, or any change that applies it). Until then it keeps the
+configuration of its last apply.
+
+- **Re-apply every provisioned Trino engine** after the upgrade. In **Control plane → Engines** the engines that still need it
+  show a **Re-apply needed** badge; the badge clears after the next successful apply. An engine with JWT only and no
+  password users never shows it.
+- **Direct plain-HTTP clients stop working** once an engine is re-applied: `trino --server http://<engine>:8080 --user x`
+  with no password gets 403 *Authentication over HTTP is not enabled*. Point such clients at the engine's ingress, or at HTTPS
+  on port 8443 where the engine serves it (delegation-capable engines), with a password or a JWT. An engine with neither has no
+  direct client path, only Egret's own.
+- `/v1/info` stays open. Egret's monitor sends `X-Forwarded-Proto: https` with a credential; delegated queries use HTTPS on
+  port 8443. The ingress sends the header too (simulated with a hand-set header; not measured against a real ingress controller).
+- External engines are not changed by Egret.
+
+See [Security & Exposure](../control-plane/query-engines/provision.md#security--exposure) and KI-355 in
+[Known issues](../known-issues.md).
+
 ## Further reading
 
 - [Backup and restore](./backup-restore)
