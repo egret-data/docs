@@ -567,6 +567,46 @@ No migration. `[governance.opa] enabled` stays `false` by default. See [Trino on
 - **Behaviour:** an OPA request whose body does not arrive within `body_read_timeout_ms` is answered 408 and counted in
   the new `egret_opa_unread_total`. Restrict `/opa/` to the engines' network: it is now required.
 
+### Workflow outputs: Loop outputs, Loop retry and flow outputs (platform #840)
+
+One migration adds columns for execution and task-run outputs; it only adds columns and applies at boot. There is no backfill: an
+execution that ended before the upgrade has no outputs. **Behaviour change for stored flows:** a flow saved earlier can give a
+different answer, because each change makes egret do what Kestra does. See [Flow control](../workflows/flows/flow-control.md#loop-outputs)
+and [Flow outputs](../workflows/flows/inputs-and-outputs.md#flow-outputs).
+
+| Flow | Before | Now |
+|---|---|---|
+| A `Loop` with `outputs:` | Accepted, never evaluated; `{{ outputs.loop.outputs }}` failed to render | Evaluated at the end of each iteration and collected in `outputs.<loop>.outputs` |
+| Any `Loop` run | No counters | `iterationCount`, `runningIterations` and `terminatedIterations` |
+| A `Loop` output that fails to render or convert | Ignored | The iteration gets `FAILED`; with `transmitFailed: true` the `Loop` fails |
+| `fetchType: STORE` (or `AUTO` over a `kestra://`, `file://` or `nsfile://` `values:`) | Ignored | One `outputs.ion` file per iteration; the list holds `{uri}` |
+| A `retry:` on a `Loop` or on an ancestor of it | Dropped for the tasks inside each iteration | Inherited by every task and `Subflow` of each iteration |
+| A failed flowable task under an ancestor's or the flow's `retry:` | Its parent stayed `RUNNING` forever | Its parent ends `FAILED` (bug fix) |
+| A flow-level `outputs:` | Never evaluated | Evaluated when the execution ends; a failure ends it `FAILED` |
+| `{{ execution.outputs }}` and a `Subflow` parent's `outputs.<id>.outputs` | Always `{}` | The evaluated outputs; a child whose declared outputs were not stored fails the `Subflow` run |
+| `{{ trigger.outputs }}` in a Flow trigger's `inputs:` | Failed (`trigger` unknown) | The triggering execution's outputs |
+| `GET` of one execution | No outputs | An `outputs` field (`SECRET` values are `******`); the list does not carry it |
+| A parent reading its `Subflow` child's `FILE` output with `read()` | Refused | Allowed, for the files the child published |
+
+Limits that exist in Egret only (Kestra has none):
+
+- One `Loop` iteration's outputs may serialise to at most 1 MiB and a `Loop`'s whole list to 16 MiB; a flow's outputs to 16 MiB per
+  execution. Beyond a limit the iteration or execution fails with a message that points to `fetchType: STORE` or to a `FILE` output.
+- A `type: FILE` output must name a file of the execution itself or of its `Loop` family; anything else is refused with
+  `egret refuses output <id>: <uri> is not a file of this execution`. A parent cannot re-publish its `Subflow` child's file.
+- A `SECRET` output with `fetchType: STORE` is refused, when you save and when it runs. Other `SECRET` outputs are sealed with
+  `secrets.master_key` and shown as `******`; without a master key the output fails and names the setting.
+- Duplicate output ids inside a `Loop`'s `outputs:` are refused when you save (`duplicate_output_id`), and `secret()` is refused in an
+  output's `value:`.
+- A `dependsOn` Flow trigger does not fire on an event whose merged `trigger.outputs` would pass 16 MiB; the log names the sizes
+  and the window is kept.
+
+Known differences from Kestra: the parent flow's `outputs:` are not evaluated inside each `Loop` iteration; a STORE file is
+named `outputs.ion` and `nextOffset` is not written; a `Subflow` child that ended before it ran and declares only literal outputs
+fails the `Subflow` run; a `retry:` with `behavior: CREATE_NEW_EXECUTION` that reaches a task inside a `Loop` is refused when it
+runs. A `SECRET` value that an author renders into a `Subflow`'s `inputs:` or a `STRING` flow output is stored in clear and
+returned by the API; keep `SECRET` values in `SECRET` outputs and inputs.
+
 ## Rolling back
 
 There is no supported in-place rollback. Restore the database from the backup taken in step 2, then start the previous

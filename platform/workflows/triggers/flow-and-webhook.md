@@ -88,7 +88,7 @@ The route accepts `GET`, `POST` and `PUT`. A request with a multipart body is re
 
 - Task expressions cannot read `trigger.*`; pass what you need through `inputs:`.
 - Flow triggers fire from saved drafts; a draft with a Flow trigger listens at once.
-- The `trigger.outputs` of an upstream flow are not available, because flow outputs are not computed.
+- `{{ trigger.outputs }}` holds the triggering execution's [flow outputs](../flows/inputs-and-outputs.md#flow-outputs) and can be used in a Flow trigger's `inputs:`; it is not yet available in the fired flow's tasks. For a `dependsOn` trigger, the event's outputs are merged with the window's. If the merged outputs would pass 16 MiB the trigger does not fire on that event, the window is kept and the log names the sizes.
 
 ## Further reading
 

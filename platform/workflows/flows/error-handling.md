@@ -38,6 +38,8 @@ The task above fails three times, one second apart. The **Gantt** tab draws each
 
 The three retry types, and `behavior`, are in the [YAML reference](./yaml-reference.md#task-retry). `warningOnRetry` is accepted and has no effect; the editor warns `ignored_property` when you save.
 
+A `retry:` on a flowable task (a `Sequential`, a `Loop`, a `Parallel` and so on) is inherited by the tasks inside it; inside a `Loop`, by the tasks of each iteration. The nearest policy wins: the task's own, then its ancestors', then the flow's. See [Loop retry](./flow-control.md#loop-retry). When a task fails for good under such a policy, its parent now ends `FAILED`; before this release it stayed `RUNNING` forever.
+
 ### Retry the whole flow
 
 A flow-level `retry:` starts a new execution when the flow fails:
