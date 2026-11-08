@@ -67,7 +67,7 @@ A refused switch lists every condition that holds, one message each, and writes 
 
 | Message | What to do |
 |---|---|
-| *OPA is not enabled on this installation ([governance.opa] enabled)* | The key is on by default, so someone turned it off: remove `enabled = false` (or set `EGRET_GOVERNANCE__OPA__ENABLED=true`, or Helm `opa.enabled=true`), keep `ranger.enabled`, then restart Egret. |
+| *OPA is not enabled on this installation ([governance.opa] enabled)* | Either the key was turned off or `ranger.enabled` (off by default) is off. Remove `enabled = false` (or set `EGRET_GOVERNANCE__OPA__ENABLED=true`, or Helm `opa.enabled=true`), keep `ranger.enabled`, then restart Egret. |
 | *only a Trino profile can use OPA; this profile is of type \<type\>* | Nothing: StarRocks profiles stay on Ranger. |
 | *only a generated profile can use OPA: hand-written policies are Ranger JSON that OPA cannot evaluate* | Express the profile's access as grants and rules (see [Migrate policies](./migrate.md)), so that Egret generates it. |
 | *engine \<name\> runs \<image\>, which does not ship the Trino OPA plugin; supported: trinodb/trino:483* | Move the engine to `trinodb/trino:483` in the Control plane, or bind it to another profile. |
