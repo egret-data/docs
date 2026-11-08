@@ -250,7 +250,9 @@ Migration 0216 adds `applied_opa_url` to every engine: the OPA URL Egret last wr
 
 :::warning
 **Queries on these engines fail until each one is re-applied and restarted.** Until then an engine asks port 8080 for `/opa/`, which answers 404. During a rolling update an engine already moved to the OPA port is also refused whenever its request reaches an old Egret pod, which has no OPA listener. Upgrade in a maintenance window, or when the query load on OPA engines is low. See [Upgrade](../../deploy-operate/upgrade.md).
-::: External engines are not re-applied: see [External engines](#external-engines).
+:::
+
+External engines are not re-applied: see [External engines](#external-engines).
 
 ## Limits
 
