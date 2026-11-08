@@ -12,22 +12,30 @@ You switch a **policy profile**, not an engine. Every engine bound to the profil
 
 ## Enable the feature
 
-The feature is gated by one key, **off by default**:
+The feature is gated by one key, **on by default** from this release:
 
 | Key | Environment variable | Default |
 |---|---|---|
-| `[governance.opa] enabled` | `EGRET_GOVERNANCE__OPA__ENABLED` | `false` |
+| `[governance.opa] enabled` | `EGRET_GOVERNANCE__OPA__ENABLED` | `true` |
 
-```bash
-EGRET_GOVERNANCE__OPA__ENABLED=true
-EGRET_RANGER__ENABLED=true
+OPA also needs `ranger.enabled`, which is **off by default**. The OPA surface and its listener run only when both keys are on; with `ranger.enabled` off, nothing binds the OPA port and a switch to OPA is refused. When both are on, Egret binds the OPA listener (`0.0.0.0:8082` by default). An installation that already runs the Ranger surface therefore binds 8082 and mounts the OPA surface after the upgrade, with no configuration change. The key being on does not move any profile; each profile stays on Ranger until an operator switches it (see [Switch a profile](#switch-a-profile)), so the default alone changes no enforcement.
+
+To turn the feature off, use any one of these:
+
+```toml
+[governance.opa]
+enabled = false
 ```
 
-Egret serves the OPA routes on their own port, **8082** by default, not on the API port 8080 (see [Network exposure](#network-exposure)). On Kubernetes, the Helm value `opa.enabled=true` sets both keys of the OPA listener for you (see [Kubernetes](../../deploy-operate/kubernetes.md)).
+```bash
+EGRET_GOVERNANCE__OPA__ENABLED=false
+```
 
-It also needs `ranger.enabled = true`, because the OPA routes check the engine credentials of the Ranger surface (see [Engines and Ranger setup](../../deploy-operate/engines-and-ranger.md)). With the Ranger surface off, OPA does not run and a switch to OPA is refused with the same message as a disabled gate.
+On Kubernetes, set the Helm value `opa.enabled=false`. The chart always sets `EGRET_GOVERNANCE__OPA__ENABLED` from `opa.enabled`. With `ranger.enabled` off (the default) the chart opens no OPA port, and Egret logs an info line at start, *OPA surface idle: ranger.enabled is off*, not an error.
 
-With the gate off, the OPA routes are not mounted (they answer 404), no snapshot refresher runs, and a switch to OPA is refused: *OPA is not enabled on this installation ([governance.opa] enabled)*. The keys that tune the request bodies are under [Limits](#limits); the listener's keys are under [Network exposure](#network-exposure).
+Egret serves the OPA routes on their own port, **8082** by default, not on the API port 8080 (see [Network exposure](#network-exposure)). On Kubernetes, the Helm value `opa.enabled` (default `true`) sets the key and, when `ranger.enabled` is also true, the OPA listener, port and NetworkPolicy rule for you (see [Kubernetes](../../deploy-operate/kubernetes.md)).
+
+`ranger.enabled` is needed because the OPA routes check the engine credentials of the Ranger surface (see [Engines and Ranger setup](../../deploy-operate/engines-and-ranger.md)). When either key is off, the OPA routes are not mounted (they answer 404), no snapshot refresher runs, and a switch to OPA is refused: *OPA is not running on this installation: it needs both [governance.opa] enabled and ranger.enabled*. The keys that tune the request bodies are under [Limits](#limits); the listener's keys are under [Network exposure](#network-exposure).
 
 **Turning the gate off while profiles are on OPA makes their engines fail every query**, because the routes unmount. Switch those profiles back to Ranger first.
 
@@ -37,7 +45,7 @@ A profile can switch to OPA when all of these hold:
 
 - it is a **Trino** profile;
 - Egret generates it: it holds grants or rules from the permission model, not hand-written policies only;
-- the installation has `[governance.opa] enabled = true`;
+- the installation has `[governance.opa] enabled = true` (the default from this release; see [Enable the feature](#enable-the-feature));
 - every bound engine that **Egret provisions** runs `trinodb/trino:483`, the one image Egret has measured to ship `plugin/opa` (a pinned digest must be the known one);
 - it holds no `all - …` default policies;
 - neither the profile nor its tag service holds hand-written policies;
@@ -57,7 +65,7 @@ A refused switch lists every condition that holds, one message each, and writes 
 
 | Message | What to do |
 |---|---|
-| *OPA is not enabled on this installation ([governance.opa] enabled)* | Set `EGRET_GOVERNANCE__OPA__ENABLED=true` (and keep `ranger.enabled`), then restart Egret. |
+| *OPA is not running on this installation: it needs both [governance.opa] enabled and ranger.enabled* | Turn on `ranger.enabled` (it is off by default), and make sure `[governance.opa] enabled` is not `false` (or set `EGRET_GOVERNANCE__OPA__ENABLED=true`, or Helm `opa.enabled=true`), then restart Egret. |
 | *only a Trino profile can use OPA; this profile is of type \<type\>* | Nothing: StarRocks profiles stay on Ranger. |
 | *only a generated profile can use OPA: hand-written policies are Ranger JSON that OPA cannot evaluate* | Express the profile's access as grants and rules (see [Migrate policies](./migrate.md)), so that Egret generates it. |
 | *engine \<name\> runs \<image\>, which does not ship the Trino OPA plugin; supported: trinodb/trino:483* | Move the engine to `trinodb/trino:483` in the Control plane, or bind it to another profile. |
@@ -80,6 +88,8 @@ You need the **policy:update** permission. Without it the section is read-only a
 
 On success a toast says *Switched to OPA.*, and the section lists the engines it reconfigured (*Reconfigured: …*), the external engines it did not restart (*Not restarted (external): …*) and what their operator must do. On a refusal the section lists every message (above) and keeps the previous selection. Switching back works the same way, from **Ranger** and **Switch to Ranger?**.
 
+A Trino profile that has no usable tag service is switched all the same, but the section also shows a warning after the switch (Governance → Engines → Advanced): *This profile has no tag service, so classification rules and clearances do not apply to its engines. Bind a tag service in the profile's settings.* Classification rules and clearances need a tag service on either mechanism, so the warning follows the profile, not the switch. StarRocks profiles never show it.
+
 ### Through the API
 
 ```bash
@@ -92,10 +102,10 @@ The body is `{"mechanism": "ranger"}` or `{"mechanism": "opa"}`. It needs `polic
 
 | Status | Meaning |
 |---|---|
-| 200 | The switch is committed. The body is `{name, mechanism, engines_reconfigured, external_engines_unchanged, external_engines_warning?}`. |
+| 200 | The switch is committed. The body is `{name, mechanism, engines_reconfigured, external_engines_unchanged, external_engines_warning?, no_tag_service_warning?}`. `no_tag_service_warning` is set for a Trino profile with no usable tag service. |
 | 404 | No such policy profile. |
 | 409 | The switch to OPA is refused, nothing is written. The body is `{error, code: "mechanism_refused", refusals}`: `refusals` holds every message of the table above that applies, and `error` is the first. |
-| 502 | The switch is committed, but some bound engines were not reconfigured (below). |
+| 502 | The switch is committed, but some bound engines were not reconfigured (below). The body carries `no_tag_service_warning` too when it applies. |
 
 ## What a switch does
 
@@ -217,11 +227,12 @@ On an OPA profile, [Explain access](../data/explain-access.md) answers from the 
 - A read shows the column mask as applied and the row filter, for example *Column mask: MASK_HASH, applied as …* and *Row filter: …*.
 - *Could not read the profile’s current state; try again.* means the snapshot could not be read at that moment.
 - *This answer is from the previous snapshot: the current model did not build, so egret answers from the previous data until it does.* appears when the profile's model did not lower.
+- A Trino profile with no usable tag service shows once, in its card, *This profile has no tag service, so classification rules and clearances do not apply to its engines. Bind a tag service in the profile's settings.* (on Ranger and on OPA). Without a tag service, tag masks, tag row filters and clearances do not reach the engines, so the explanation of a read can differ from what the classification suggests.
 - After a switch, an engine not re-applied yet is named: *Not re-applied yet: \<engine\> still runs the previous plugin, so it may answer differently from this OPA explanation until re-applied (send the switch again).*
 
 ![Who can read? on lake.s1.t2 for bob: the profile opa_e2e with its Trino and OPA badges, and bob allowed to select s1.t2 by a grant](/img/platform/admin/gov-opa-explain.png)
 
-Through the API, `POST /api/control-plane/perm/explain` carries `mechanism` (`ranger` or `opa`), `ir_reason` on each access, `engines_not_reapplied` when an engine still runs the other plugin, and, for a read, the rendered column mask and the AND of the applying row filters under `opa` (`column_mask`, `column_mask_type`, `row_filter`). A column mask is rendered with `varchar` where the engine substitutes the column's own type.
+Through the API, `POST /api/control-plane/perm/explain` carries `mechanism` (`ranger` or `opa`), `ir_reason` on each access, `engines_not_reapplied` when an engine still runs the other plugin, `no_tag_service_warning` on each profile of the answer that has no usable tag service (the same text as above; StarRocks profiles carry none), and, for a read, the rendered column mask and the AND of the applying row filters under `opa` (`column_mask`, `column_mask_type`, `row_filter`). A column mask is rendered with `varchar` where the engine substitutes the column's own type.
 
 Explain follows the **profile's** mechanism, not each engine's. It also cannot see a snapshot the refresher has dropped, so for about one refresh period (1 s) it can show a read that the engine refuses, never the reverse.
 
@@ -269,6 +280,7 @@ A value outside its range stops Egret at startup, for example *governance.opa.ba
 - **Body deadline.** An admitted request must deliver its whole body within `body_read_timeout_ms`, or it gets 408. 5 s covers a 24 MiB body at about 40 Mbit/s; a 64 MiB body needs about 110 Mbit/s. Raise it on a slow link.
 - **In flight and parsing.** Egret counts bodies in 4 MiB units: at most 64 units (256 MiB) in flight before authentication, and 16 units (64 MiB) being parsed at once. A request reserves its declared `Content-Length`, or its route's whole limit when it declares none. A request that cannot get its units within 1 s gets 503 `{"error": "busy"}`, and its body is never read. A larger `batch_body_limit_bytes` lets one body take more of the same budget; it does not raise the memory bound.
 - **Rebuild delay.** Snapshots are rebuilt within about 1 s of a policy change.
+- **Shared tag service.** After a policy or tag change, the OPA surface keeps answering from the previous snapshot until each affected profile is rebuilt. Profiles rebuild one after another on the 1 s refresher, so when many profiles share one tag service, a tag change reaches the last of them after roughly N rebuilds. On a loaded dev machine the last profile became current about 0.4 s after the change with 5 profiles sharing one tag service, about 1 s with 10 and about 3.5 s with 20, and the refresher's 1 s period comes on top. The time also grows with the total number of grants and rules on the installation.
 - **Other gaps.** An external Trino 483 engine on its own compiled profile cannot run any query: it gets no infrastructure rows (KI-354). The mask `{col}` placeholder is substituted unquoted, as with Ranger. StarRocks has no OPA mechanism.
 
 ## Further reading

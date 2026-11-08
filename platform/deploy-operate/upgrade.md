@@ -548,7 +548,7 @@ migrating it is refused until its missing levels are set (see [Migrate policies]
 ### Trino on OPA, preview (platform #838)
 
 Migration 0213 adds `mechanism` to every policy profile, with the default `ranger`, and `applied_mechanism` to every
-engine. Nothing changes until `[governance.opa] enabled` is turned on, which it is not by default, and a profile is
+engine. Nothing changes until `[governance.opa] enabled` is turned on, which it is not by default (changed in a later release; see below), and a profile is
 switched. See [Trino on OPA](../data-governance/engines-and-policy/trino-on-opa.md).
 
 - **API addition:** `ProfileDto.mechanism`, `PATCH /api/control-plane/policies/services/{service}` and
@@ -556,7 +556,7 @@ switched. See [Trino on OPA](../data-governance/engines-and-policy/trino-on-opa.
 
 ### Trino on OPA, console and limits (platform #839)
 
-No migration. `[governance.opa] enabled` stays `false` by default. See [Trino on OPA](../data-governance/engines-and-policy/trino-on-opa.md).
+No migration. `[governance.opa] enabled` stays `false` by default (changed in a later release; see below). See [Trino on OPA](../data-governance/engines-and-policy/trino-on-opa.md).
 
 - **Console:** the **Access control** section on a Trino profile's **Advanced** tab switches between Ranger and OPA;
   **Download Trino config** and an external engine's **Plugin config** tab show the OPA files for a profile on OPA.
@@ -664,6 +664,19 @@ while `[governance.opa] enabled` is `false`. See [Trino on OPA](../data-governan
   `NetworkPolicy/egret-ingress`, rendered when `engineNetworkPolicy.enabled`, that admits the OPA port only from `engineNamespace`
   and `opa.extraFrom`. With `engineNetworkPolicy.enabled`, `egret-ingress` admits only 8080, 8081 (apps) and the OPA port to the backend pod: anything that reached another port on it is now refused. Add the namespace of an external Trino on OPA to `opa.extraFrom`. See
   [Kubernetes](./kubernetes.md#engine-network-policy).
+
+### OPA is on by default
+
+`[governance.opa] enabled` now defaults to `true`, and so does the Helm value `opa.enabled`. **Profiles stay on Ranger until an operator
+switches them**, so the change alone moves no enforcement. What changes is that, where `ranger.enabled` is on (it is off by default), Egret now binds the OPA listener, port **8082** by
+default, and mounts the OPA surface with no configuration change, so a profile can be switched to OPA without touching configuration first. With `ranger.enabled` off, nothing binds 8082 and a switch to OPA is refused. See
+[Trino on OPA](../data-governance/engines-and-policy/trino-on-opa.md).
+
+- **Turning it off:** `[governance.opa] enabled = false`, `EGRET_GOVERNANCE__OPA__ENABLED=false`, or Helm `opa.enabled=false`. The chart sets the variable from `opa.enabled`. Switch any profile on OPA back to Ranger first: with the key off, its engines fail every query.
+- **Installs outside Helm with `ranger.enabled` on can fail to start after the upgrade, with no config change.** Egret now validates and binds `[governance.opa] listen` (default `0.0.0.0:8082`) and runs the 1 s snapshot refresher. Start-up stops, naming the key, when: port 8082 is already taken on the host; `server.port` or `apps.listen` (with `apps.origin` set) is 8082; a leftover malformed `[governance.opa] listen` or `engine_url`, ignored while OPA was off, is now checked; or the OPA engine URL cannot be derived from `catalog.public_url`. Fix it by setting `[governance.opa] listen` and `engine_url`, or `enabled = false`. Helm installs are not affected, because the chart sets the listen value.
+- **Network:** the chart's `NetworkPolicy/egret-ingress` (with `engineNetworkPolicy.enabled`) admits the OPA port only from `engineNamespace` and `opa.extraFrom`. Outside Kubernetes, keep port 8082 reachable from the engines only.
+- **Tag-service warning:** a Trino profile with no usable tag service now carries `no_tag_service_warning` on the `PATCH …/mechanism` answer and on each explain profile, and the console shows it. See [Trino on OPA](../data-governance/engines-and-policy/trino-on-opa.md#through-the-api).
+- **Known issues** on OPA engines: KI-352, KI-353 and KI-354 in [Known issues](../known-issues.md).
 
 ## Further reading
 
