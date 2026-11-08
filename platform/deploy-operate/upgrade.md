@@ -647,14 +647,14 @@ while `[governance.opa] enabled` is `false`. See [Trino on OPA](../data-governan
   `listen`; **if `public_url` is an ingress hostname rather than Egret's in-cluster address, set `engine_url`**.
 - **Provisioned engines re-apply themselves.** At start, with OPA enabled, Egret re-applies each provisioned Trino engine on an OPA
   profile whose recorded OPA URL differs from the current one, including engines applied before the upgrade. A failure is logged
-  per engine as a warning and does not stop the server; re-apply that engine from the console. Expect a coordinator restart for each.
+  per engine as a warning and does not stop the server; apply that engine again with any change that applies it. The pass runs in the background: serving starts at once and the engines converge shortly after. Expect a coordinator restart for each.
 - **External engines re-install their files.** Download the OPA plugin files again (**Control plane → Engines → \<engine\> → Plugin
   config**, or `GET /api/control-plane/engines/{id}/opa-plugin-config`, which now returns the OPA port's URL), install them and
   restart the coordinator. Until then the engine asks port 8080 and fails every query.
 - **Firewalls:** allow the OPA port (8082 by default) from the engines to Egret. Anything between them that only allowed 8080 blocks OPA.
 - **Helm:** new values `opa.enabled` (default `false`), `opa.port` (`8082`) and `opa.extraFrom`, and a new
   `NetworkPolicy/egret-ingress`, rendered when `engineNetworkPolicy.enabled`, that admits the OPA port only from `engineNamespace`
-  and `opa.extraFrom`. Add the namespace of an external Trino on OPA to `opa.extraFrom`. See
+  and `opa.extraFrom`. With `engineNetworkPolicy.enabled`, `egret-ingress` admits only 8080, 8081 (apps) and the OPA port to the backend pod: anything that reached another port on it is now refused. Add the namespace of an external Trino on OPA to `opa.extraFrom`. See
   [Kubernetes](./kubernetes.md#engine-network-policy).
 
 ## Further reading
