@@ -548,7 +548,7 @@ migrating it is refused until its missing levels are set (see [Migrate policies]
 ### Trino on OPA, preview (platform #838)
 
 Migration 0213 adds `mechanism` to every policy profile, with the default `ranger`, and `applied_mechanism` to every
-engine. Nothing changes until `[governance.opa] enabled` is turned on, which it is not by default, and a profile is
+engine. Nothing changes until `[governance.opa] enabled` is turned on, which it is not by default (changed in a later release; see below), and a profile is
 switched. See [Trino on OPA](../data-governance/engines-and-policy/trino-on-opa.md).
 
 - **API addition:** `ProfileDto.mechanism`, `PATCH /api/control-plane/policies/services/{service}` and
@@ -556,7 +556,7 @@ switched. See [Trino on OPA](../data-governance/engines-and-policy/trino-on-opa.
 
 ### Trino on OPA, console and limits (platform #839)
 
-No migration. `[governance.opa] enabled` stays `false` by default. See [Trino on OPA](../data-governance/engines-and-policy/trino-on-opa.md).
+No migration. `[governance.opa] enabled` stays `false` by default (changed in a later release; see below). See [Trino on OPA](../data-governance/engines-and-policy/trino-on-opa.md).
 
 - **Console:** the **Access control** section on a Trino profile's **Advanced** tab switches between Ranger and OPA;
   **Download Trino config** and an external engine's **Plugin config** tab show the OPA files for a profile on OPA.
@@ -668,11 +668,11 @@ while `[governance.opa] enabled` is `false`. See [Trino on OPA](../data-governan
 ### OPA is on by default
 
 `[governance.opa] enabled` now defaults to `true`, and so does the Helm value `opa.enabled`. **Profiles stay on Ranger until an operator
-switches them**, so the change alone moves no enforcement. What changes is that Egret now binds the OPA listener, port **8082** by
-default, on every installation, and that a profile can be switched to OPA without touching configuration first. See
+switches them**, so the change alone moves no enforcement. What changes is that, where `ranger.enabled` is on (it is off by default), Egret now binds the OPA listener, port **8082** by
+default, and mounts the OPA surface with no configuration change, so a profile can be switched to OPA without touching configuration first. With `ranger.enabled` off, nothing binds 8082 and a switch to OPA is refused. See
 [Trino on OPA](../data-governance/engines-and-policy/trino-on-opa.md).
 
-- **Turning it off:** `[governance.opa] enabled = false`, `EGRET_GOVERNANCE__OPA__ENABLED=false`, or Helm `opa.enabled=false`. The chart renders the variable explicitly either way. Switch any profile on OPA back to Ranger first: with the key off, its engines fail every query.
+- **Turning it off:** `[governance.opa] enabled = false`, `EGRET_GOVERNANCE__OPA__ENABLED=false`, or Helm `opa.enabled=false`. The chart sets the variable from `opa.enabled`. Switch any profile on OPA back to Ranger first: with the key off, its engines fail every query.
 - **Network:** the chart's `NetworkPolicy/egret-ingress` (with `engineNetworkPolicy.enabled`) admits the OPA port only from `engineNamespace` and `opa.extraFrom`. Outside Kubernetes, keep port 8082 reachable from the engines only.
 - **Tag-service warning:** a Trino profile with no usable tag service now carries `no_tag_service_warning` on the `PATCH …/mechanism` answer and on each explain profile, and the console shows it. See [Trino on OPA](../data-governance/engines-and-policy/trino-on-opa.md#through-the-api).
 - **Known issues** on OPA engines: KI-352, KI-353 and KI-354 in [Known issues](../known-issues.md).

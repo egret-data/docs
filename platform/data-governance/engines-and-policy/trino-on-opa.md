@@ -18,7 +18,7 @@ The feature is gated by one key, **on by default** from this release:
 |---|---|---|
 | `[governance.opa] enabled` | `EGRET_GOVERNANCE__OPA__ENABLED` | `true` |
 
-Nothing needs to be set to use OPA, as long as `ranger.enabled` is on. Turning the key on does not move any profile: every profile stays on Ranger until an operator switches it (see [Switch a profile](#who-can-switch)), so the default alone changes no enforcement. It does bind the OPA listener (`0.0.0.0:8082` by default) on every installation.
+OPA also needs `ranger.enabled`, which is **off by default**. The OPA surface and its listener run only when both keys are on; with `ranger.enabled` off, nothing binds the OPA port and a switch to OPA is refused. When both are on, Egret binds the OPA listener (`0.0.0.0:8082` by default). An installation that already runs the Ranger surface therefore binds 8082 and mounts the OPA surface after the upgrade, with no configuration change. The key being on does not move any profile; each profile stays on Ranger until an operator switches it (see [Switch a profile](#switch-a-profile)), so the default alone changes no enforcement.
 
 To turn the feature off, use any one of these:
 
@@ -31,7 +31,7 @@ enabled = false
 EGRET_GOVERNANCE__OPA__ENABLED=false
 ```
 
-On Kubernetes, set the Helm value `opa.enabled=false`. The chart renders the environment variable explicitly either way.
+On Kubernetes, set the Helm value `opa.enabled=false`. The chart sets `EGRET_GOVERNANCE__OPA__ENABLED` from `opa.enabled`.
 
 Egret serves the OPA routes on their own port, **8082** by default, not on the API port 8080 (see [Network exposure](#network-exposure)). On Kubernetes, the Helm value `opa.enabled` (default `true`) sets both keys of the OPA listener for you (see [Kubernetes](../../deploy-operate/kubernetes.md)).
 
