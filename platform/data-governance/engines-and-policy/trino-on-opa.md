@@ -35,9 +35,7 @@ On Kubernetes, set the Helm value `opa.enabled=false`. The chart always sets `EG
 
 Egret serves the OPA routes on their own port, **8082** by default, not on the API port 8080 (see [Network exposure](#network-exposure)). On Kubernetes, the Helm value `opa.enabled` (default `true`) sets the key and, when `ranger.enabled` is also true, the OPA listener, port and NetworkPolicy rule for you (see [Kubernetes](../../deploy-operate/kubernetes.md)).
 
-It also needs `ranger.enabled = true`, because the OPA routes check the engine credentials of the Ranger surface (see [Engines and Ranger setup](../../deploy-operate/engines-and-ranger.md)). With the Ranger surface off, OPA does not run and a switch to OPA is refused with the same message as a disabled gate.
-
-With the gate off, the OPA routes are not mounted (they answer 404), no snapshot refresher runs, and a switch to OPA is refused: *OPA is not enabled on this installation ([governance.opa] enabled)*. The keys that tune the request bodies are under [Limits](#limits); the listener's keys are under [Network exposure](#network-exposure).
+`ranger.enabled` is needed because the OPA routes check the engine credentials of the Ranger surface (see [Engines and Ranger setup](../../deploy-operate/engines-and-ranger.md)). When either key is off, the OPA routes are not mounted (they answer 404), no snapshot refresher runs, and a switch to OPA is refused: *OPA is not running on this installation: it needs both [governance.opa] enabled and ranger.enabled*. The keys that tune the request bodies are under [Limits](#limits); the listener's keys are under [Network exposure](#network-exposure).
 
 **Turning the gate off while profiles are on OPA makes their engines fail every query**, because the routes unmount. Switch those profiles back to Ranger first.
 
@@ -67,7 +65,7 @@ A refused switch lists every condition that holds, one message each, and writes 
 
 | Message | What to do |
 |---|---|
-| *OPA is not enabled on this installation ([governance.opa] enabled)* | Either the key was turned off or `ranger.enabled` (off by default) is off. Remove `enabled = false` (or set `EGRET_GOVERNANCE__OPA__ENABLED=true`, or Helm `opa.enabled=true`), keep `ranger.enabled`, then restart Egret. |
+| *OPA is not running on this installation: it needs both [governance.opa] enabled and ranger.enabled* | Turn on `ranger.enabled` (it is off by default), and make sure `[governance.opa] enabled` is not `false` (or set `EGRET_GOVERNANCE__OPA__ENABLED=true`, or Helm `opa.enabled=true`), then restart Egret. |
 | *only a Trino profile can use OPA; this profile is of type \<type\>* | Nothing: StarRocks profiles stay on Ranger. |
 | *only a generated profile can use OPA: hand-written policies are Ranger JSON that OPA cannot evaluate* | Express the profile's access as grants and rules (see [Migrate policies](./migrate.md)), so that Egret generates it. |
 | *engine \<name\> runs \<image\>, which does not ship the Trino OPA plugin; supported: trinodb/trino:483* | Move the engine to `trinodb/trino:483` in the Control plane, or bind it to another profile. |
