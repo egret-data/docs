@@ -141,7 +141,7 @@ Egret does not restart or reconfigure an external engine. Its operator installs 
 
 The engine's **Plugin** tab in **Governance → Engine & policy** has **Download Trino config**, which shows the same two files for a profile on OPA, with the engine id and the secret as placeholders (`GET /api/control-plane/policies/services/{service}/trino-config`). Its note reads *Install these two files on a Trino 483 or later coordinator with plugin/opa: egret answers its requests, and cannot check an external engine's image.*, and its warnings include *The coordinator must run Trino 483 or later with plugin/opa; egret cannot check an external engine's image.*
 
-![The Trino config dialog of opa_e2e on OPA: the install note, the opa.log-requests warning, the Trino 483 note, and the two files with Download buttons](/img/platform/admin/gov-opa-trino-config.png)
+![The Trino config dialog of opa_e2e on OPA: the install note, the opa.log-requests warning, the Trino 483 note, the opa.policy.batched-uri warning, and the two files with Download buttons, their URLs on the OPA listener port 8082](/img/platform/admin/gov-opa-trino-config.png)
 
 **Keep `opa.policy.batched-uri`.** Egret's `access-control.properties` sets it, and the files carry the warning *Do not remove opa.policy.batched-uri from access-control.properties: without it Trino sends one request per object, and a listing of about a thousand tables, such as information_schema.columns, failed in testing.* Measured: without it, `information_schema.columns` over a catalog of 1 003 tables failed in 30 of 30 runs with *Failed to query OPA backend*, because the plugin's own HTTP client overflowed its queue of 1 024 requests. With it, the same query took 1 024 requests and succeeded.
 
