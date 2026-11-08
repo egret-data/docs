@@ -31,9 +31,9 @@ enabled = false
 EGRET_GOVERNANCE__OPA__ENABLED=false
 ```
 
-On Kubernetes, set the Helm value `opa.enabled=false`. The chart sets `EGRET_GOVERNANCE__OPA__ENABLED` from `opa.enabled`.
+On Kubernetes, set the Helm value `opa.enabled=false`. The chart always sets `EGRET_GOVERNANCE__OPA__ENABLED` from `opa.enabled`. With `ranger.enabled` off (the default) the chart opens no OPA port, and Egret logs an info line at start, *OPA surface idle: ranger.enabled is off*, not an error.
 
-Egret serves the OPA routes on their own port, **8082** by default, not on the API port 8080 (see [Network exposure](#network-exposure)). On Kubernetes, the Helm value `opa.enabled` (default `true`) sets both keys of the OPA listener for you (see [Kubernetes](../../deploy-operate/kubernetes.md)).
+Egret serves the OPA routes on their own port, **8082** by default, not on the API port 8080 (see [Network exposure](#network-exposure)). On Kubernetes, the Helm value `opa.enabled` (default `true`) sets the key and, when `ranger.enabled` is also true, the OPA listener, port and NetworkPolicy rule for you (see [Kubernetes](../../deploy-operate/kubernetes.md)).
 
 It also needs `ranger.enabled = true`, because the OPA routes check the engine credentials of the Ranger surface (see [Engines and Ranger setup](../../deploy-operate/engines-and-ranger.md)). With the Ranger surface off, OPA does not run and a switch to OPA is refused with the same message as a disabled gate.
 
