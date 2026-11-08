@@ -642,15 +642,23 @@ default. Port 8080 now answers 404 for `/opa/`; `/ranger/`, `/oauth/token` and t
 migration (`0216`, one column, `applied_opa_url`, that records the OPA URL each engine was last applied with). Nothing changes
 while `[governance.opa] enabled` is `false`. See [Trino on OPA](../data-governance/engines-and-policy/trino-on-opa.md#network-exposure).
 
-- **New keys:** `[governance.opa] listen` and `engine_url`. Egret refuses to start when `listen` has the port of `server.port` or,
-  with `apps.origin` set, of the apps listener. When `engine_url` is unset, engines get `[catalog] public_url` with the port of
+- **New keys:** `[governance.opa] listen` and `engine_url`, checked only while `[governance.opa] enabled` is `true`. Egret then
+  refuses to start when `listen` has the port of `server.port` or, with `apps.origin` set, of the apps listener, or when
+  `engine_url` is set but is not an absolute `http(s)` URL with a host. When `engine_url` is unset, engines get `[catalog] public_url` with the port of
   `listen`; **if `public_url` is an ingress hostname rather than Egret's in-cluster address, set `engine_url`**.
 - **Provisioned engines re-apply themselves.** At start, with OPA enabled, Egret re-applies each provisioned Trino engine on an OPA
   profile whose recorded OPA URL differs from the current one, including engines applied before the upgrade. A failure is logged
-  per engine as a warning and does not stop the server; apply that engine again with any change that applies it. The pass runs in the background: serving starts at once and the engines converge shortly after. Expect a coordinator restart for each.
+  per engine as a warning and does not stop the server; apply that engine again with any change that applies it. The pass runs in
+  the background after the new Egret starts serving, and each re-applied coordinator restarts.
+- **Queries on provisioned OPA engines fail during the upgrade.** From the moment the new Egret serves until an engine has been
+  re-applied and its coordinator has restarted, that engine still asks port 8080 for `/opa/`, which now answers 404, so its queries
+  are refused. During a rolling update, old and new Egret pods serve side by side: an engine already re-applied to the OPA port is
+  also refused whenever its request reaches an old pod, which has no OPA listener. On Docker the window includes the Egret container
+  recreate. How long this lasts depends on the number of engines and on how fast each coordinator restarts. **Upgrade in a
+  maintenance window, or when the query load on OPA engines is low.** Engines on the Ranger mechanism are not affected.
 - **External engines re-install their files.** Download the OPA plugin files again (**Control plane → Engines → \<engine\> → Plugin
   config**, or `GET /api/control-plane/engines/{id}/opa-plugin-config`, which now returns the OPA port's URL), install them and
-  restart the coordinator. Until then the engine asks port 8080 and fails every query.
+  restart the coordinator. From the upgrade until then the engine asks port 8080 and fails every query.
 - **Firewalls:** allow the OPA port (8082 by default) from the engines to Egret. Anything between them that only allowed 8080 blocks OPA.
 - **Helm:** new values `opa.enabled` (default `false`), `opa.port` (`8082`) and `opa.extraFrom`, and a new
   `NetworkPolicy/egret-ingress`, rendered when `engineNetworkPolicy.enabled`, that admits the OPA port only from `engineNamespace`

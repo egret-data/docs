@@ -233,8 +233,8 @@ The OPA surface reads a request body before it can authenticate it. On a shared 
 
 | Key | Environment variable | Default | Meaning |
 |---|---|---|---|
-| `[governance.opa] listen` | `EGRET_GOVERNANCE__OPA__LISTEN` | `0.0.0.0:8082` | Where the OPA listener binds, as `host:port`. Egret refuses to start when its port equals `server.port` or, when apps are enabled (`apps.origin` is set), the apps listener's port. |
-| `[governance.opa] engine_url` | `EGRET_GOVERNANCE__OPA__ENGINE_URL` | unset | The base URL engines use for OPA. Unset, Egret takes `[catalog] public_url` (or the Docker callback URL; `http://egret:8080` when `public_url` is unset, so `http://egret:8082`) and replaces its port with the port of `listen`, then trims a trailing slash. |
+| `[governance.opa] listen` | `EGRET_GOVERNANCE__OPA__LISTEN` | `0.0.0.0:8082` | Where the OPA listener binds, as `host:port`. With OPA enabled, Egret refuses to start when its port equals `server.port` or, when apps are enabled (`apps.origin` is set), the apps listener's port. With OPA off it is not checked, because nothing binds it. |
+| `[governance.opa] engine_url` | `EGRET_GOVERNANCE__OPA__ENGINE_URL` | unset | The base URL engines use for OPA. Unset, Egret takes `[catalog] public_url` (or the Docker callback URL; `http://egret:8080` when `public_url` is unset, so `http://egret:8082`) and replaces its port with the port of `listen`, then trims a trailing slash. With OPA enabled, a value that is not an absolute `http(s)` URL with a host stops Egret at start. |
 
 :::warning
 **Set `engine_url` when `[catalog] public_url` is not Egret's in-cluster or internal address.** If it is, for example, an ingress hostname, the derived URL points at that hostname on the OPA port and engines cannot reach it. Set `engine_url` to an address engines can reach, such as `http://egret.<namespace>.svc.cluster.local:8082`.
@@ -246,7 +246,11 @@ The OPA surface reads a request body before it can authenticate it. On a shared 
 
 ### Engines that Egret provisions
 
-Migration 0216 adds `applied_opa_url` to every engine: the OPA URL Egret last wrote into its plugin files. When Egret starts with OPA enabled, it re-applies, in the background, each provisioned Trino engine on an OPA profile whose recorded URL differs from the current one, including engines applied before the upgrade (their value is empty). A failure is logged per engine as a warning and does not stop the server. Serving starts at once and the engines converge shortly after; apply a failed engine again with any change that applies it. External engines are not re-applied: see [External engines](#external-engines).
+Migration 0216 adds `applied_opa_url` to every engine: the OPA URL Egret last wrote into its plugin files. When Egret starts with OPA enabled, it re-applies, in the background, each provisioned Trino engine on an OPA profile whose recorded URL differs from the current one, including engines applied before the upgrade (their value is empty). A failure is logged per engine as a warning and does not stop the server; apply a failed engine again with any change that applies it. The pass runs after the new Egret starts serving, and each re-applied coordinator restarts.
+
+:::warning
+**Queries on these engines fail until each one is re-applied and restarted.** Until then an engine asks port 8080 for `/opa/`, which answers 404. During a rolling update an engine already moved to the OPA port is also refused whenever its request reaches an old Egret pod, which has no OPA listener. Upgrade in a maintenance window, or when the query load on OPA engines is low. See [Upgrade](../../deploy-operate/upgrade.md).
+::: External engines are not re-applied: see [External engines](#external-engines).
 
 ## Limits
 
