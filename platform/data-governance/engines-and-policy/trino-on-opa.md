@@ -23,9 +23,11 @@ EGRET_GOVERNANCE__OPA__ENABLED=true
 EGRET_RANGER__ENABLED=true
 ```
 
+Egret serves the OPA routes on their own port, **8082** by default, not on the API port 8080 (see [Network exposure](#network-exposure)). On Kubernetes, the Helm value `opa.enabled=true` sets both keys of the OPA listener for you (see [Kubernetes](../../deploy-operate/kubernetes.md)).
+
 It also needs `ranger.enabled = true`, because the OPA routes check the engine credentials of the Ranger surface (see [Engines and Ranger setup](../../deploy-operate/engines-and-ranger.md)). With the Ranger surface off, OPA does not run and a switch to OPA is refused with the same message as a disabled gate.
 
-With the gate off, the OPA routes are not mounted (they answer 404), no snapshot refresher runs, and a switch to OPA is refused: *OPA is not enabled on this installation ([governance.opa] enabled)*. The two other keys of `[governance.opa]` are under [Limits](#limits).
+With the gate off, the OPA routes are not mounted (they answer 404), no snapshot refresher runs, and a switch to OPA is refused: *OPA is not enabled on this installation ([governance.opa] enabled)*. The keys that tune the request bodies are under [Limits](#limits); the listener's keys are under [Network exposure](#network-exposure).
 
 **Turning the gate off while profiles are on OPA makes their engines fail every query**, because the routes unmount. Switch those profiles back to Ranger first.
 
@@ -137,6 +139,8 @@ The engine's **Plugin** tab in **Governance → Engine & policy** has **Download
 
 Read `external_engines_unchanged` (or the section's *Not restarted (external)* line) after every switch.
 
+**After an upgrade to the OPA port.** An external engine that already runs the OPA plugin points at the old address on port 8080, which now answers 404 for `/opa/`, so it fails every query. Download its files again (the plugin-config route above now returns the OPA port's URL), install them in `/etc/trino/` and restart the coordinator. Egret re-applies the engines it provisions itself (see [Network exposure](#network-exposure)); it does not touch an external one.
+
 ## Never enable opa.log-requests
 
 The engine's Ranger plugin credential is the OPA secret, and the plugin sends it **inside every request body**, from `egret-opa-context.properties`. The generated files set `opa.log-requests` and `opa.log-responses` to `false`, and the files carry the warning *Do not enable opa.log-requests: every request carries egret.secret in input.context.properties, and the coordinator log would hold it.*
@@ -223,11 +227,26 @@ Explain follows the **profile's** mechanism, not each engine's. It also cannot s
 
 ## Network exposure
 
-The OPA routes live on Egret's main listener, under `/opa/v1/data/egret/trino/`: `allow`, `batch`, `row_filters`, `batch_column_masks` and `column_mask`. They have no CSRF protection and no OpenAPI entry.
+The OPA routes live on their own listener, under `/opa/v1/data/egret/trino/`: `allow`, `batch`, `row_filters`, `batch_column_masks` and `column_mask`. The listener serves nothing else. They have no CSRF protection and no OpenAPI entry. Port 8080 answers 404 for `/opa/`; `/ranger/`, `/oauth/token` and the Iceberg REST catalog stay on 8080, and engines on the Ranger mechanism are unchanged.
+
+The OPA surface reads a request body before it can authenticate it. On a shared port, any pod that could reach Egret could hold stalled requests and use up the budget that engines need; on its own port, a NetworkPolicy can admit only the engines.
+
+| Key | Environment variable | Default | Meaning |
+|---|---|---|---|
+| `[governance.opa] listen` | `EGRET_GOVERNANCE__OPA__LISTEN` | `0.0.0.0:8082` | Where the OPA listener binds, as `host:port`. Egret refuses to start when its port equals `server.port` or, when apps are enabled (`apps.origin` is set), the apps listener's port. |
+| `[governance.opa] engine_url` | `EGRET_GOVERNANCE__OPA__ENGINE_URL` | unset | The base URL engines use for OPA. Unset, Egret takes `[catalog] public_url` (or the Docker callback URL) and replaces its port with the port of `listen`, then trims a trailing slash. |
+
+:::warning
+**Set `engine_url` when `[catalog] public_url` is not Egret's in-cluster or internal address.** If it is, for example, an ingress hostname, the derived URL points at that hostname on the OPA port and engines cannot reach it. Set `engine_url` to an address engines can reach, such as `http://egret.<namespace>.svc.cluster.local:8082`.
+:::
 
 :::danger
-**Restrict `/opa/` to the engines' network**, with an ingress rule or a NetworkPolicy, so that only Trino coordinators reach it. This is required, not advisory. Egret reads request bodies before it authenticates the caller, and a caller that opens connections and stalls them can hold most of the in-flight budget, renewing it every `body_read_timeout_ms`; the engines' queries then get 503 and fail.
+**Only the engines may reach the OPA port.** Allow it from the engines' network and from nothing else. On Kubernetes, `engineNetworkPolicy.enabled` renders `NetworkPolicy/egret-ingress`, which admits the OPA port from `engineNamespace` and from `opa.extraFrom` only (see [Kubernetes](../../deploy-operate/kubernetes.md#engine-network-policy)). Any firewall between the engines and Egret must allow the OPA port, 8082 by default, or every query on an OPA engine fails.
 :::
+
+### Engines that Egret provisions
+
+Migration 0216 adds `applied_opa_url` to every engine: the OPA URL Egret last wrote into its plugin files. When Egret starts with OPA enabled, it re-applies each provisioned Trino engine on an OPA profile whose recorded URL differs from the current one, including engines applied before the upgrade (their value is empty). A failure is logged per engine as a warning and does not stop the server; re-apply that engine from the console. External engines are not re-applied: see [External engines](#external-engines).
 
 ## Limits
 

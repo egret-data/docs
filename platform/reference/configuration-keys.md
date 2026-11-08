@@ -156,9 +156,11 @@ The S3-compatible object store used for the catalog warehouse, query results, wo
 
 | Key | Environment variable | Default | Meaning |
 |---|---|---|---|
-| `enabled` | `EGRET_GOVERNANCE__OPA__ENABLED` | `false` | Serve the OPA decision routes for Trino and allow a policy profile to switch to OPA. Needs `ranger.enabled`. See [Trino on OPA](../data-governance/engines-and-policy/trino-on-opa.md). |
+| `enabled` | `EGRET_GOVERNANCE__OPA__ENABLED` | `false` | Serve the OPA decision routes for Trino, on their own listener (`listen`), and allow a policy profile to switch to OPA. Needs `ranger.enabled`. See [Trino on OPA](../data-governance/engines-and-policy/trino-on-opa.md). |
 | `batch_body_limit_bytes` | `EGRET_GOVERNANCE__OPA__BATCH_BODY_LIMIT_BYTES` | `25165824` (24 MiB) | Largest request body the OPA `/batch` route accepts. Trino sends a listing of a whole schema as one batch; a larger body is answered 413 and the query fails. From 4194304 (4 MiB) to 67108864 (64 MiB); every other OPA route keeps 4 MiB. |
 | `body_read_timeout_ms` | `EGRET_GOVERNANCE__OPA__BODY_READ_TIMEOUT_MS` | `5000` | How long an admitted OPA request may take to send its whole body before it is answered 408 and its connection closed. From 1 to 60000. |
+| `listen` | `EGRET_GOVERNANCE__OPA__LISTEN` | `0.0.0.0:8082` | Where the OPA listener binds, `host:port`. It serves only the OPA routes; port 8080 answers 404 for `/opa/`. Egret refuses to start when the port equals `server.port` or, with `apps.origin` set, the apps listener's port. |
+| `engine_url` | `EGRET_GOVERNANCE__OPA__ENGINE_URL` | unset | Base URL engines use for OPA. Unset: `catalog.public_url` (or the Docker callback URL) with its port replaced by the port of `listen`. Set it when `public_url` is not Egret's in-cluster address, for example an ingress hostname. |
 
 ## engine
 
