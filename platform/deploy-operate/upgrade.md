@@ -665,6 +665,18 @@ while `[governance.opa] enabled` is `false`. See [Trino on OPA](../data-governan
   and `opa.extraFrom`. With `engineNetworkPolicy.enabled`, `egret-ingress` admits only 8080, 8081 (apps) and the OPA port to the backend pod: anything that reached another port on it is now refused. Add the namespace of an external Trino on OPA to `opa.extraFrom`. See
   [Kubernetes](./kubernetes.md#engine-network-policy).
 
+### OPA is on by default
+
+`[governance.opa] enabled` now defaults to `true`, and so does the Helm value `opa.enabled`. **Profiles stay on Ranger until an operator
+switches them**, so the change alone moves no enforcement. What changes is that Egret now binds the OPA listener, port **8082** by
+default, on every installation, and that a profile can be switched to OPA without touching configuration first. See
+[Trino on OPA](../data-governance/engines-and-policy/trino-on-opa.md).
+
+- **Turning it off:** `[governance.opa] enabled = false`, `EGRET_GOVERNANCE__OPA__ENABLED=false`, or Helm `opa.enabled=false`. The chart renders the variable explicitly either way. Switch any profile on OPA back to Ranger first: with the key off, its engines fail every query.
+- **Network:** the chart's `NetworkPolicy/egret-ingress` (with `engineNetworkPolicy.enabled`) admits the OPA port only from `engineNamespace` and `opa.extraFrom`. Outside Kubernetes, keep port 8082 reachable from the engines only.
+- **Tag-service warning:** a Trino profile with no usable tag service now carries `no_tag_service_warning` on the `PATCH …/mechanism` answer and on each explain profile, and the console shows it. See [Trino on OPA](../data-governance/engines-and-policy/trino-on-opa.md#through-the-api).
+- **Known issues** on OPA engines: KI-352, KI-353 and KI-354 in [Known issues](../known-issues.md).
+
 ## Further reading
 
 - [Backup and restore](./backup-restore)

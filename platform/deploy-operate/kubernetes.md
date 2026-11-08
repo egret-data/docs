@@ -25,7 +25,7 @@ With default values `helm template` renders these objects:
 | Object | Purpose |
 |---|---|
 | `Deployment/egret` | The Egret server. Probes: startup `GET /healthz`, readiness `GET /readyz`, liveness `GET /healthz`. Requests 500m CPU and 1 GiB, limits 2 CPU and 4 GiB. `terminationGracePeriodSeconds` is 65, which must stay above the server's 55 second drain. |
-| `Service/egret` | Port 8080 (8081 for Data Apps when `apps.origin` is set, and the port named `opa` when `opa.enabled` is set). |
+| `Service/egret` | Port 8080 (8081 for Data Apps when `apps.origin` is set, and the port named `opa` while `opa.enabled` is on, which is the default). |
 | `Deployment/egret-frontend`, `Service/egret-frontend` | The built web app behind nginx, as a NodePort Service (30080). |
 | `Deployment/egret-renderer`, `Service/egret-renderer` | The screenshot service used by reports. |
 | `Job/egret-init` | A post-install and post-upgrade hook that runs `egret init`, creating the administrator and the `default` workspace. It is idempotent. |
@@ -182,7 +182,7 @@ Running a script task also needs the workspace feature `workflow_containers` (of
 | `engineNetworkPolicy.operatorNamespaces` | `[starrocks]` | Namespaces of the StarRocks operator, let in on the front end's 8030 and 9030. |
 | `engineNetworkPolicy.ingressFrom` | `[]` | NetworkPolicy peers an engine Ingress forwards from (your ingress controller), let in on 8030 (StarRocks front end) and 8080 and 8443 (Trino). **Required when an engine has an Ingress**, or the Ingress gets no traffic. |
 | `engineNetworkPolicy.extraFrom` | `[]` | Other NetworkPolicy peers, let in on every port, for example a metrics scraper. |
-| `opa.enabled` | `false` | Sets `EGRET_GOVERNANCE__OPA__ENABLED=true` and `EGRET_GOVERNANCE__OPA__LISTEN=0.0.0.0:<opa.port>`, and adds the `opa` port to the Deployment and the `Service/egret`. It still needs `ranger.enabled`. See [Trino on OPA](../data-governance/engines-and-policy/trino-on-opa.md). |
+| `opa.enabled` | `true` | Sets `EGRET_GOVERNANCE__OPA__ENABLED=true` (`false` when you turn it off; the chart renders the variable either way) and `EGRET_GOVERNANCE__OPA__LISTEN=0.0.0.0:<opa.port>`, and adds the `opa` port to the Deployment and the `Service/egret`. Profiles stay on Ranger until an operator switches them. It still needs `ranger.enabled`. Set `opa.enabled=false` to turn OPA off. See [Trino on OPA](../data-governance/engines-and-policy/trino-on-opa.md). |
 | `opa.port` | `8082` | The port of Egret's OPA listener. Egret derives the URL engines use from `catalog.public_url` with this port, so no other value is needed while that URL is Egret's in-cluster address. |
 | `opa.extraFrom` | `[]` | NetworkPolicy peers beyond `engineNamespace` that may reach the OPA port, for example the namespace of an external Trino on OPA. |
 | `apps.origin`, `apps.egretOrigin` | empty | The Data Apps origin (a sibling subdomain such as `apps.<host>`) and Egret's own origin. Empty turns the apps iframe and its listener off. |
