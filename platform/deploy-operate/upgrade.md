@@ -678,7 +678,7 @@ default, and mounts the OPA surface with no configuration change, so a profile c
 - **Tag-service warning:** a Trino profile with no usable tag service now carries `no_tag_service_warning` on the `PATCH …/mechanism` answer and on each explain profile, and the console shows it. See [Trino on OPA](../data-governance/engines-and-policy/trino-on-opa.md#through-the-api).
 - **Known issues** on OPA engines: KI-352, KI-353 and KI-354 in [Known issues](../known-issues.md).
 
-### StarRocks engine posture (platform #TBD-ENGINE-POSTURE)
+### StarRocks engine posture (platform #847)
 
 Nothing changes on its own when you upgrade: no migration rewrites an engine's image or sets a password, because the FE restarts. Migration 0217 adds one flag, which records a security upgrade that was stored but not applied.
 

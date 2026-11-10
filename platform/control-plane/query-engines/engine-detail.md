@@ -16,7 +16,7 @@ A provisioned StarRocks engine that a policy profile names shows, above the tabs
 
 ### Security warnings on a StarRocks engine
 
-Two warnings can appear above the tabs of a StarRocks engine (since platform #TBD-ENGINE-POSTURE).
+Two warnings can appear above the tabs of a StarRocks engine (since platform #847).
 
 #### Not governed
 
