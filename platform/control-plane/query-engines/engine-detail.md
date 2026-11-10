@@ -42,13 +42,13 @@ The warning needs the `engine:update` permission to act on; without it the page 
 
 **Upgrade security** opens a confirmation dialog, *Upgrade this engine's security?*, that lists what will change:
 
-- `FE image: <current> → <new>`, and *The CN image moves to the same release.*;
+- `FE image: <current> → <new>`, and *The CN image moves to the same release.* When egret has no FE image recorded for the engine, `<current>` reads *the current image (not recorded)*;
 - *root password will be set*, when the engine has none;
 - *The stored changes are applied again.*, for `notApplied`.
 
 ![The Upgrade this engine's security dialog listing the FE image change and the root password](/img/platform/admin/cp-engine-security-upgrade-dialog.png)
 
-It also warns that the FE and CN pods restart, and that a client outside egret that logs in as `root` with no password is refused afterwards. egret's own access is not affected: it uses the password it stores. Press **Upgrade security** in the dialog to run it. The engine is applied on every run, so running it again is safe.
+It also warns that the FE and CN pods restart, and that a client outside egret that logs in as `root` with no password is refused afterwards. When a root password will be set, it adds *egret's own admin statements on this engine fail until the FE takes the new password, usually within a minute.* Press **Upgrade security** in the dialog to run it. The engine is applied on every run, so running it again is safe.
 
 If the FE image is of a newer release than egret's default fork image (an official 4.1.8, for example), egret does not change the image, because StarRocks FE metadata cannot be downgraded. The root password is still set, and the dialog and the result say:
 
