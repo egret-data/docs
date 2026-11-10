@@ -678,6 +678,14 @@ default, and mounts the OPA surface with no configuration change, so a profile c
 - **Tag-service warning:** a Trino profile with no usable tag service now carries `no_tag_service_warning` on the `PATCH …/mechanism` answer and on each explain profile, and the console shows it. See [Trino on OPA](../data-governance/engines-and-policy/trino-on-opa.md#through-the-api).
 - **Known issues** on OPA engines: KI-352, KI-353 and KI-354 in [Known issues](../known-issues.md).
 
+### StarRocks engine posture (platform #847)
+
+Nothing changes on its own when you upgrade: no migration rewrites an engine's image or sets a password, because the FE restarts. Migration 0217 adds one flag, which records a security upgrade that was stored but not applied.
+
+- **After the upgrade, open Control Plane → Infrastructure → Engines and look for Security upgrade needed.** An engine created before platform #826 and #832 can still run an official StarRocks FE or an egret image before `4.1.7-egret.4`, or have a passwordless FE `root`. Open each one and press **Upgrade security** (or `POST /api/control-plane/engines/{id}/security-upgrade`) in a quiet window: the FE and CN pods restart. A client outside egret that logs in as `root` with no password is refused afterwards. See [Engine detail](../control-plane/query-engines/engine-detail.md#security-upgrade-needed).
+- Look for **Not governed** too: with Ranger on, a StarRocks engine with no policy profile enforces none of egret's policies. Bind a profile in its settings.
+- **API change:** the engine adds `notGoverned`, `securityUpgradeNeeded`, `securityUpgradeReasons`, `securityUpgradeFeImage` and `securityUpgradeBlockedRelease`, and a new route `POST /api/control-plane/engines/{id}/security-upgrade`. See [Engines API](../reference/rest-api/control-plane-engines.md).
+
 ## Further reading
 
 - [Backup and restore](./backup-restore)

@@ -18,6 +18,10 @@ You need **engine:create** and **engine:provision**. Egret runs the engine where
 4. Under **Configuration**, adjust what you need. Leave a field blank to use the default.
 5. Press **Create engine**.
 
+For a StarRocks engine the form has a **Policy profile** select (since platform #847; fixes KI-336). It lists the StarRocks profiles that no engine uses yet. Its default, **Create a profile named after the engine**, makes a new StarRocks profile with the engine's name when Ranger is on; with Ranger off nothing is bound. Without a profile, egret's grants, masks and row filters do not reach the engine, and with Ranger on the engine shows **Not governed**. If a profile with the engine's name already exists and is of another type, or another engine uses it, the create is refused (409).
+
+![The Add engine form for StarRocks with the Policy profile select open](/img/platform/admin/cp-engine-create-starrocks-profile.png)
+
 The engine page opens with the status **Provisioning**. It turns **Running** when the coordinator answers. Measured on the demo stack: 72 seconds for the first engine on a Docker host that already had the image, and 38 seconds for a restart.
 
 :::tip Single-node engine
