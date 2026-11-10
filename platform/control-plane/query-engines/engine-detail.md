@@ -52,7 +52,7 @@ It also warns that the FE and CN pods restart, and that a client outside egret t
 
 If the FE image is of a newer release than egret's default fork image (an official 4.1.8, for example), egret does not change the image, because StarRocks FE metadata cannot be downgraded. The root password is still set, and the dialog and the result say:
 
-*No patched image for release <x> yet: the image was not changed.*
+*No patched image for release* `<x>` *yet: the image was not changed.*
 
 The `unpatchedImage` reason then stays. If the apply fails, the page shows the error, the engine keeps the **Security upgrade needed** badge with the reason *Not applied*, and you run **Upgrade security** again. Any later successful apply of the engine, a settings save for example, also clears that reason.
 
