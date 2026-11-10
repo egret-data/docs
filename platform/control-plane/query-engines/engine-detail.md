@@ -14,6 +14,48 @@ The header shows the engine name, its namespace (`egret-engines`), the image, th
 
 A provisioned StarRocks engine that a policy profile names shows, above the tabs, the warning that unless the engine runs `egret-starrocks-fe` `4.1.7-egret.4` or later its StarRocks lets users past the profile: official images serve the Iceberg metadata tables without asking Ranger and apply no mask or row filter to prepared statements, and official and earlier patched images apply none through the HTTP SQL API or Arrow Flight SQL, let anyone read object storage through `FILES()` and let a masked or filtered user store a table's rows in the clear in a materialized view, and images before `4.1.7-egret.4` show a filtered user the statistics of hidden rows through `EXPLAIN COSTS` and let anyone reach object storage with the cluster's own identity through `BROKER LOAD`, `EXPORT` and `SELECT INTO OUTFILE` without keys (since platform #822, widened in #826, #827 and #832; see [External engine](#overview-1), KI-340, KI-345 to KI-348, KI-350, KI-351). It is not shown while the profile list loads, or to a viewer who cannot read it. It is not shown for a provisioned engine on Egret's patched image `ghcr.io/egret-data/egret-starrocks-fe` `4.1.7-egret.4` or later (the default for new engines since platform #832), which fixes all of them; it is shown for an engine still on `4.1.7-egret.1` or `4.1.7-egret.3`; an external engine always shows it, because Egret does not know its image.
 
+### Security warnings on a StarRocks engine
+
+Two warnings can appear above the tabs of a StarRocks engine (since platform #TBD-ENGINE-POSTURE).
+
+#### Not governed
+
+With Ranger on, a StarRocks engine that is bound to no policy profile shows:
+
+*Not governed: this engine is bound to no policy profile, so egret's grants, masks and row filters do not reach it. Bind it to a StarRocks profile in its settings.*
+
+The engine list shows the same engine with a **Not governed** badge. To fix it, bind a StarRocks profile in the engine's settings (`authzServiceId` on `PUT /api/control-plane/engines/{id}`). With Ranger off no engine is governed, so the warning is not shown. Add engine now offers a profile for StarRocks (see [Provision an engine](./provision.md#create-an-engine)), so a new engine is bound from the start.
+
+#### Security upgrade needed
+
+A provisioned StarRocks engine that lacks egret's security fixes shows the warning *This engine needs a security upgrade* with one sentence per reason, and an **Upgrade security** button. The older warning about metadata tables is not shown while this one is.
+
+![The engine page of a StarRocks engine with the security upgrade warning and the Upgrade security button](/img/platform/admin/cp-engine-security-upgrade-warning.png)
+
+| Reason | API value | What it means |
+|---|---|---|
+| Image | `unpatchedImage` | The FE image is not `egret-starrocks-fe` `4.1.7-egret.4` or later (or a mirror of one). StarRocks then lets users past the engine's profile: Iceberg metadata tables, prepared statements, the HTTP SQL API, `FILES()` and more (KI-340, KI-345). |
+| Root password | `noRootPassword` | The FE `root` account has no password: anyone who reaches port 9030 can log in as `root`. Engines created before the root-password change have none. |
+| Not applied | `notApplied` | The last security upgrade stored its changes but did not finish applying them, for example because the apply failed. |
+
+The warning needs the `engine:update` permission to act on; without it the page says *Upgrading it needs the engine:update permission.* An external engine never shows it: egret does not change an external engine's image.
+
+**Upgrade security** opens a confirmation dialog, *Upgrade this engine's security?*, that lists what will change:
+
+- `FE image: <current> → <new>`, and *The CN image moves to the same release.*;
+- *root password will be set*, when the engine has none;
+- *The stored changes are applied again.*, for `notApplied`.
+
+![The Upgrade this engine's security dialog listing the FE image change and the root password](/img/platform/admin/cp-engine-security-upgrade-dialog.png)
+
+It also warns that the FE and CN pods restart, and that a client outside egret that logs in as `root` with no password is refused afterwards. egret's own access is not affected: it uses the password it stores. Press **Upgrade security** in the dialog to run it. The engine is applied on every run, so running it again is safe.
+
+If the FE image is of a newer release than egret's default fork image (an official 4.1.8, for example), egret does not change the image, because StarRocks FE metadata cannot be downgraded. The root password is still set, and the dialog and the result say:
+
+*No patched image for release <x> yet: the image was not changed.*
+
+The `unpatchedImage` reason then stays. If the apply fails, the page shows the error, the engine keeps the **Security upgrade needed** badge with the reason *Not applied*, and you run **Upgrade security** again. Any later successful apply of the engine, a settings save for example, also clears that reason.
+
 ### Overview
 
 A strip shows the **phase**, **pods** (ready/total; **containers** on the Docker provisioner), **replicas** (for example *Coord 1 · Worker 0*, the counts the engine runs with), **catalogs**, **workspaces** and **auth** (*JWT auth*, impersonation, password auth or no delegation). For StarRocks, **FE replicas** and **CN replicas** replace *replicas*.

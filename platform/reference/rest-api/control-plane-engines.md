@@ -8,7 +8,7 @@ description: REST endpoints in the control-plane-engines group.
 
 Engine provisioning: Trino-on-Kubernetes clusters, their catalogs, native query monitor, and pod logs/exec.
 
-This page lists 26 endpoints (OpenAPI tag `control-plane-engines`). It is generated from `openapi.json`; see the [REST API overview](../rest-api) for authentication, CSRF and error conventions.
+This page lists 27 endpoints (OpenAPI tag `control-plane-engines`). It is generated from `openapi.json`; see the [REST API overview](../rest-api) for authentication, CSRF and error conventions.
 
 | Method | Path | Operation id | Notes |
 |---|---|---|---|
@@ -36,6 +36,7 @@ This page lists 26 endpoints (OpenAPI tag `control-plane-engines`). It is genera
 | POST | `/api/control-plane/engines/{id}/retire-previous-ranger-credential` | `retire_previous_ranger_credential` | `POST /engines/\{id\}/retire-previous-ranger-credential` — the operator's confirmation that an EXTERNAL engine's plugin now runs with the credential named `ins... |
 | POST | `/api/control-plane/engines/{id}/rotate-ranger-credential` | `rotate_ranger_credential` | `POST /engines/\{id\}/rotate-ranger-credential` — mint a new Ranger plugin credential. |
 | POST | `/api/control-plane/engines/{id}/rotate-secrets` | `rotate_engine_secrets` | `POST /engines/\{id\}/rotate-secrets` — mint a new Trino internal-communication secret and `egret-monitor` password and re-apply the engine (pods roll). |
+| POST | `/api/control-plane/engines/{id}/security-upgrade` | `security_upgrade` | Bring a legacy provisioned StarRocks engine up to egret's security baseline. |
 | GET | `/api/control-plane/engines/{id}/workspaces` | `list_engine_workspaces` |  |
 | PUT | `/api/control-plane/engines/{id}/workspaces` | `set_engine_workspaces` |  |
 
@@ -130,6 +131,11 @@ Operation id: `list_engines`. Auth: Session cookie. Forbidden (403): Missing eng
 | `rangerCredentialId` | string (uuid), nullable | no | The id of the engine's CURRENT Ranger plugin credential: the `credentialId` registration or the last rotation returned with it. An opaque id that grants nothing (never the password); an external engine's operator sends it as `installed` to... |
 | `endpoint` | string | yes | `host:port` clients reach the engine on, as a workspace connection to it dials it (`Engine::client_endpoint`). External: the declared address. |
 | `runtime` | EngineRuntime | no |  |
+| `securityUpgradeNeeded` | boolean | yes | Provisioned StarRocks only: whether the engine needs **Upgrade security** (since platform #TBD-ENGINE-POSTURE). |
+| `securityUpgradeReasons` | array of string | no | Why, in this order: `unpatchedImage`, `noRootPassword`, `notApplied`. |
+| `securityUpgradeFeImage` | string, nullable | no | The FE image the upgrade would set; absent when it would set none. |
+| `securityUpgradeBlockedRelease` | string, nullable | no | The newer release that keeps the current image (the downgrade block); absent otherwise. |
+| `notGoverned` | boolean | yes | `true` only when Ranger is on, the engine is StarRocks and it is bound to no policy profile. |
 
 | Status | Meaning |
 |---|---|
@@ -182,6 +188,11 @@ Operation id: `create_engine`. Auth: Session cookie and `X-Egret-CSRF` header. F
 | `rangerCredentialId` | string (uuid), nullable | no | The id of the engine's CURRENT Ranger plugin credential: the `credentialId` registration or the last rotation returned with it. An opaque id that grants nothing (never the password); an external engine's operator sends it as `installed` to... |
 | `endpoint` | string | yes | `host:port` clients reach the engine on, as a workspace connection to it dials it (`Engine::client_endpoint`). External: the declared address. |
 | `runtime` | EngineRuntime | no |  |
+| `securityUpgradeNeeded` | boolean | yes | Provisioned StarRocks only: whether the engine needs **Upgrade security** (since platform #TBD-ENGINE-POSTURE). |
+| `securityUpgradeReasons` | array of string | no | Why, in this order: `unpatchedImage`, `noRootPassword`, `notApplied`. |
+| `securityUpgradeFeImage` | string, nullable | no | The FE image the upgrade would set; absent when it would set none. |
+| `securityUpgradeBlockedRelease` | string, nullable | no | The newer release that keeps the current image (the downgrade block); absent otherwise. |
+| `notGoverned` | boolean | yes | `true` only when Ranger is on, the engine is StarRocks and it is bound to no policy profile. |
 | `catalogAttachErrors` | CatalogAttachErrorDto[] | yes | Catalogs from the body's `catalogs` that could not be attached. Empty on success. The engine EXISTS and is provisioned; these catalogs simply are not on it, and each can be retried with `POST /api/control-plane/engines/\{id\}/catalogs/\{cid\}`.... |
 
 | Status | Meaning |
@@ -230,6 +241,11 @@ Operation id: `register_external_engine`. Auth: Session cookie and `X-Egret-CSRF
 | `rangerCredentialId` | string (uuid), nullable | no | The id of the engine's CURRENT Ranger plugin credential: the `credentialId` registration or the last rotation returned with it. An opaque id that grants nothing (never the password); an external engine's operator sends it as `installed` to... |
 | `endpoint` | string | yes | `host:port` clients reach the engine on, as a workspace connection to it dials it (`Engine::client_endpoint`). External: the declared address. |
 | `runtime` | EngineRuntime | no |  |
+| `securityUpgradeNeeded` | boolean | yes | Provisioned StarRocks only: whether the engine needs **Upgrade security** (since platform #TBD-ENGINE-POSTURE). |
+| `securityUpgradeReasons` | array of string | no | Why, in this order: `unpatchedImage`, `noRootPassword`, `notApplied`. |
+| `securityUpgradeFeImage` | string, nullable | no | The FE image the upgrade would set; absent when it would set none. |
+| `securityUpgradeBlockedRelease` | string, nullable | no | The newer release that keeps the current image (the downgrade block); absent otherwise. |
+| `notGoverned` | boolean | yes | `true` only when Ranger is on, the engine is StarRocks and it is bound to no policy profile. |
 | `rangerCredential` | RangerCredentialDto | yes | The credential the engine's Ranger plugin presents to egret's `/ranger` surface (HTTP Basic). **Shown once**: egret never returns this password again; a lost one is replaced with `POST... |
 
 | Status | Meaning |
@@ -288,6 +304,11 @@ Operation id: `get_engine`. Auth: Session cookie. Forbidden (403): Missing engin
 | `rangerCredentialId` | string (uuid), nullable | no | The id of the engine's CURRENT Ranger plugin credential: the `credentialId` registration or the last rotation returned with it. An opaque id that grants nothing (never the password); an external engine's operator sends it as `installed` to... |
 | `endpoint` | string | yes | `host:port` clients reach the engine on, as a workspace connection to it dials it (`Engine::client_endpoint`). External: the declared address. |
 | `runtime` | EngineRuntime | no |  |
+| `securityUpgradeNeeded` | boolean | yes | Provisioned StarRocks only: whether the engine needs **Upgrade security** (since platform #TBD-ENGINE-POSTURE). |
+| `securityUpgradeReasons` | array of string | no | Why, in this order: `unpatchedImage`, `noRootPassword`, `notApplied`. |
+| `securityUpgradeFeImage` | string, nullable | no | The FE image the upgrade would set; absent when it would set none. |
+| `securityUpgradeBlockedRelease` | string, nullable | no | The newer release that keeps the current image (the downgrade block); absent otherwise. |
+| `notGoverned` | boolean | yes | `true` only when Ranger is on, the engine is StarRocks and it is bound to no policy profile. |
 
 | Status | Meaning |
 |---|---|
@@ -345,6 +366,11 @@ Operation id: `update_engine`. Auth: Session cookie and `X-Egret-CSRF` header. F
 | `rangerCredentialId` | string (uuid), nullable | no | The id of the engine's CURRENT Ranger plugin credential: the `credentialId` registration or the last rotation returned with it. An opaque id that grants nothing (never the password); an external engine's operator sends it as `installed` to... |
 | `endpoint` | string | yes | `host:port` clients reach the engine on, as a workspace connection to it dials it (`Engine::client_endpoint`). External: the declared address. |
 | `runtime` | EngineRuntime | no |  |
+| `securityUpgradeNeeded` | boolean | yes | Provisioned StarRocks only: whether the engine needs **Upgrade security** (since platform #TBD-ENGINE-POSTURE). |
+| `securityUpgradeReasons` | array of string | no | Why, in this order: `unpatchedImage`, `noRootPassword`, `notApplied`. |
+| `securityUpgradeFeImage` | string, nullable | no | The FE image the upgrade would set; absent when it would set none. |
+| `securityUpgradeBlockedRelease` | string, nullable | no | The newer release that keeps the current image (the downgrade block); absent otherwise. |
+| `notGoverned` | boolean | yes | `true` only when Ranger is on, the engine is StarRocks and it is bound to no policy profile. |
 
 | Status | Meaning |
 |---|---|
@@ -473,6 +499,11 @@ Operation id: `update_external_engine`. Auth: Session cookie and `X-Egret-CSRF` 
 | `rangerCredentialId` | string (uuid), nullable | no | The id of the engine's CURRENT Ranger plugin credential: the `credentialId` registration or the last rotation returned with it. An opaque id that grants nothing (never the password); an external engine's operator sends it as `installed` to... |
 | `endpoint` | string | yes | `host:port` clients reach the engine on, as a workspace connection to it dials it (`Engine::client_endpoint`). External: the declared address. |
 | `runtime` | EngineRuntime | no |  |
+| `securityUpgradeNeeded` | boolean | yes | Provisioned StarRocks only: whether the engine needs **Upgrade security** (since platform #TBD-ENGINE-POSTURE). |
+| `securityUpgradeReasons` | array of string | no | Why, in this order: `unpatchedImage`, `noRootPassword`, `notApplied`. |
+| `securityUpgradeFeImage` | string, nullable | no | The FE image the upgrade would set; absent when it would set none. |
+| `securityUpgradeBlockedRelease` | string, nullable | no | The newer release that keeps the current image (the downgrade block); absent otherwise. |
+| `notGoverned` | boolean | yes | `true` only when Ranger is on, the engine is StarRocks and it is bound to no policy profile. |
 
 | Status | Meaning |
 |---|---|
@@ -775,6 +806,35 @@ Operation id: `rotate_engine_secrets`. Auth: Session cookie and `X-Egret-CSRF` h
 | 409 | The engine changed concurrently (e.g. a delete in progress); retry; The engine is external (`code` = `engine_is_external`): egret does not rotate the secrets of it |
 | 500 | Internal error |
 | 502 | Kubernetes rejected the apply; the engine row now names the new secret pair (the cluster may already hold it), and the previous pair is kept — not deleted — until a later successful apply supersedes it |
+
+## POST `/api/control-plane/engines/{id}/security-upgrade`
+
+Auth: Session cookie and `X-Egret-CSRF` header. Forbidden (403): Missing engine:update permission. Since platform #TBD-ENGINE-POSTURE.
+
+Brings a legacy provisioned StarRocks engine up to egret's security baseline. It mints an FE `root` password when the engine has none, moves the FE and CN images to the default patched images unless that would be a downgrade, and applies the engine: a Job sets the password on the running FE, and the FE and CN pods restart. The engine is applied on every call, and each step is idempotent, so a repeat call finishes a run whose apply failed.
+
+| Parameter | In | Type | Required | Description |
+|---|---|---|---|---|
+| `id` | path | string (uuid) | yes | Engine id |
+
+**Response 200 (application/json)**: `SecurityUpgradeDto`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `engine` | EngineDto | yes | The engine as it now stands, with `securityUpgradeNeeded` and `securityUpgradeReasons` recomputed. |
+| `imageChanged` | boolean | yes | `true` when FE and CN were moved to the default patched images. |
+| `rootPasswordSet` | boolean | yes | `true` when this call minted a FE root password. |
+| `imageKeptBecause` | string, nullable | no | Why an unpatched image was kept: the engine runs a newer release than the default FE, and egret does not downgrade. For example *No patched image for release 4.1.8 yet: the image was not changed.* |
+
+| Status | Meaning |
+|---|---|
+| 200 | The engine was applied. |
+| 400 | Kubernetes is not configured, or the engine's spec could not be assembled |
+| 401 | Not authenticated |
+| 403 | Missing engine:update permission |
+| 404 | No such engine |
+| 409 | The engine is external (`code` = `engine_is_external`), is not a StarRocks engine, or is being deleted or changed concurrently |
+| 502 | The apply failed. The engine keeps the `notApplied` reason; run the call again |
 
 ## GET `/api/control-plane/engines/{id}/workspaces`
 

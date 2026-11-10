@@ -24,6 +24,13 @@ A summary strip counts **engines**, how many are **running** and **not running**
 
 A provisioned Trino engine can also carry a **Re-apply needed** badge (the API field is `securityReapplyNeeded` on the engine). Its tooltip says *This engine still accepts unauthenticated requests on port 8080. Re-apply it to turn on authentication.* The engine was applied before platform #842 and still runs the old configuration. The badge clears after the next successful apply. An engine with JWT only and no password users never shows it. See [Provision an engine](./provision.md#security--exposure).
 
+Since platform #TBD-ENGINE-POSTURE a StarRocks engine can carry two more badges beside the status:
+
+- **Security upgrade needed** for a provisioned engine on an image or login that lacks egret's security fixes. Open the engine and press **Upgrade security** (see [Engine detail](./engine-detail.md#security-upgrade-needed)).
+- **Not governed** for a StarRocks engine with no policy profile while Ranger is on (see [Engine detail](./engine-detail.md#not-governed)).
+
+![The Engines list with the Security upgrade needed and Not governed badges on StarRocks engines](/img/platform/admin/cp-engines-security-upgrade-badge.png)
+
 ## Add an engine
 
 Two buttons sit at the top right:
