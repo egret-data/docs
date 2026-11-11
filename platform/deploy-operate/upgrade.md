@@ -699,6 +699,23 @@ A provisioned StarRocks engine gets a [Query log](../control-plane/query-engines
 - **API change:** four routes under `/api/control-plane/engines/{id}/query-log`. See [Engines API](../reference/rest-api/control-plane-engines.md#get-apicontrol-planeenginesidquery-log).
 - Retention is 30 days, and there is no export and no rotation of the loader password.
 
+### StarRocks impersonation, CN password and engine delete (platform #PR-NUMBER)
+
+- **StarRocks engines in impersonation mode start working under Ranger.** On upgrade, egret writes `egret-delegator-impersonate` to their profile and creates a StarRocks user for each member of each workspace the engine serves, within seconds of start. Users made by hand for earlier tests (for example a passwordless `member-sso`) are not egret's: they are left as they are and a warning names them. Drop them as `root` to let egret create its own; see [Handing over a user egret did not create](./engines-and-ranger.md#handing-over-a-user-egret-did-not-create).
+- **Passworded StarRocks engines roll their FE and CN once** on their next apply, because `MYSQL_PWD` is now set on both. A CN that crash-loops today (KI-335) recovers then. An engine without a persistent front-end metadata volume loses its FE metadata on that roll, as on any roll.
+- **Engine delete now removes the FE metadata volume.** The FE metadata of a deleted engine is gone; the table data stays in object storage.
+- **Claims left by earlier deletes are not removed by the upgrade.** List them, and delete those whose engine no longer exists before re-creating an engine of the same name:
+
+  ```bash
+  kubectl get pvc -n egret-engines | grep '^fe-meta-'
+  ```
+
+- **A user named `root` cannot be minted any more** (the new user gets `root-2`). One who already holds it keeps it and is not synced to StarRocks.
+- **Platform admins get a StarRocks user** on every impersonation-mode engine assigned to a workspace.
+- **Engines bound to no profile lose `GRANT IMPERSONATE ON ALL USERS`.** On their next apply or sweep (at most ten minutes after the upgrade) the delegator gets per-user grants for egret's users instead, and can no longer become `root`.
+- **Orphan IMPERSONATE grants** on users dropped before the upgrade stay. See the manual cleanup under [StarRocks users for impersonation](./engines-and-ranger.md#starrocks-users-for-impersonation) (KI-358).
+- **Creating a StarRocks engine whose name left a metadata claim** answers 409 `engine_metadata_left_over` with the `kubectl` command that removes it.
+
 ## Further reading
 
 - [Backup and restore](./backup-restore)

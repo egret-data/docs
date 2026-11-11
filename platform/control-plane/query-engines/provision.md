@@ -89,6 +89,12 @@ On the demo stack the default mode ran queries as the signed-in person in both c
 
 A StarRocks engine has its own configuration screen with sections such as **Replicas & resources**, **JVM**, **Per-node memory**, **Health probes**, **Graceful shutdown**, **Resource groups** and **Session properties**, plus a Security section for authentication and delegation. Attaching or detaching a catalog on StarRocks creates or drops it on the FE in place, without rolling the pods. StarRocks engines need the Kubernetes provisioner.
 
+If an earlier StarRocks engine of the same name left its front-end metadata volume behind, **Create** is refused with *A previous StarRocks engine named "\<name\>" left its front-end metadata volume fe-meta-\<name\>-fe-0. A new engine would start with the old engine's users, catalogs and root password. Delete it first: kubectl delete pvc fe-meta-\<name\>-fe-0 -n egret-engines*. Run the command, then create the engine again. (A live engine of that name gets the usual "already exists" refusal.)
+
+```bash
+kubectl delete pvc fe-meta-<name>-fe-0 -n egret-engines
+```
+
 ## What happens next
 
 1. Egret starts the cluster, creates a **policy profile** with the engine's name (for example `docs-trino`, with the tag service `docs-trino_tag`) and binds it.

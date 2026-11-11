@@ -60,7 +60,7 @@ Three switches decide whose identity the engine sees. They interact: read them t
 
 | Switch | What it does | Requires |
 |---|---|---|
-| **Run queries as the logged-in user** (impersonation) | The engine runs each query as the person who started it, so the engine's own grants and policies apply to them. | Trino impersonation and Ranger. For StarRocks: *a StarRocks service user configured for EXECUTE AS + Ranger*. Shown for Trino and StarRocks only. |
+| **Run queries as the logged-in user** (impersonation) | The engine runs each query as the person who started it, so the engine's own grants and policies apply to them. | Trino impersonation and Ranger. For StarRocks: egret creates the StarRocks users itself (one per workspace member and platform admin, see [StarRocks users for impersonation](../deploy-operate/engines-and-ranger.md#starrocks-users-for-impersonation)); with a policy profile bound, Ranger enforces the policies. Shown for Trino and StarRocks only. |
 | **Per-user delegation** | *Run queries as the signed-in user (requires SSO).* Egret presents a per-user engine JWT, so the engine knows the person. | An SSO sign-in. |
 | **Governed data** | Declares that the engine filters rows and masks columns per user. *Row filters and column masks are applied per user at the engine. Data API endpoints on this connection must run queries as the caller.* | |
 
