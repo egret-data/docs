@@ -686,6 +686,19 @@ Nothing changes on its own when you upgrade: no migration rewrites an engine's i
 - Look for **Not governed** too: with Ranger on, a StarRocks engine with no policy profile enforces none of egret's policies. Bind a profile in its settings.
 - **API change:** the engine adds `notGoverned`, `securityUpgradeNeeded`, `securityUpgradeReasons`, `securityUpgradeFeImage` and `securityUpgradeBlockedRelease`, and a new route `POST /api/control-plane/engines/{id}/security-upgrade`. See [Engines API](../reference/rest-api/control-plane-engines.md).
 
+### StarRocks Query log (migration 0218)
+
+A provisioned StarRocks engine gets a [Query log](../control-plane/query-engines/engine-detail.md#query-log) tab. Migration 0218 adds the column that holds the loader user's secret, reserves the user name `egret_query_log` so no person can be given it, and adds the permission `engine:audit`.
+
+- **Existing engines set themselves up.** When egret starts, it sets the Query log up once on every reachable provisioned StarRocks engine. It creates the audit database and table, the loader user and, on an engine whose image ships it, installs the plugin; the engine does not restart. Nothing runs on an engine that is not reachable at that moment: open its **Query log** tab and press **Set up query log** (`engine:update`), or `POST /api/control-plane/engines/{id}/query-log/setup`.
+- **Engines on an image before `4.1.7-egret.4` need Upgrade security first.** Only that image ships the audit plugin. Such an engine shows `pluginNotShipped` on the tab. Press **Upgrade security** (see the [posture note above](#starrocks-engine-posture-platform-847)); the set-up then runs again by itself, and the Query log starts after the FE and CN pods are back.
+- **Events from before the plugin's first refresh are not recorded.** StarRocks hands events to the plugin about a minute after it is installed, so a new Query log starts a minute or two after the set-up.
+- **Who can read statements changes.** `engine:audit` is granted to every platform role that holds `engine:update`. Roles that only hold `engine:read` see the tab without the statement and error text. Grant `engine:audit` to other roles under **Control Plane → Roles** if they need it.
+- **Direct SQL on the audit database is refused to everyone,** engine admins included, on an engine bound to a Ranger profile. Egret adds the guard rows to the profile on its own; they cannot be edited.
+- **`plugin_enable` and `plugin_dir` are refused in `feConfig`.**
+- **API change:** four routes under `/api/control-plane/engines/{id}/query-log`. See [Engines API](../reference/rest-api/control-plane-engines.md#get-apicontrol-planeenginesidquery-log).
+- Retention is 30 days, and there is no export and no rotation of the loader password.
+
 ## Further reading
 
 - [Backup and restore](./backup-restore)

@@ -113,6 +113,7 @@ Expose only what clients need.
 - [ ] **Remember StarRocks' Ranger plugin enforces resource-based policies only.** Egret's rules and clearances by
   classification reach it as resource policies; hand-written tag policies do not.
 - [ ] **Re-check `access_control = ranger` after StarRocks container recreation.** It is lost silently.
+- [ ] **Grant `engine:audit` sparingly.** It reveals the statement and error text of a StarRocks engine's [Query log](../control-plane/query-engines/engine-detail.md#query-log), which can include the values people filtered on and the mask and row filter expressions that applied to them. Only roles that hold `engine:update` get it by default.
 
 ## 7. Single sign-on
 

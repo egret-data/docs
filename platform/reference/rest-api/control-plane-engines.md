@@ -8,7 +8,7 @@ description: REST endpoints in the control-plane-engines group.
 
 Engine provisioning: Trino-on-Kubernetes clusters, their catalogs, native query monitor, and pod logs/exec.
 
-This page lists 28 endpoints (OpenAPI tag `control-plane-engines`). It is generated from `openapi.json`; see the [REST API overview](../rest-api) for authentication, CSRF and error conventions.
+This page lists 32 endpoints (OpenAPI tag `control-plane-engines`). It is generated from `openapi.json`; see the [REST API overview](../rest-api) for authentication, CSRF and error conventions.
 
 | Method | Path | Operation id | Notes |
 |---|---|---|---|
@@ -32,6 +32,10 @@ This page lists 28 endpoints (OpenAPI tag `control-plane-engines`). It is genera
 | GET | `/api/control-plane/engines/{id}/queries` | `list_queries` |  |
 | GET | `/api/control-plane/engines/{id}/queries/{qid}` | `get_query` |  |
 | DELETE | `/api/control-plane/engines/{id}/queries/{qid}` | `kill_query` |  |
+| GET | `/api/control-plane/engines/{id}/query-log` | `list_query_log` |  |
+| POST | `/api/control-plane/engines/{id}/query-log/setup` | `setup_query_log` |  |
+| GET | `/api/control-plane/engines/{id}/query-log/status` | `query_log_status` |  |
+| GET | `/api/control-plane/engines/{id}/query-log/{queryId}` | `get_query_log_entry` |  |
 | GET | `/api/control-plane/engines/{id}/ranger-plugin-config` | `ranger_plugin_config` | `GET /api/control-plane/engines/\{id\}/ranger-plugin-config`. |
 | POST | `/api/control-plane/engines/{id}/restart` | `restart_engine` | `POST /engines/\{id\}/restart` — roll the engine's pods without changing config (like `kubectl rollout restart`). |
 | POST | `/api/control-plane/engines/{id}/retire-previous-ranger-credential` | `retire_previous_ranger_credential` | `POST /engines/\{id\}/retire-previous-ranger-credential` — the operator's confirmation that an EXTERNAL engine's plugin now runs with the credential named `ins... |
@@ -137,7 +141,7 @@ Operation id: `list_engines`. Auth: Session cookie. Forbidden (403): Missing eng
 | `securityUpgradeReasons` | SecurityUpgradeReason[] | yes | Why the engine needs the security upgrade, in order: `unpatchedImage` (the stored FE image is absent or not an egret FE with every security patch), `noRootPassword` (the FE root has no password secret) and `notApplied` (the last security... |
 | `securityUpgradeFeImage` | string, nullable | no | The FE image the security upgrade would switch the engine to. Set only when `unpatchedImage` is a reason and the swap is not a downgrade; absent otherwise. The security upgrade action (`POST... |
 | `securityUpgradeBlockedRelease` | string, nullable | no | The release (e.g. `4.1.8`) that blocks the FE image swap: set when `unpatchedImage` is a reason but the engine already runs a release newer than the default FE, which cannot be downgraded. Absent otherwise. The security upgrade action... |
-| `notGoverned` | boolean | yes | `true` when Ranger is on and this StarRocks engine (provisioned or external) is bound to no policy profile, so Ranger governs nothing on it (KI-336). A Trino engine is never flagged: it late-binds a profile on its next apply. Set by the... |
+| `notGoverned` | boolean | yes | `true` when Ranger is on and this StarRocks engine (provisioned or external) is bound to no policy profile, so Ranger governs nothing on it (KI-336). A Trino engine is never flagged: it late-binds a profile on its next apply. Set by every... |
 
 | Status | Meaning |
 |---|---|
@@ -195,7 +199,7 @@ Operation id: `create_engine`. Auth: Session cookie and `X-Egret-CSRF` header. F
 | `securityUpgradeReasons` | SecurityUpgradeReason[] | yes | Why the engine needs the security upgrade, in order: `unpatchedImage` (the stored FE image is absent or not an egret FE with every security patch), `noRootPassword` (the FE root has no password secret) and `notApplied` (the last security... |
 | `securityUpgradeFeImage` | string, nullable | no | The FE image the security upgrade would switch the engine to. Set only when `unpatchedImage` is a reason and the swap is not a downgrade; absent otherwise. The security upgrade action (`POST... |
 | `securityUpgradeBlockedRelease` | string, nullable | no | The release (e.g. `4.1.8`) that blocks the FE image swap: set when `unpatchedImage` is a reason but the engine already runs a release newer than the default FE, which cannot be downgraded. Absent otherwise. The security upgrade action... |
-| `notGoverned` | boolean | yes | `true` when Ranger is on and this StarRocks engine (provisioned or external) is bound to no policy profile, so Ranger governs nothing on it (KI-336). A Trino engine is never flagged: it late-binds a profile on its next apply. Set by the... |
+| `notGoverned` | boolean | yes | `true` when Ranger is on and this StarRocks engine (provisioned or external) is bound to no policy profile, so Ranger governs nothing on it (KI-336). A Trino engine is never flagged: it late-binds a profile on its next apply. Set by every... |
 | `catalogAttachErrors` | CatalogAttachErrorDto[] | yes | Catalogs from the body's `catalogs` that could not be attached. Empty on success. The engine EXISTS and is provisioned; these catalogs simply are not on it, and each can be retried with `POST /api/control-plane/engines/\{id\}/catalogs/\{cid\}`.... |
 
 | Status | Meaning |
@@ -249,7 +253,7 @@ Operation id: `register_external_engine`. Auth: Session cookie and `X-Egret-CSRF
 | `securityUpgradeReasons` | SecurityUpgradeReason[] | yes | Why the engine needs the security upgrade, in order: `unpatchedImage` (the stored FE image is absent or not an egret FE with every security patch), `noRootPassword` (the FE root has no password secret) and `notApplied` (the last security... |
 | `securityUpgradeFeImage` | string, nullable | no | The FE image the security upgrade would switch the engine to. Set only when `unpatchedImage` is a reason and the swap is not a downgrade; absent otherwise. The security upgrade action (`POST... |
 | `securityUpgradeBlockedRelease` | string, nullable | no | The release (e.g. `4.1.8`) that blocks the FE image swap: set when `unpatchedImage` is a reason but the engine already runs a release newer than the default FE, which cannot be downgraded. Absent otherwise. The security upgrade action... |
-| `notGoverned` | boolean | yes | `true` when Ranger is on and this StarRocks engine (provisioned or external) is bound to no policy profile, so Ranger governs nothing on it (KI-336). A Trino engine is never flagged: it late-binds a profile on its next apply. Set by the... |
+| `notGoverned` | boolean | yes | `true` when Ranger is on and this StarRocks engine (provisioned or external) is bound to no policy profile, so Ranger governs nothing on it (KI-336). A Trino engine is never flagged: it late-binds a profile on its next apply. Set by every... |
 | `rangerCredential` | RangerCredentialDto | yes | The credential the engine's Ranger plugin presents to egret's `/ranger` surface (HTTP Basic). **Shown once**: egret never returns this password again; a lost one is replaced with `POST... |
 
 | Status | Meaning |
@@ -313,7 +317,7 @@ Operation id: `get_engine`. Auth: Session cookie. Forbidden (403): Missing engin
 | `securityUpgradeReasons` | SecurityUpgradeReason[] | yes | Why the engine needs the security upgrade, in order: `unpatchedImage` (the stored FE image is absent or not an egret FE with every security patch), `noRootPassword` (the FE root has no password secret) and `notApplied` (the last security... |
 | `securityUpgradeFeImage` | string, nullable | no | The FE image the security upgrade would switch the engine to. Set only when `unpatchedImage` is a reason and the swap is not a downgrade; absent otherwise. The security upgrade action (`POST... |
 | `securityUpgradeBlockedRelease` | string, nullable | no | The release (e.g. `4.1.8`) that blocks the FE image swap: set when `unpatchedImage` is a reason but the engine already runs a release newer than the default FE, which cannot be downgraded. Absent otherwise. The security upgrade action... |
-| `notGoverned` | boolean | yes | `true` when Ranger is on and this StarRocks engine (provisioned or external) is bound to no policy profile, so Ranger governs nothing on it (KI-336). A Trino engine is never flagged: it late-binds a profile on its next apply. Set by the... |
+| `notGoverned` | boolean | yes | `true` when Ranger is on and this StarRocks engine (provisioned or external) is bound to no policy profile, so Ranger governs nothing on it (KI-336). A Trino engine is never flagged: it late-binds a profile on its next apply. Set by every... |
 
 | Status | Meaning |
 |---|---|
@@ -376,7 +380,7 @@ Operation id: `update_engine`. Auth: Session cookie and `X-Egret-CSRF` header. F
 | `securityUpgradeReasons` | SecurityUpgradeReason[] | yes | Why the engine needs the security upgrade, in order: `unpatchedImage` (the stored FE image is absent or not an egret FE with every security patch), `noRootPassword` (the FE root has no password secret) and `notApplied` (the last security... |
 | `securityUpgradeFeImage` | string, nullable | no | The FE image the security upgrade would switch the engine to. Set only when `unpatchedImage` is a reason and the swap is not a downgrade; absent otherwise. The security upgrade action (`POST... |
 | `securityUpgradeBlockedRelease` | string, nullable | no | The release (e.g. `4.1.8`) that blocks the FE image swap: set when `unpatchedImage` is a reason but the engine already runs a release newer than the default FE, which cannot be downgraded. Absent otherwise. The security upgrade action... |
-| `notGoverned` | boolean | yes | `true` when Ranger is on and this StarRocks engine (provisioned or external) is bound to no policy profile, so Ranger governs nothing on it (KI-336). A Trino engine is never flagged: it late-binds a profile on its next apply. Set by the... |
+| `notGoverned` | boolean | yes | `true` when Ranger is on and this StarRocks engine (provisioned or external) is bound to no policy profile, so Ranger governs nothing on it (KI-336). A Trino engine is never flagged: it late-binds a profile on its next apply. Set by every... |
 
 | Status | Meaning |
 |---|---|
@@ -510,7 +514,7 @@ Operation id: `update_external_engine`. Auth: Session cookie and `X-Egret-CSRF` 
 | `securityUpgradeReasons` | SecurityUpgradeReason[] | yes | Why the engine needs the security upgrade, in order: `unpatchedImage` (the stored FE image is absent or not an egret FE with every security patch), `noRootPassword` (the FE root has no password secret) and `notApplied` (the last security... |
 | `securityUpgradeFeImage` | string, nullable | no | The FE image the security upgrade would switch the engine to. Set only when `unpatchedImage` is a reason and the swap is not a downgrade; absent otherwise. The security upgrade action (`POST... |
 | `securityUpgradeBlockedRelease` | string, nullable | no | The release (e.g. `4.1.8`) that blocks the FE image swap: set when `unpatchedImage` is a reason but the engine already runs a release newer than the default FE, which cannot be downgraded. Absent otherwise. The security upgrade action... |
-| `notGoverned` | boolean | yes | `true` when Ranger is on and this StarRocks engine (provisioned or external) is bound to no policy profile, so Ranger governs nothing on it (KI-336). A Trino engine is never flagged: it late-binds a profile on its next apply. Set by the... |
+| `notGoverned` | boolean | yes | `true` when Ranger is on and this StarRocks engine (provisioned or external) is bound to no policy profile, so Ranger governs nothing on it (KI-336). A Trino engine is never flagged: it late-binds a profile on its next apply. Set by every... |
 
 | Status | Meaning |
 |---|---|
@@ -705,6 +709,137 @@ Operation id: `kill_query`. Auth: Session cookie and `X-Egret-CSRF` header. Forb
 | 409 | The engine is external (`code` = `engine_is_external`): egret does not cancel queries on it |
 | 500 | Internal error |
 | 502 | Trino coordinator unreachable or rejected the cancel |
+
+## GET `/api/control-plane/engines/{id}/query-log`
+
+Operation id: `list_query_log`. Auth: Session cookie. Forbidden (403): Missing engine:read permission.
+
+| Parameter | In | Type | Required | Description |
+|---|---|---|---|---|
+| `id` | path | string (uuid) | yes | Engine id |
+| `from` | query | string (date-time) | no | RFC 3339; rows with `from &lt;= timestamp`. Default: `to` minus 24 hours. |
+| `to` | query | string (date-time) | no | RFC 3339; rows with `timestamp &lt; to`. Default: now. At most 31 days after `from`. |
+| `user` | query | string | no | The session user or the user inside `authorizedUser`, exact and case-insensitive; at most 128 characters. |
+| `state` | query | string | no | `ok`, `error` or `all` (default). |
+| `limit` | query | integer (int32) | no | Rows per page, 1 to 200 (default 50). |
+| `cursor` | query | string | no | The previous page's `nextCursor`. |
+
+**Response 200 (application/json)**: `QueryLogPageDto`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `entries` | QueryLogEntryDto[] | yes |  |
+| `nextCursor` | string, nullable | no | Pass it as `cursor` for the next page; `null` on the last. |
+
+| Status | Meaning |
+|---|---|
+| 200 | A page of the engine's statements, newest first. `statement` and `errorMessage` are absent without engine:audit |
+| 400 | A malformed parameter; the message names it |
+| 401 | Not authenticated |
+| 403 | Missing engine:read permission |
+| 404 | No such engine |
+| 409 | The engine is external (`code` = `engine_is_external`), not a StarRocks engine, or its query log table does not exist (`code` = `query_log_not_ready`, with `state`) |
+| 500 | Internal error |
+| 502 | The FE did not answer or refused the read (`code` = `engine_fe_error`, scrubbed message) |
+
+## POST `/api/control-plane/engines/{id}/query-log/setup`
+
+Operation id: `setup_query_log`. Auth: Session cookie and `X-Egret-CSRF` header. Forbidden (403): Missing engine:update permission.
+
+| Parameter | In | Type | Required | Description |
+|---|---|---|---|---|
+| `id` | path | string (uuid) | yes | Engine id |
+
+**Response 200 (application/json)**: `QueryLogStatusDto`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `state` | QueryLogState | yes | The query log's state, as the Query log tab shows it (design section 5). |
+| `message` | string, nullable | no | Why the state is `unreachable` (the FE's message, scrubbed). `null` otherwise. |
+| `lastEventAt` | string, nullable | no | The newest event in the last day (RFC 3339); `null` when there is none or the table does not exist. |
+| `retentionDays` | integer (int32) | yes | How many days of events the table keeps. |
+
+| Status | Meaning |
+|---|---|
+| 200 | Set up: state `ready`, or `pluginNotShipped` when the engine's image has no plugin (the table and loader user were still created) |
+| 401 | Not authenticated |
+| 403 | Missing engine:update permission |
+| 404 | No such engine |
+| 409 | The engine is external (`code` = `engine_is_external`), not a StarRocks engine, or being deleted |
+| 500 | Internal error |
+| 502 | A setup step failed (`code` = `engine_fe_error`, scrubbed message) |
+
+## GET `/api/control-plane/engines/{id}/query-log/status`
+
+Operation id: `query_log_status`. Auth: Session cookie. Forbidden (403): Missing engine:read permission.
+
+| Parameter | In | Type | Required | Description |
+|---|---|---|---|---|
+| `id` | path | string (uuid) | yes | Engine id |
+
+**Response 200 (application/json)**: `QueryLogStatusDto`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `state` | QueryLogState | yes | The query log's state, as the Query log tab shows it (design section 5). |
+| `message` | string, nullable | no | Why the state is `unreachable` (the FE's message, scrubbed). `null` otherwise. |
+| `lastEventAt` | string, nullable | no | The newest event in the last day (RFC 3339); `null` when there is none or the table does not exist. |
+| `retentionDays` | integer (int32) | yes | How many days of events the table keeps. |
+
+| Status | Meaning |
+|---|---|
+| 200 | The query log's state, read from the FE now. An FE that does not answer is state `unreachable` with its scrubbed message, still a 200 |
+| 401 | Not authenticated |
+| 403 | Missing engine:read permission |
+| 404 | No such engine |
+| 409 | The engine is external (`code` = `engine_is_external`), or not a StarRocks engine |
+| 500 | Internal error |
+
+## GET `/api/control-plane/engines/{id}/query-log/{queryId}`
+
+Operation id: `get_query_log_entry`. Auth: Session cookie. Forbidden (403): Missing engine:read permission.
+
+| Parameter | In | Type | Required | Description |
+|---|---|---|---|---|
+| `id` | path | string (uuid) | yes | Engine id |
+| `queryId` | path | string | yes | The statement's query id (a UUID) |
+
+**Response 200 (application/json)**: `QueryLogEntryDto`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `queryId` | string | yes |  |
+| `timestamp` | string | yes | When the statement ended (RFC 3339). |
+| `user` | string, nullable | no | The session user ("Connected as"). |
+| `authorizedUser` | string, nullable | no | The bare name of the user the statement ran for ("User"), parsed from `'bob'@'%'`; `null` when empty. |
+| `clientIp` | string, nullable | no |  |
+| `catalog` | string, nullable | no |  |
+| `db` | string, nullable | no |  |
+| `state` | string, nullable | no | `EOF` or `OK` for a success, `ERR` for a failure. |
+| `errorMessage` | string, nullable | no | The FE's error, redacted. Absent (not `null`) for a caller without `engine:audit`: StarRocks errors quote the statement's text. |
+| `queryTimeMs` | integer (int64), nullable | no |  |
+| `scanRows` | integer (int64), nullable | no |  |
+| `scanBytes` | integer (int64), nullable | no |  |
+| `returnRows` | integer (int64), nullable | no |  |
+| `cpuCostNs` | integer (int64), nullable | no |  |
+| `memCostBytes` | integer (int64), nullable | no |  |
+| `command` | string, nullable | no |  |
+| `querySource` | string, nullable | no |  |
+| `isQuery` | boolean, nullable | no |  |
+| `digest` | string, nullable | no |  |
+| `statement` | string, nullable | no | The statement, redacted: its first 2,000 characters on a page, whole on the detail route. Absent for a caller without `engine:audit`. |
+| `statementTruncated` | boolean | yes | Whether `statement` was cut. Always false when it is absent. |
+
+| Status | Meaning |
+|---|---|
+| 200 | One statement, whole. `statement` and `errorMessage` are absent without engine:audit |
+| 400 | `queryId` is not a UUID |
+| 401 | Not authenticated |
+| 403 | Missing engine:read permission |
+| 404 | No such engine, or no such statement in the log |
+| 409 | The engine is external (`code` = `engine_is_external`), not a StarRocks engine, or its query log table does not exist (`code` = `query_log_not_ready`, with `state`) |
+| 500 | Internal error |
+| 502 | The FE did not answer or refused the read (`code` = `engine_fe_error`, scrubbed message) |
 
 ## GET `/api/control-plane/engines/{id}/ranger-plugin-config`
 

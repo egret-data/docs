@@ -286,6 +286,28 @@ that cost time otherwise:
   the table and a mask per column). A schema change to such a table through egret's Iceberg catalog recompiles the
   profile at once. Hand-written tag policies are not enforced on StarRocks.
 
+### The query log of a StarRocks engine
+
+A provisioned StarRocks engine on egret's patched image records every statement it runs (see [Query log](../control-plane/query-engines/engine-detail.md#query-log)). The pieces, so you know what egret adds to the engine:
+
+- **The audit database.** egret creates `starrocks_audit_db__.starrocks_audit_tbl__` on the engine. The StarRocks AuditLoader plugin, which the image ships at `/opt/egret/auditloader.zip`, writes one row per statement. The table keeps 30 days.
+- **The loader user.** The plugin loads as the StarRocks user `egret_query_log`, which holds `INSERT` on that table and nothing else. Its password is a secret egret generates for the engine; egret never rotates it. The name is reserved: no person can be given it, and if a human already holds it the set-up stops and says so. On an engine bound to no policy profile egret grants `INSERT` natively; on a bound engine, which runs `access_control = ranger`, the next rows allow it.
+- **The Ranger rows.** Two infrastructure rows on the engine's StarRocks profile: `egret-query-log-loader` allows `egret_query_log` to `insert` into the table, and the `egret-query-log-guard - …` rows (one per resource level under a database) deny every user all access to the audit database. They are egret's own, appear in the profile's policy list, and cannot be created, renamed or edited by hand.
+- **The guard denies everyone.** That includes engine admins, whose `egret-admin - …` rows allow everything: a Ranger deny beats an allow. Nobody reads the audit database by SQL on a governed engine; only the loader user may insert. egret reads it itself as `root`, which Ranger does not check, and gates what it shows behind `engine:read` and `engine:audit`. An engine bound to no profile has no Ranger: its users have no privilege on a database they did not create unless someone grants one natively, which egret does not do.
+- **No Ranger audit.** The Ranger plugin's own audit stays off (`xasecure.audit.is.enabled=false`). The Query log is the only audit surface.
+- **Refused `feConfig` keys.** `plugin_enable` and `plugin_dir` are refused in an engine's `feConfig`, so an override cannot switch the audit plugin off or move its directory.
+
+:::warning Statements can show data
+A statement run through `PREPARE` and `EXECUTE` or the MySQL binary protocol is recorded as the FE ran it: with its parameter values inlined and with the mask and row filter expressions of the policies that applied. So the log can show the values a person filtered on and the rules that restricted them. Error messages quote the statement too. That is why the statement and the error text need `engine:audit`, which only roles that can update engines hold by default. Grant it sparingly.
+:::
+
+**What is redacted.** StarRocks replaces the secrets in `FILES()` and in catalog properties with `***` before it records the event, and it does the same for passwords in `CREATE USER … IDENTIFIED BY`, `ALTER USER … IDENTIFIED BY`, `SET PASSWORD` and `INSTALL PLUGIN` (measured on `4.1.7-egret.4`). egret redacts a second time before text leaves the server, in the statement and the error:
+
+- the engine's `root` password and the loader password, wherever either appears, become `***`;
+- the value of `IDENTIFIED BY '…'`, and of a quoted property pair whose key contains `password`, `passwd`, `secret`, `access_key` or `secret_key`, becomes `'***'`.
+
+Nothing else is redacted. A literal in a `WHERE` clause or in an `INSERT` is shown as it was sent.
+
 ### Verify the plugin is polling
 
 On the engine, the plugin logs each poll (StarRocks: `fe.log`, `RangerAdminRESTClient.getServicePoliciesIfUpdated`).

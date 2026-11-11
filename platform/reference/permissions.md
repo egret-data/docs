@@ -58,6 +58,7 @@ The last column is what a fresh install grants; your roles may differ.
 | `engine:delete` | platform | Delete engines | none (only the `platform_admin` bypass) |
 | `engine:provision` | platform | Provision / restart engines on the cluster | none (only the `platform_admin` bypass) |
 | `engine:kill` | platform | Kill running queries | none (only the `platform_admin` bypass) |
+| `engine:audit` | platform | Read statement text in engine query logs | none (only the `platform_admin` bypass); migration 0218 also grants it to every platform role that holds `engine:update` |
 
 ### Catalogs
 
