@@ -298,7 +298,7 @@ A provisioned StarRocks engine on egret's patched image records every statement 
 - **Refused `feConfig` keys.** `plugin_enable` and `plugin_dir` are refused in an engine's `feConfig`, so an override cannot switch the audit plugin off or move its directory.
 
 :::warning Statements can show data
-A statement run through `PREPARE` and `EXECUTE` or the MySQL binary protocol is recorded as the FE ran it: with its parameter values inlined and with the mask and row filter expressions of the policies that applied. So the log can show the values a person filtered on and the rules that restricted them. Error messages quote the statement too. That is why the statement and the error text need `engine:audit`, which only roles that can update engines hold by default. Grant it sparingly.
+A statement run through `PREPARE` and `EXECUTE` or the MySQL binary protocol is recorded as the FE ran it: with its parameter values inlined and with the mask and row filter expressions of the policies that applied. So the log can show the values a person filtered on and the rules that restricted them. An error can refer to the statement too. That is why the statement and the error need `engine:audit`, which only roles that can update engines hold by default. Grant it sparingly.
 :::
 
 **What is redacted.** StarRocks replaces the secrets in `FILES()` and in catalog properties with `***` before it records the event, and it does the same for passwords in `CREATE USER … IDENTIFIED BY`, `ALTER USER … IDENTIFIED BY`, `SET PASSWORD` and `INSTALL PLUGIN` (measured on `4.1.7-egret.4`). egret redacts a second time before text leaves the server, in the statement and the error:
@@ -307,6 +307,10 @@ A statement run through `PREPARE` and `EXECUTE` or the MySQL binary protocol is 
 - the value of `IDENTIFIED BY '…'`, and of a quoted property pair whose key contains `password`, `passwd`, `secret`, `access_key` or `secret_key`, becomes `'***'`.
 
 Nothing else is redacted. A literal in a `WHERE` clause or in an `INSERT` is shown as it was sent.
+
+**Errors are codes.** The audit row stores only an error code, so the Query log shows `INTERNAL_ERR` or `ANALYSIS_ERR`, not the engine's message. A Ranger deny shows as `INTERNAL_ERR`.
+
+**Known limit: the row count is readable.** The guard denies reading the statement and other columns, `insert`, `drop` and the rest. StarRocks checks `SELECT` per column, and `SELECT count(*) FROM starrocks_audit_db__.starrocks_audit_tbl__` references none, so it is not blocked: anyone who can connect to the engine can learn how many statements the log holds, but not their contents. This is a StarRocks and Ranger property; closing it is a follow-up.
 
 ### Verify the plugin is polling
 

@@ -695,7 +695,7 @@ A provisioned StarRocks engine gets a [Query log](../control-plane/query-engines
 - **Events from before the plugin's first refresh are not recorded.** StarRocks hands events to the plugin about a minute after it is installed, so a new Query log starts a minute or two after the set-up.
 - **Who can read statements changes.** `engine:audit` is granted to every platform role that holds `engine:update`. Roles that only hold `engine:read` see the tab without the statement and error text. Grant `engine:audit` to other roles under **Control Plane → Roles** if they need it.
 - **Direct SQL on the audit database is refused to everyone,** engine admins included, on an engine bound to a Ranger profile. Egret adds the guard rows to the profile on its own; they cannot be edited.
-- **`plugin_enable` and `plugin_dir` are refused in `feConfig`.**
+- **`plugin_enable` and `plugin_dir` are refused in `feConfig`.** An engine whose `feConfig` already overrides either key gets a 400 on its next update until you remove those keys.
 - **API change:** four routes under `/api/control-plane/engines/{id}/query-log`. See [Engines API](../reference/rest-api/control-plane-engines.md#get-apicontrol-planeenginesidquery-log).
 - Retention is 30 days, and there is no export and no rotation of the loader password.
 

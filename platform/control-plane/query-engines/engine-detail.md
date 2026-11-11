@@ -121,7 +121,6 @@ The node list comes from Trino's `GET /v1/node` where the coordinator serves it.
 A provisioned StarRocks engine shows a **Query log** tab after Monitor (`?tab=query-log`). It lists the statements the engine ran, from every way in: the MySQL protocol, prepared statements, the HTTP SQL API, Arrow Flight SQL and materialized view refreshes. A Trino engine and an external StarRocks engine have no such tab: egret does not install anything on an engine it does not run, and Trino's **Monitor** shows live queries only. Anyone with `engine:read` sees the tab; the statement text and the error text need `engine:audit` (see [Who sees the statement](#who-sees-the-statement)).
 
 ![The Query log tab of a StarRocks engine: the status line, the filters and the statements, newest first](/img/platform/admin/cp-engine-query-log.png)
-<!-- PLACEHOLDER SCREENSHOT: cp-engine-query-log.png (the tab with rows). Added later by the controller. -->
 
 Above the table a status line says what state the log is in.
 
@@ -146,18 +145,17 @@ The table is newest first, 50 rows at a time; **Load more** fetches the next pag
 
 **User** and **Connected as** differ for a delegated query. egret's engine queries on behalf of a person log in to StarRocks as a service user and then run `EXECUTE AS <person>`. StarRocks records both. **User** is the person the statement ran for, so you read who asked first. **Connected as** is the session user and appears only when it differs, for example the service user behind a Data API endpoint or a workspace query. For a person who connects to StarRocks directly there is one name, and **Connected as** is empty.
 
-**State** is **Succeeded** or **Failed**. A statement StarRocks or its policies refused, such as an *Access denied* from Ranger, is **Failed**.
+**State** is **Succeeded** or **Failed**. A statement StarRocks or its policies refused, such as a column a Ranger policy denies, is **Failed**. The audit row stores only an error *code*, not the message, so the **Error** field of the side panel shows a code such as `INTERNAL_ERR` or `ANALYSIS_ERR` (for `EXECUTE AS` a user that does not exist). A Ranger deny shows as `INTERNAL_ERR`, not as *Access denied*.
 
 Select a row to open a side panel with the whole statement (up to 1 MiB; the table cuts it at 2,000 characters), the error and the counters: catalog, database, client address, query source, rows and bytes scanned, rows returned, CPU time and memory.
 
 ![The side panel of a statement with its error, counters and the full text](/img/platform/admin/cp-engine-query-log-panel.png)
-<!-- PLACEHOLDER SCREENSHOT: cp-engine-query-log-panel.png (the side panel). Added later by the controller. -->
 
-egret's own reads of the log are left out. Every other statement of the `root` user, egret's own set-up statements included, is shown.
+egret's own reads and probes, which run as `root` and carry the marker comment `/* egret-query-log-read */`, are left out of the table and of **Latest event**. Every other statement of the `root` user, egret's own set-up statements included, is shown.
 
 #### Who sees the statement
 
-The statement text can contain the values a person filtered on and the mask and row filter expressions of the policies that applied, and StarRocks error messages quote the statement they reject. So **both the statement and the error text need the `engine:audit` permission** ("Read statement text in engine query logs"). Without it the tab shows every other column, the state included, so a failed statement still reads as failed, and the statement and the error show *Hidden: needs engine:audit*. Migration 0218 grants `engine:audit` to every platform role that already holds `engine:update`. Grant it to other roles under **Control Plane → Roles**; see [Permissions](../../reference/permissions.md). What the log redacts is listed under [Security of a StarRocks engine](../../deploy-operate/engines-and-ranger.md#the-query-log-of-a-starrocks-engine).
+The statement text can contain the values a person filtered on and the mask and row filter expressions of the policies that applied, and an error can refer to the statement that caused it. So **both the statement and the error need the `engine:audit` permission** ("Read statement text in engine query logs"). Without it the tab shows every other column, the state included, so a failed statement still reads as failed, and the statement and the error show *Hidden: needs engine:audit*. Migration 0218 grants `engine:audit` to every platform role that already holds `engine:update`. Grant it to other roles under **Control Plane → Roles**; see [Permissions](../../reference/permissions.md). What the log redacts is listed under [Security of a StarRocks engine](../../deploy-operate/engines-and-ranger.md#the-query-log-of-a-starrocks-engine).
 
 #### Set-up and retention
 
@@ -165,25 +163,25 @@ The log is kept for **30 days**. StarRocks drops older partitions of the log tab
 
 The set-up runs on its own, so most engines never need the button:
 
-- when a StarRocks engine is created and has become ready;
+- when a StarRocks engine is created. The setup runs after the delegation setup and waits for an alive compute node before it creates the table, so on a new engine the tab becomes ready about when the engine is **Running**;
 - after each apply or upgrade that may restart the engine, including **Upgrade security**;
 - once when egret starts, for every reachable provisioned StarRocks engine, so engines that existed before the Query log get it.
 
-**Set up query log** (needs `engine:update`) runs the same steps once, now. Use it to recover from a failed or lost set-up, or after an FE restart on its own shows **Not set up**. Without the permission the button is disabled and says *Setting it up needs the engine:update permission.* The steps are safe to repeat. An error is shown as a message and logged; a failed set-up never fails a create, an apply or an upgrade.
+**Set up query log** (needs `engine:update`) runs the same steps once, now. Use it to recover from a failed or lost set-up. If the plugin ever ends up in a state other than `INSTALLED`, the tab shows **Not set up** until the next set-up reinstalls it. Without the permission the button is disabled and says *Setting it up needs the engine:update permission.* The steps are safe to repeat. An error is shown as a message and logged; a failed set-up never fails a create, an apply or an upgrade.
 
-:::note Events before the first refresh
+:::note Events that are not recorded
 StarRocks hands events to its audit plugins only about a minute after the plugin is installed, and again about once a minute. Statements that ran before the plugin's first refresh are not recorded, and after that a statement shows in the log about a minute after it ran.
+
+The plugin survives an FE pod restart: the FE extracts it again from the image, and nothing needs to be set up. Roughly 2 minutes of events around a restart are not recorded, those queued in the old FE and those sent before the new plugin's first load.
 :::
 
 ![The Query log tab of an engine whose log is not set up, with the warning and the Set up query log button](/img/platform/admin/cp-engine-query-log-not-set-up.png)
-<!-- PLACEHOLDER SCREENSHOT: cp-engine-query-log-not-set-up.png (the notSetUp state). Added later by the controller. -->
 
 #### Engines on an older image
 
 Only egret's patched StarRocks image ships the audit plugin, from `ghcr.io/egret-data/egret-starrocks-fe` `4.1.7-egret.4`. An engine on an official image or on `4.1.7-egret.1` to `4.1.7-egret.3` shows `pluginNotShipped`. egret still creates the log table and the loader user, and does not fail the apply. When the engine carries the **Security upgrade needed** warning, the tab says: *This engine's image has no audit plugin. **Upgrade security**, in the security warning on this page, moves it to egret's image, and the Query log starts after that.* Press [**Upgrade security**](#security-upgrade-needed); the set-up then runs again by itself and installs the plugin. Without that warning the tab says *The Query log starts once the engine runs egret's image.*
 
 ![The Query log tab of an engine on an older image, with the warning that its image has no audit plugin](/img/platform/admin/cp-engine-query-log-plugin-not-shipped.png)
-<!-- PLACEHOLDER SCREENSHOT: cp-engine-query-log-plugin-not-shipped.png (the pluginNotShipped state). Added later by the controller. -->
 
 The tab is also served by the [Engines API](../../reference/rest-api/control-plane-engines.md#get-apicontrol-planeenginesidquery-log).
 
