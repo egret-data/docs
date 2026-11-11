@@ -10,7 +10,7 @@ Select an engine in **Control Plane → Engines** to open its page. The tabs dep
 
 ![The Overview tab of a provisioned engine on the Docker demo stack: phase running, one container, its catalogs and workspaces](/img/platform/admin/cp-engine-overview.png)
 
-The header shows the engine name, its namespace (`egret-engines`), the image, the endpoint, the authentication (*JWT auth*) and the Ranger plugin version, with the type and status badges. The endpoint is the `host:port` a workspace connection to the engine dials, for example `docs-trino-trino.egret-engines.svc:8443` (port 8443 is the HTTPS listener of an engine with JWT delegation). **Open in Engine & policy** opens the engine in Governance, **Restart** restarts the engine, and the **More engine actions** menu (**⋯**) holds **Delete engine**. The tabs are **Overview**, **Catalogs**, **Workspaces**, **Settings** and **Monitor**.
+The header shows the engine name, its namespace (`egret-engines`), the image, the endpoint, the authentication (*JWT auth*) and the Ranger plugin version, with the type and status badges. The endpoint is the `host:port` a workspace connection to the engine dials, for example `docs-trino-trino.egret-engines.svc:8443` (port 8443 is the HTTPS listener of an engine with JWT delegation). **Open in Engine & policy** opens the engine in Governance, **Restart** restarts the engine, and the **More engine actions** menu (**⋯**) holds **Delete engine**. The tabs are **Overview**, **Catalogs**, **Workspaces**, **Settings** and **Monitor**. A provisioned StarRocks engine has one more tab after Monitor, [**Query log**](#query-log).
 
 A provisioned StarRocks engine that a policy profile names shows, above the tabs, the warning that unless the engine runs `egret-starrocks-fe` `4.1.7-egret.4` or later its StarRocks lets users past the profile: official images serve the Iceberg metadata tables without asking Ranger and apply no mask or row filter to prepared statements, and official and earlier patched images apply none through the HTTP SQL API or Arrow Flight SQL, let anyone read object storage through `FILES()` and let a masked or filtered user store a table's rows in the clear in a materialized view, and images before `4.1.7-egret.4` show a filtered user the statistics of hidden rows through `EXPLAIN COSTS` and let anyone reach object storage with the cluster's own identity through `BROKER LOAD`, `EXPORT` and `SELECT INTO OUTFILE` without keys (since platform #822, widened in #826, #827 and #832; see [External engine](#overview-1), KI-340, KI-345 to KI-348, KI-350, KI-351). It is not shown while the profile list loads, or to a viewer who cannot read it. It is not shown for a provisioned engine on Egret's patched image `ghcr.io/egret-data/egret-starrocks-fe` `4.1.7-egret.4` or later (the default for new engines since platform #832), which fixes all of them; it is shown for an engine still on `4.1.7-egret.1` or `4.1.7-egret.3`; an external engine always shows it, because Egret does not know its image.
 
@@ -115,6 +115,75 @@ How Egret signs in to the coordinator depends on the engine:
 | Password users or impersonation | The engine's `egret-monitor` account | The queries that account may see. |
 
 The node list comes from Trino's `GET /v1/node` where the coordinator serves it. Trino 483 does not by default, and then Egret reads `system.runtime.nodes` instead. That query runs as the same sign-in, so on a JWT engine it appears in the **Queries** table under your name (on the demo stack: `SELECT http_uri FROM system.runtime.nodes`, user `admin`, **FINISHED**). If it is refused too, **nodes** shows `—`: the count is unknown, not zero, and the query counts are still shown.
+
+### Query log
+
+A provisioned StarRocks engine shows a **Query log** tab after Monitor (`?tab=query-log`). It lists the statements the engine ran, from every way in: the MySQL protocol, prepared statements, the HTTP SQL API, Arrow Flight SQL and materialized view refreshes. A Trino engine and an external StarRocks engine have no such tab: egret does not install anything on an engine it does not run, and Trino's **Monitor** shows live queries only. Anyone with `engine:read` sees the tab; the statement text and the error text need `engine:audit` (see [Who sees the statement](#who-sees-the-statement)).
+
+![The Query log tab of a StarRocks engine: the status line, the filters and the statements, newest first](/img/platform/admin/cp-engine-query-log.png)
+
+Above the table a status line says what state the log is in.
+
+| State | API value | What the tab shows |
+|---|---|---|
+| Ready | `ready` | *Kept 30 days. Latest event: \<time\>.* When nothing has been logged yet: *No events yet. Events reach the log about a minute after a statement runs.* |
+| Not set up | `notSetUp` | A warning: *The query log is not set up on this engine: its audit plugin or its log table is missing.* with a **Set up query log** button. |
+| Plugin not shipped | `pluginNotShipped` | A warning that the engine's image has no audit plugin (see [Engines on an older image](#engines-on-an-older-image)). |
+| Unreachable | `unreachable` | The engine's message, with a **Retry** button. |
+
+The state is read from the engine each time the tab opens. Nothing about it is stored in egret.
+
+#### Filters and columns
+
+The filters sit above the table and stay in the page address, so a link shares them:
+
+- **Time range**: **Last hour**, **Last 24 hours** (the default), **Last 7 days**, **Last 30 days** or **Custom** with **From** and **To**. A range is at most 31 days.
+- **User**: the person's name, exact and case-insensitive. It matches either of the two user columns below.
+- **State**: **All**, **Succeeded** or **Failed**.
+
+The table is newest first, 50 rows at a time; **Load more** fetches the next page. The columns are **Time** (your local time; hover for the UTC instant), **User**, **Connected as**, **State**, **Command**, **Duration**, **Rows returned** and **Statement**, which shows the first line of the statement.
+
+**User** and **Connected as** differ for a delegated query. egret's engine queries on behalf of a person log in to StarRocks as a service user and then run `EXECUTE AS <person>`. StarRocks records both. **User** is the person the statement ran for, so you read who asked first. **Connected as** is the session user and appears only when it differs, for example the service user behind a Data API endpoint or a workspace query. For a person who connects to StarRocks directly there is one name, and **Connected as** is empty.
+
+**State** is **Succeeded** or **Failed**. A statement StarRocks or its policies refused, such as a column a Ranger policy denies, is **Failed**. The audit row stores only an error *code*, not the message, so the **Error** field of the side panel shows a code such as `INTERNAL_ERR` or `ANALYSIS_ERR` (for `EXECUTE AS` a user that does not exist). A Ranger deny shows as `INTERNAL_ERR`, not as *Access denied*.
+
+Select a row to open a side panel with the whole statement (up to 1 MiB; the table cuts it at 2,000 characters), the error and the counters: catalog, database, client address, query source, rows and bytes scanned, rows returned, CPU time and memory.
+
+![The side panel of a statement with its error, counters and the full text](/img/platform/admin/cp-engine-query-log-panel.png)
+
+egret's own reads and probes, which run as `root` and carry the marker comment `/* egret-query-log-read */`, are left out of the table and of **Latest event**. Every other statement of the `root` user, egret's own set-up statements included, is shown.
+
+#### Who sees the statement
+
+The statement text can contain the values a person filtered on and the mask and row filter expressions of the policies that applied, and an error can refer to the statement that caused it. So **both the statement and the error need the `engine:audit` permission** ("Read statement text in engine query logs"). Without it the tab shows every other column, the state included, so a failed statement still reads as failed, and the statement and the error show *Hidden: needs engine:audit*. Migration 0218 grants `engine:audit` to every platform role that already holds `engine:update`. Grant it to other roles under **Control Plane → Roles**; see [Permissions](../../reference/permissions.md). What the log redacts is listed under [Security of a StarRocks engine](../../deploy-operate/engines-and-ranger.md#the-query-log-of-a-starrocks-engine).
+
+#### Set-up and retention
+
+The log is kept for **30 days**. StarRocks drops older partitions of the log table by itself.
+
+The set-up runs on its own, so most engines never need the button:
+
+- when a StarRocks engine is created. The setup runs after the delegation setup and waits for an alive compute node before it creates the table, so on a new engine the tab becomes ready about when the engine is **Running**;
+- after each apply or upgrade that may restart the engine, including **Upgrade security**;
+- once when egret starts, for every reachable provisioned StarRocks engine, so engines that existed before the Query log get it.
+
+**Set up query log** (needs `engine:update`) runs the same steps once, now. Use it to recover from a failed or lost set-up. If the plugin ever ends up in a state other than `INSTALLED`, the tab shows **Not set up** until the next set-up reinstalls it. Without the permission the button is disabled and says *Setting it up needs the engine:update permission.* The steps are safe to repeat. An error is shown as a message and logged; a failed set-up never fails a create, an apply or an upgrade.
+
+:::note Events that are not recorded
+StarRocks hands events to its audit plugins only about a minute after the plugin is installed, and again about once a minute. Statements that ran before the plugin's first refresh are not recorded, and after that a statement shows in the log about a minute after it ran.
+
+The plugin survives an FE pod restart: the FE extracts it again from the image, and nothing needs to be set up. Roughly 2 minutes of events around a restart are not recorded, those queued in the old FE and those sent before the new plugin's first load.
+:::
+
+![The Query log tab of an engine whose log is not set up, with the warning and the Set up query log button](/img/platform/admin/cp-engine-query-log-not-set-up.png)
+
+#### Engines on an older image
+
+Only egret's patched StarRocks image ships the audit plugin, from `ghcr.io/egret-data/egret-starrocks-fe` `4.1.7-egret.4`. An engine on an official image or on `4.1.7-egret.1` to `4.1.7-egret.3` shows `pluginNotShipped`. egret still creates the log table and the loader user, and does not fail the apply. When the engine carries the **Security upgrade needed** warning, the tab says: *This engine's image has no audit plugin. **Upgrade security**, in the security warning on this page, moves it to egret's image, and the Query log starts after that.* Press [**Upgrade security**](#security-upgrade-needed); the set-up then runs again by itself and installs the plugin. Without that warning the tab says *The Query log starts once the engine runs egret's image.*
+
+![The Query log tab of an engine on an older image, with the warning that its image has no audit plugin](/img/platform/admin/cp-engine-query-log-plugin-not-shipped.png)
+
+The tab is also served by the [Engines API](../../reference/rest-api/control-plane-engines.md#get-apicontrol-planeenginesidquery-log).
 
 ### Restart
 
