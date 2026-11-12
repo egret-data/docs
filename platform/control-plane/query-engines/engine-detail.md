@@ -205,6 +205,8 @@ Type the engine name and press **Delete**. You return to the Engines list. The d
 
 :::warning Deleting a StarRocks engine destroys its front-end metadata
 The delete removes the engine's initpwd Job pods and the front end's metadata volumes (`fe-meta-<name>-fe-0` and any further ordinals) along with the cluster. That metadata holds the StarRocks users, catalogs, grants, the root password and the query log, and it cannot be recovered. Table data stays in object storage under the engine's storage path. Creating an engine of the same name afterwards starts with a fresh front end.
+
+The same holds outside Egret: deleting the front end's StatefulSet with `kubectl delete sts` (default cascade) now deletes its metadata volumes too. To have the operator re-create the StatefulSet and keep the metadata, delete it with `--cascade=orphan`.
 :::
 
 ### Kubernetes-only features
