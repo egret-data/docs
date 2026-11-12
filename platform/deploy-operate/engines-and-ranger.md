@@ -154,6 +154,7 @@ Egret writes its own policies into the profile of every engine that delegates qu
   the engine, by engine username. A disabled platform admin is not in them.
 - On Trino, three baseline policies: `egret-user-impersonate-self`, `egret-user-execute-query` and `egret-query-timeout`.
 - On a Trino engine that impersonates with a delegator account, also `egret-delegator-impersonate`.
+- On a StarRocks engine in impersonation mode, also `egret-delegator-impersonate`, on the resource `user`. It lets the delegator `egret_delegator` run `EXECUTE AS` for every user except `root`, `egret_delegator` and `egret_query_log`.
 
 Egret derives this set from the engines bound to the profile and the active platform admins, and brings the stored
 policies in line with it. It adds a missing policy, updates one in place (the policy id stays the same), and deletes one
@@ -166,7 +167,7 @@ finds nothing to change leaves the policy version where it was.
 
 So a policy that is no longer wanted goes away:
 
-- `egret-delegator-impersonate` goes when the engine moves from impersonation to JWT;
+- `egret-delegator-impersonate` goes when the engine moves from impersonation to JWT (on StarRocks too);
 - all of these policies go when the profile's last delegating engine is unbound or deleted;
 - the `egret-admin` policies go when there is no active platform admin.
 
@@ -184,6 +185,36 @@ are recompiled at the next restart or at the next write that recompiles them.
 A change reaches an engine at the plugin's next download. Engine tokens already issued to a disabled or deleted user stay
 valid until they expire (at most 15 minutes), but a disabled admin's tokens no longer carry all access once the new
 policies are downloaded.
+
+### StarRocks users for impersonation
+
+In impersonation mode egret runs each query on StarRocks as the person who started it (`EXECUTE AS`), and StarRocks can only do that for a user that exists. So egret creates the users itself; nobody has to configure a service user by hand.
+
+- **Who gets a user.** On an engine that serves at least one workspace, egret creates `'<username>'@'%'` for each member of each workspace the engine serves, and for each live platform admin. The password is random and nobody knows it, so nobody can log in as that user: it exists only for the delegator to become. A platform admin gets a user on every impersonation engine assigned to a workspace.
+- **When a user is dropped.** egret drops a user it created when access ends: the person leaves the workspace, is disabled or deleted, loses `platform_admin`, or the engine is unassigned from every workspace or moved to JWT. Under JWT delegation egret does not use `EXECUTE AS` and keeps no users.
+- **What it never touches.** egret drops only users it created, and keeps a record of them. A user it did not create is left as it is. The names `root`, `egret_delegator` and `egret_query_log` are never created, granted or dropped, and a person cannot be given the username `root` (they get `root-2`).
+- **When it runs.** Database triggers start a sync on membership, role and user changes (a member added or removed, a group membership change, a role or platform-role grant, a user disabled, enabled or deleted). It also runs on every engine apply, once at server start, and every 10 minutes. A change takes effect within seconds; a failed step is logged and the next run tries again.
+- **Native access control.** An engine bound to no policy profile has no Ranger row, so the delegator holds `GRANT IMPERSONATE ON USER '<username>'@'%'` for exactly the users egret manages, and never `ON ALL USERS` (which would let it become `root`). egret adds the per-user grants first and revokes `ON ALL USERS` only after every grant landed. Before it drops a user it revokes that user's grant. An engine bound to a profile runs Ranger, which ignores native grants; there the row above is the control.
+
+#### Handing over a user egret did not create
+
+If a member's name is already held by a StarRocks user egret did not create (for example a test user made by hand), egret leaves it untouched and logs a warning naming it: `starrocks users: a member's name is held by a StarRocks user egret did not create; it is left as it is`. To hand it over, drop it as `root` on the FE. The next sync creates egret's own user of that name.
+
+```sql
+DROP USER 'member-sso'@'%';
+```
+
+:::warning Known issue: orphan IMPERSONATE grants (KI-358)
+On an engine bound to no policy profile, StarRocks keeps the delegator's `IMPERSONATE ON USER 'u'@'%'` after `DROP USER 'u'@'%'`, and refuses to revoke it once `u` no longer exists. egret revokes before its own drops, but it cannot revoke a grant on a name whose user is already gone: one dropped before this release, or by someone other than egret. Anyone who later creates a user of that name can then be impersonated by the delegator. To clean up, as `root`, for each name that `SHOW GRANTS FOR 'egret_delegator'@'%'` lists and `SHOW USERS` does not, create the user temporarily with a random password, revoke, then drop:
+
+```sql
+CREATE USER 'u'@'%' IDENTIFIED BY '<a long random password>';
+REVOKE IMPERSONATE ON USER 'u'@'%' FROM USER 'egret_delegator'@'%';
+DROP USER 'u'@'%';
+```
+
+Engines bound to a policy profile are not affected: Ranger does not read the native grant.
+:::
 
 ### Authentication of the plugin
 

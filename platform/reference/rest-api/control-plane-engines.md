@@ -208,7 +208,7 @@ Operation id: `create_engine`. Auth: Session cookie and `X-Egret-CSRF` header. F
 | 400 | Unknown/unprovisioned warehouse, invalid input (including a StarRocks engine name longer than 48 characters: the operator derives 63-character pod volume names from it), or provisioning failed |
 | 401 | Not authenticated |
 | 403 | Missing engine:create permission |
-| 409 | An engine with this name already exists, or its same-name policy profile is bound to another engine |
+| 409 | An engine with this name already exists, or its same-name policy profile is bound to another engine; or (StarRocks, `code` = `engine_metadata_left_over`) a previous engine of this name left its front-end metadata volume. The body also carries `claim`, and the message ends with the command that removes it, `kubectl delete pvc <claim> -n <namespace>`. A live engine of the same name gets the normal "already exists" refusal instead |
 | 500 | Internal error |
 
 ## POST `/api/control-plane/engines/external`

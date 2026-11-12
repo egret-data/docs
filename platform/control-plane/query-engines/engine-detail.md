@@ -203,6 +203,12 @@ A Trino engine that has run before and now has no pod or container at all, for e
 
 Type the engine name and press **Delete**. You return to the Engines list. The dialog says *This destroys the engine's Kubernetes cluster. It cannot be undone.*, or on the Docker provisioner *This removes the engine's containers. It cannot be undone.* (measured: 7 seconds). The engine's policy profile is kept and appears under **Profiles without an engine** in Governance.
 
+:::warning Deleting a StarRocks engine destroys its front-end metadata
+The delete removes the engine's initpwd Job pods and the front end's metadata volumes (`fe-meta-<name>-fe-0` and any further ordinals) along with the cluster. That metadata holds the StarRocks users, catalogs, grants, the root password and the query log, and it cannot be recovered. Table data stays in object storage under the engine's storage path. Creating an engine of the same name afterwards starts with a fresh front end.
+
+The same holds outside Egret: deleting the front end's StatefulSet with `kubectl delete sts` (default cascade) now deletes its metadata volumes too. To have the operator re-create the StatefulSet and keep the metadata, delete it with `--cascade=orphan`.
+:::
+
 ### Kubernetes-only features
 
 **Logs** and **Exec** work only with the Kubernetes provisioner, and are not shown for an engine Docker runs:
