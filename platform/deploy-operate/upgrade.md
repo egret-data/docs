@@ -699,7 +699,7 @@ A provisioned StarRocks engine gets a [Query log](../control-plane/query-engines
 - **API change:** four routes under `/api/control-plane/engines/{id}/query-log`. See [Engines API](../reference/rest-api/control-plane-engines.md#get-apicontrol-planeenginesidquery-log).
 - Retention is 30 days, and there is no export and no rotation of the loader password.
 
-### StarRocks impersonation, CN password and engine delete (platform #PR-NUMBER)
+### StarRocks impersonation, CN password and engine delete (platform #850)
 
 - **StarRocks engines in impersonation mode start working under Ranger.** On upgrade, egret writes `egret-delegator-impersonate` to their profile and creates a StarRocks user for each member of each workspace the engine serves, within seconds of start. Users made by hand for earlier tests (for example a passwordless `member-sso`) are not egret's: they are left as they are and a warning names them. Drop them as `root` to let egret create its own; see [Handing over a user egret did not create](./engines-and-ranger.md#handing-over-a-user-egret-did-not-create).
 - **Passworded StarRocks engines roll their FE and CN once** on their next apply, because `MYSQL_PWD` is now set on both. A CN that crash-loops today (KI-335) recovers then. An engine without a persistent front-end metadata volume loses its FE metadata on that roll, as on any roll.
