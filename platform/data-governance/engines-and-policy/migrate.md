@@ -36,6 +36,22 @@ The tab opens with *Profile \<profile\>: who owns each policy, whether it can mo
 
 Every sentence explaining a verdict, a blocker, a disagreement or a refusal comes from the server verbatim, so the screen never tells you something different from what the server enforces.
 
+## Migration status of the enforcement point
+
+Above the list the tab shows a status badge for the enforcement point. It counts only operator policies, the hand-written ones; policies egret compiled are not part of it.
+
+| Badge | Meaning |
+|---|---|
+| **Migration complete — every manual policy is in the model** | No operator policy remains un-migrated on this enforcement point. |
+| **N to migrate** | N operator policies can be migrated but have not been yet. |
+| **M blocked** | M operator policies cannot be migrated at all. Each is listed with its name and the reason. |
+
+A blocked policy keeps the enforcement point **incomplete** until you remove it or rewrite it so that it can be migrated. Migrating the other policies does not complete the enforcement point while one is still blocked.
+
+This completeness is the signal the per-enforcement-point switch to the model is planned to use.
+
+<!-- TODO(SP3d): screenshot of the migration-complete badge once the demo stack is rebuilt -->
+
 ## Migrate policies
 
 1. Tick the migratable policies you want. The line below the table reads *Selected: …* or *No policy selected.*
