@@ -15,7 +15,7 @@ A **grant** says who can read or write which part of a catalog. Grants are the m
 | **Effect** | **Allow** or **Deny**. A deny grant is marked with a **Deny** badge in lists. |
 | **Actions** | **Read**, **Write**, or both. Ranger has no "write": egret evaluates it as insert and delete on Trino, and as insert, update and delete on StarRocks. |
 | **Scope** | A catalog, narrowed to a schema, a table and a column. Each narrower level is optional. |
-| **Principals** | Who the grant is for: **Include** (users, groups or roles) and **Exclude** (principals removed from the include set). |
+| **Principals** | Who the grant is for: **Include** (users or groups) and **Exclude** (principals removed from the include set). |
 
 Grants are written as sentences in lists, for example `user member-sso can read demo_warehouse.analytics.sessions`. A level whose value is a pattern (`*`, `ord*`, `order?`) is quoted in the sentence, and the engine matches it as a glob.
 
@@ -38,7 +38,7 @@ Each row has **Open**, which opens the [grant's own page](#the-single-grant-page
 1. Open **Governance → Data** and select the table, for example `demo_warehouse.analytics.sessions`.
 2. Press **Grant access**. The dialog opens as **New grant** with the catalog, schema and table already filled in.
 3. Leave **Effect** as **Allow**. Under **Actions**, keep **Read** ticked.
-4. Under **Principals → Include**, choose a kind (**user**, **group** or **role**), then search.
+4. Under **Principals → Include**, choose a kind (**user** or **group**), then search.
 5. A user who already has an engine username is added by selecting the match; since platform #823 that is every user except a service account before its first token and a person whose name a stored reference already uses. For such a user the match shows **Allocate username and add**: press it. Confirm **Allocate and add** in the dialog *Allocate a username to Member SSO?* Egret reports *Member SSO was allocated a username and added, stored as member-sso.* The username is kept even if you close the form without saving.
 6. Press **Preview**. The dialog scrolls to the preview, so its result and **Create** are both on screen. The preview names the profiles that would be recompiled, for example `docs-trino`, and how many policies would be created, updated, deleted or left unchanged.
 7. Press **Create**. You see *Grant created.*
@@ -59,7 +59,7 @@ The engine applies the grant at its next policy download (the plugin polls every
 | **Scope → Schema** | Free text, for example `sales`. Disabled until a catalog is chosen. |
 | **Scope → Table** | Free text, for example `orders`. Disabled until a schema is entered. |
 | **Scope → Column** | Free text, for example `ssn`. Disabled until a table is entered. |
-| **Principals → Include** | Users, groups and roles. A role is typed by name (**Role name**) and added with **Add**. At least one is required: *Include at least one principal — a grant that includes nobody would compile to nothing.* |
+| **Principals → Include** | Users and groups. At least one is required: *Include at least one principal — a grant that includes nobody would compile to nothing.* (Role principals are no longer offered — see [Roles are migrated to groups](#roles-are-migrated-to-groups).) |
 | **Principals → Exclude** | Principals removed from the grant, same pickers. |
 
 ### Preview before you save
@@ -78,7 +78,13 @@ Every grant has its own page at `/governance/grants/<id>`, reached from **Open**
 
 ## Principals and what reaches the engine
 
-Users are written to the engine by **username**. Groups and roles are expanded to their current members' usernames when the grant is compiled, because engines do not receive group or role names. Membership changes recompile at the next compile, not instantly. See [How permissions work](../concepts.md#what-does-not-reach-the-engine).
+Users are written to the engine by **username**. Groups are expanded to their current members' usernames when the grant is compiled, because engines do not receive group names. Membership changes recompile at the next compile, not instantly. See [How permissions work](../concepts.md#what-does-not-reach-the-engine).
+
+### Roles are migrated to groups
+
+Grants used to accept a **role** principal. Egret now has one principal model built on users and groups, so each role referenced by a grant, rule or engine permission is migrated once to a **managed group** named `role:<name> holders` whose membership mirrors the role's holders, and the role reference is rewritten to that group. The compiled engine output is unchanged by the migration — a role and its holder group expand to the same usernames — and [Explain access](./explain-access.md) reads the same for every affected person.
+
+After the migration the grant and engine-permission dialogs no longer offer a **role** kind; grant to a group instead. The `role:<name> holders` groups are maintained by egret and are not offered for hand authoring either. Role principals created before the migration still display in lists and in Explain. The migration is reversible by a platform admin.
 
 :::warning
 A grant on a catalog that no engine serves compiles into a profile no engine downloads. Check the **Engines** line of the object header: *No engine attached* means the grant is stored but enforced nowhere.
@@ -174,7 +180,7 @@ Iceberg has no column rename for a view: a view's columns change only with a new
 
 ## Limits and known issues
 
-- The grant dialog offers kinds **user**, **group** and **role** only. The fourth kind that exists internally (workspace members) is written by egret itself.
+- The grant dialog offers kinds **user** and **group** only. Role principals are migrated to managed groups ([Roles are migrated to groups](#roles-are-migrated-to-groups)); the workspace-members kind that exists internally is written by egret itself.
 - A grant whose principals include nobody is refused, both by the form and by the API, so an edit can never silently revoke a grant.
 - After a rename, a person who reads the table through an allow grant can be refused on the new name for up to about two policy polls, until the engines apply the moved grant (KI-317).
 - A rename that copies a restriction is held for up to 90 seconds; run from SQL Lab, a hold longer than 60 seconds shows a timeout, which says that the rename may still complete (KI-310).
