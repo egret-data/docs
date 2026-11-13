@@ -69,7 +69,8 @@ Things to know:
 - **Error and finally branches run again.** The `errors`, `finally` and `afterExecution` tasks of the flow and of its flow-control tasks are cleared and run again on the new outcome.
 - **A `WorkingDirectory` block runs whole again**, in a new working directory.
 - **A loop restarts at the failing iteration.** For a `Loop`, the last failed or paused iteration is restarted in place. An iteration cannot be restarted on its own: its **Restart** button is disabled and names the loop's execution to restart instead.
-- **A failed subflow child is restarted in place** and the parent waits for it. A child that did not fail is not run again.
+- **A failed subflow child is restarted in place** and the parent waits for it. A child that did not fail, a paused one included, is not run again: the `Subflow` task ends **Success** and keeps the child's outputs.
+- **The flow must still be startable.** A restart is refused when the flow is in the trash or was deleted permanently (`404`), or is disabled (`409`), as for replay. If the flow has an `egret.sql` task, which runs as the flow's creator, only its creator can restart it (`400`).
 - **Flow triggers fire again.** The restart adds the states `RESTARTED`, `RUNNING` and the new end state to the history, and each one is an event for a flow trigger.
 
 The API route is `POST /api/ws/{workspace}/workflows/executions/{id}/restart`. It answers `200` with the execution. A `revision` query parameter is refused with `400` `restart_revision_unsupported`.
@@ -93,7 +94,8 @@ The **New state** list offers **Success**, **Warning**, **Failed** and **Cancell
 
 - A task run set to **Success** or **Warning** lets the tasks after it run. In a check on the demo stack, a task that failed was marked **Success** and the next task ran and the execution ended `SUCCESS`.
 - Choosing **Cancelled** ends the execution as `CANCELLED` at once.
-- The execution gets the label `system.restarted: true` and an extra attempt number, as for a restart, and the tasks of its `errors`, `finally` and `afterExecution` branches are cleared and run again.
+- The execution gets the label `system.restarted: true` and an extra attempt number, as for a restart, and the tasks of its `errors`, `finally` and `afterExecution` branches are cleared and run again. A task run inside one of those branches is cleared with them, so changing its state makes the branch run again rather than keeping the state you picked.
+- The same flow checks as restart apply: the flow must not be in the trash or disabled, and on a flow with an `egret.sql` task only its creator can change a task run's state. **Change status** runs no task and has neither check.
 
 The API route is `POST /api/ws/{workspace}/workflows/executions/{id}/task-runs/{task_run_id}/state` with the body `{"state": "SUCCESS"}`.
 
@@ -124,6 +126,8 @@ The page shows the refusal in the dialog or as a message and changes nothing. In
 | `state_unchanged` | 409 | The execution or task run is already in the state you picked. |
 | `inside_working_directory` | 409 | The task run is inside a `WorkingDirectory` block, which cannot be changed one task at a time. Restart the execution instead, which runs the block whole again. |
 | `restart_revision_unsupported` | 400 | A `revision` was passed to restart. Restart in the same execution does not take one. |
+
+Restart and a task-run state change also give the flow refusals replay gives: `404` when the flow is in the trash or was deleted permanently, `409` *Cannot execute flow: flow is disabled.*, and `400` *the flow contains an `egret.sql` task, which runs as the flow's creator, so only its creator can start it* when you are not the flow's creator.
 
 A state outside **Success**, **Warning**, **Failed** and **Cancelled** is refused with `400`. An execution id from another workspace answers `404`.
 
@@ -172,7 +176,7 @@ A killed execution cannot be resumed; replay it to run it again. Killing an exec
 - **Restart** with a `revision` (a new execution on another version of the flow) is not available: it is refused with `restart_revision_unsupported`. Use **Replay** to run an execution again from the start.
 - Not available: replay from a chosen task, delete an execution, and force-run.
 - A restart cannot be started on a loop iteration, on an execution whose `afterExecution` tasks are still running, or after the pruner deleted its files.
-- **Change state** is not offered for a task run inside a `WorkingDirectory` block. If a task run is set to **Cancelled** or is still **Paused**, the flow-control tasks that contain it can show **Running** under an execution that has ended.
+- **Change state** is not offered for a task run inside a `WorkingDirectory` block. A task-run state change is refused with `after_execution_running` while a task run of the ended execution is still **Paused**.
 - A `Subflow` inside a `LoopUntil` is matched to its earlier child by position only, so a restarted iteration starts a new child. A restarted `Subflow` whose child is still running waits for it.
 - Restart and the state changes act on one execution; there is no bulk version.
 - Replay always uses the execution's original inputs; they cannot be edited.
