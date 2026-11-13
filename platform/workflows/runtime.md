@@ -28,7 +28,7 @@ The Docker demo stack (`just demo-up`) sets `EGRET_WORKFLOW__WORKER_ENABLED=true
 | Core tasks: log, outputs, variables, labels, assert, fail, exit, sleep, storage files, namespace files, KV | Run. |
 | Flow control: `If`, `Switch`, `Parallel`, `Sequential`, `Dag`, `Loop`, `LoopUntil`, `AllowFailure`, `Subflow`, `Pause` | Run. A loop and a subflow create child executions. |
 | Retries, timeouts, `errors:` handlers | Run. Flow-level `finally:` and `afterExecution:` do not run anywhere (see [Retries, errors and timeouts](./flows/error-handling.md)). |
-| Resume, kill, replay | Work. A kill of a sleeping task ended `KILLED` about 4 seconds later. |
+| Resume, restart, change state, kill, replay | Work. A kill of a sleeping task ended `KILLED` about 4 seconds later. |
 | Schedule triggers, backfills, flow triggers | Fire. |
 | Webhook triggers | Not reachable: webhooks are off (the routes answer 404), and the frontend's web server does not forward `/workflows/v1/` to the backend. |
 | Script tasks (`scripts.shell.*`, `scripts.python.*`) and `WorkingDirectory` with them | Refused before they start: no container runner is configured. Egret reaches Docker only through a socket proxy that is used to start engines. |
@@ -79,7 +79,7 @@ Script and plugin tasks also need a `container_runner`, and the image on the pla
 | Permission | Allows |
 |---|---|
 | `workflow:read` | See flows, versions, executions, logs, namespaces, files, KV keys and triggers. |
-| `workflow:manage` | Create, edit, version, run and delete flows, restore them from the trash or delete them permanently; resume, replay and kill executions; edit namespace files and KV; switch triggers and start backfills. Granted to workspace editors and admins. |
+| `workflow:manage` | Create, edit, version, run and delete flows, restore them from the trash or delete them permanently; resume, restart, replay and kill executions, and change the state of an execution or a task run; edit namespace files and KV; switch triggers and start backfills. Granted to workspace editors and admins. |
 | `workflow:use_secrets` | Save or publish a flow that calls `secret()`. Granted to workspace admins only. |
 
 `workflow:read` is not enough for any action. A person with only read access sees read-only editors and disabled buttons with the reason beside them. A person without `workflow:read` does not see the Workflows items in the sidebar; opened by their address, Flows, Executions, Namespaces and Triggers show *You don't have access to this page.* with *Workflows need the workflow:read permission in this workspace.*

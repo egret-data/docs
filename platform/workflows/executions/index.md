@@ -55,7 +55,7 @@ The **Trigger** column says how the run began:
 
 ## Open an execution
 
-Press an execution's id. The [execution page](./detail.md) has tabs for **Overview**, **Topology**, **Gantt**, **Logs** and **Outputs**, and the [actions](./actions.md) **Resume**, **Replay** and **Kill**.
+Press an execution's id. The [execution page](./detail.md) has tabs for **Overview**, **Topology**, **Gantt**, **Logs** and **Outputs**, and the [actions](./actions.md) **Resume**, **Restart**, **Replay**, **Kill** and **Change status**.
 
 ## Start an execution
 
@@ -79,8 +79,8 @@ When the files or logs have been removed, the **Logs** and **Outputs** tabs say 
 
 ## Limits and known issues
 
-- There is no bulk action (kill, replay or delete several runs), no change-status action and no delete.
-- **Restart** a failed execution from the failed task is not available; use **Replay**, which starts a new execution from the beginning.
+- There is no bulk action (kill, restart, replay or delete several runs) and no delete.
+- **Restart** runs the failed tasks again in the same execution; **Replay** starts a new execution from the beginning. Restart with a `revision` is not available. See [Run actions](./actions.md).
 - The page polls rather than streaming. A long-running execution can lag behind by a few seconds.
 - An execution can stay in **Running** longer than its tasks need when another execution's long task holds the worker; see [Runtime and operations](../runtime.md#limits-and-known-issues).
 
