@@ -8,7 +8,7 @@ description: REST endpoints in the perm group.
 
 Data permission model (grants, rules, explain).
 
-This page lists 34 endpoints (OpenAPI tag `perm`). It is generated from `openapi.json`; see the [REST API overview](../rest-api) for authentication, CSRF and error conventions.
+This page lists 42 endpoints (OpenAPI tag `perm`). It is generated from `openapi.json`; see the [REST API overview](../rest-api) for authentication, CSRF and error conventions.
 
 | Method | Path | Operation id | Notes |
 |---|---|---|---|
@@ -27,6 +27,12 @@ This page lists 34 endpoints (OpenAPI tag `perm`). It is generated from `openapi
 | POST | `/api/control-plane/perm/grants` | `create_grant` |  |
 | PATCH | `/api/control-plane/perm/grants/{id}` | `patch_grant` | **Edit in place, keeping the id — SP4b D1.** The body is the whole grant, exactly the create route's shape: this replaces the grant's body and keeps its iden... |
 | DELETE | `/api/control-plane/perm/grants/{id}` | `delete_grant` |  |
+| POST | `/api/control-plane/perm/migrate/clearances` | `migrate_clearances` | SP3c-2: migrate every gated clearance into a `withhold` rule exempting the holders of its required roles and groups, PROVABLY — the compiled artifact of ever... |
+| POST | `/api/control-plane/perm/migrate/clearances/undo` | `undo_clearances` | SP3c-2: undo one clearance migration, restoring `classification_policies` and removing the withhold rules it created. |
+| POST | `/api/control-plane/perm/migrate/role-principals` | `migrate_role_principals` | SP3c-1: rewrite every `role` principal (grants, rule exemptions, engine grants) into a ref to that role's managed `role:&lt;name> holders` group, PROVABLY — the... |
+| POST | `/api/control-plane/perm/migrate/role-principals/undo` | `undo_role_principals` | SP3c-1: undo one role-principal migration, restoring the `role` refs it rewrote. |
+| POST | `/api/control-plane/perm/migrate/ws-assignments` | `migrate_ws_assignments` | SP3c-3: rewrite every implicit workspace-assignment grant into an explicit grant on the managed `ws:&lt;slug> members` group, PROVABLY — the compiled artifact o... |
+| POST | `/api/control-plane/perm/migrate/ws-assignments/undo` | `undo_ws_assignments` | SP3c-3: undo one workspace-assignment migration, restoring the implicit grants it rewrote. |
 | GET | `/api/control-plane/perm/overlaps` | `list_overlaps` | Every mask / row-filter pair already stored in a profile's download. |
 | GET | `/api/control-plane/perm/people` | `list_people` |  |
 | GET | `/api/control-plane/perm/people/groups/{name}` | `read_group` |  |
@@ -36,10 +42,12 @@ This page lists 34 endpoints (OpenAPI tag `perm`). It is generated from `openapi
 | GET | `/api/control-plane/perm/policies/services/{service_id}/classify` | `classify_service_policies` | SP4d-3 Task 5: every policy of one profile, classified — its owner, whether it can be migrated into the permission model, and if not, every reason as a sente... |
 | POST | `/api/control-plane/perm/policies/services/{service_id}/migrate` | `migrate_service_policies` | SP4d-3 Task 7: migrate hand-written policies of one profile into the permission model, PROVABLY — see `crate::migrate` for the transaction, its order, and th... |
 | POST | `/api/control-plane/perm/policies/services/{service_id}/migrate/undo` | `undo_service_policy_migration` | SP4d-3 Task 7: undo migrations — delete the grants and rules provenance names, recompile, switch each original back on, delete the provenance. |
+| GET | `/api/control-plane/perm/policies/services/{service_id}/migration-gate` | `service_migration_gate` |  |
+| GET | `/api/control-plane/perm/policies/services/{service_id}/migration-status` | `service_migration_status` | SP3b: the enforcement point's migration standing — how many of its operator policies are migrated, pending or blocked, and whether it is complete (every oper... |
 | GET | `/api/control-plane/perm/policies/services/{service_id}/warnings` | `service_policy_warnings` | SP4d-4 Task 11: the policies of one profile whose stored resource levels Ranger reads differently from how the editor shows them — a policy that stops above ... |
 | POST | `/api/control-plane/perm/preview` | `preview` | **The dry run — SP4b D2. |
 | GET | `/api/control-plane/perm/rules` | `list_rules` |  |
-| POST | `/api/control-plane/perm/rules` | `create_rule` | Create a named mask or row-filter rule and recompile the profiles it affects, in one transaction. |
+| POST | `/api/control-plane/perm/rules` | `create_rule` | Create a named mask or row-filter rule and recompile the enforcement points it affects, in one transaction. |
 | GET | `/api/control-plane/perm/rules/enforcement` | `rules_enforcement` | Whether each listed STORED rule is enforced — the `enforcedBy` / `notEnforced` / `catalogs` half of `GET /perm/rules/\{id\}/effect`, computed by the same funct... |
 | PATCH | `/api/control-plane/perm/rules/{id}` | `patch_rule` | Edit a rule in place, keeping the id — the rule half of SP4b D1. |
 | DELETE | `/api/control-plane/perm/rules/{id}` | `delete_rule` |  |
@@ -62,7 +70,7 @@ Operation id: `cleared_people`. Auth: Session cookie. Forbidden (403): Missing p
 | `count` | integer (int32) | yes | Every person listed by the rules above (not only the first 200). It is not everyone egret clears: platform admins are cleared and not listed (see the type doc). |
 | `people` | ClearedPerson[] | yes | The first [`CLEARED_PEOPLE_LIMIT`] (200) of them, sorted by label. |
 | `truncated` | boolean | yes | More people are listed than `people` carries. |
-| `enginesEnforce` | boolean | yes | Whether engines enforce the clearance at all: true when it names at least one required role. False means anyone with SQL access reads the data on engines. |
+| `enginesEnforce` | boolean | yes | Whether engines enforce the clearance at all: true when it names a required role or group. False means the clearance names neither, so anyone with SQL access reads the data on engines. |
 | `onEnginesCount` | integer (int32) | yes | How many of `count` are `onEngines`, independent of the 200 cap. |
 
 | Status | Meaning |
@@ -102,7 +110,7 @@ It exists because the affected-service sets above are derived from the mutated R
 | 400 | The model cannot be compiled for this profile |
 | 401 | Not authenticated |
 | 403 | Missing policy:update permission |
-| 404 | No such policy profile |
+| 404 | No such enforcement point |
 | 409 | A rule overlap: two mask (or two row-filter) rules would decide one request differently: this write would compile such a pair, or a profile it recompiles already holds one, which refuses every recompile of that profile until one rule is... |
 | 500 | Internal error |
 
@@ -172,7 +180,7 @@ Operation id: `patch_engine_grant`. Auth: Session cookie and `X-Egret-CSRF` head
 
 | Status | Meaning |
 |---|---|
-| 200 | Engine grant replaced (the engine is fixed) AND its profile recompiled |
+| 200 | Engine grant replaced (the engine is fixed) AND its enforcement point recompiled |
 | 400 | As for create |
 | 401 | Not authenticated |
 | 403 | Missing policy:update permission |
@@ -222,7 +230,7 @@ Operation id: `list_engine_grants`. Auth: Session cookie. Forbidden (403): Missi
 
 | Status | Meaning |
 |---|---|
-| 200 | The engine, its profile, every engine it shares that profile with, its engine grants and the profile's seeded (managed) policies |
+| 200 | The engine, its enforcement point, every engine it shares that enforcement point with, its engine grants and the enforcement point's seeded (managed) policies |
 | 401 | Not authenticated |
 | 403 | Missing policy:read permission |
 | 404 | No such engine |
@@ -253,12 +261,12 @@ Operation id: `create_engine_grant`. Auth: Session cookie and `X-Egret-CSRF` hea
 
 | Status | Meaning |
 |---|---|
-| 201 | Engine grant created AND the engine's profile recompiled, in one transaction |
+| 201 | Engine grant created AND the engine's enforcement point recompiled, in one transaction |
 | 400 | Unknown capability, a capability of another engine type, a value that breaks the catalogue's rules, a catalog the engine does not reach, or empty/invalid/unresolvable principals |
 | 401 | Not authenticated |
 | 403 | Missing policy:update permission |
 | 404 | No such engine |
-| 409 | The engine has no profile, is being deleted or is RisingWave; the impersonation target is reserved or an engine admin; the engine already has that grant; or the recompile refused (overlap, ceiling) |
+| 409 | The engine has no enforcement point, is being deleted or is RisingWave; the impersonation target is reserved or an engine admin; the engine already has that grant; or the recompile refused (overlap, ceiling) |
 
 ## POST `/api/control-plane/perm/explain`
 
@@ -328,7 +336,7 @@ Evaluate one user and one engine capability on the artifact the engine's profile
 | 401 | Not authenticated |
 | 403 | Missing policy:read permission |
 | 404 | No such engine |
-| 409 | The profile's engines run a plugin version egret does not model |
+| 409 | The enforcement point's engines run a plugin version egret does not model |
 
 ## POST `/api/control-plane/perm/explain/principal`
 
@@ -373,7 +381,7 @@ Operation id: `list_grants`. Auth: Session cookie. Forbidden (403): Missing poli
 | `actions` | Action[] | yes |  |
 | `scope` | Scope | yes | A path into a catalog. `schema`/`table`/`column` narrow progressively — `perm.grants` and `perm.rules` both CHECK that a level cannot be skipped (a column implies a table implies a schema). |
 | `principals` | PrincipalSet | yes | A principal subtract: `include` minus `exclude`. This is what lets egret drop Ranger's allow-exception/deny-exception blocks from the authoring surface (see `crates/egret-perm/tests/store.rs`) — both `Grant.principals` and `Rule.exempt` use... |
-| `origin` | GrantOrigin | yes | Why a grant exists. `WorkspaceAssignment` rows are written by the assignment path, not by a human, and are recreated from the assignment on demand (D3) — `perm.grants` enforces at most one such row per `(catalog_id, workspace_id)` via... |
+| `origin` | GrantOrigin | yes | Why a grant exists. `WorkspaceAssignment`/`WorkspaceAssignmentGroup` rows are written by the assignment path, not by a human, and are recreated from the assignment on demand (D3) — `perm.grants` enforces at most one such row per... |
 | `catalog_name` | string, nullable | no | `registry.catalogs.name` for `scope.catalog_id`, resolved server-side. |
 
 | Status | Meaning |
@@ -398,7 +406,7 @@ Operation id: `create_grant`. Auth: Session cookie and `X-Egret-CSRF` header. Fo
 
 | Status | Meaning |
 |---|---|
-| 201 | Grant created AND the profiles it affects recompiled, in one transaction |
+| 201 | Grant created AND the enforcement points it affects recompiled, in one transaction |
 | 400 | The grant names a scope level as "" (Ranger's "every value at that level", not a resource name — it would be enforced across the whole catalog), names a level beneath a "*" one (a path cannot skip a level, and a "*" names none), or cannot... |
 | 401 | Not authenticated |
 | 403 | Missing policy:update permission |
@@ -439,7 +447,7 @@ Replace a grant's body, keeping its id, and recompile the UNION of the profiles 
 
 | Status | Meaning |
 |---|---|
-| 200 | Grant updated AND every affected profile recompiled, in one transaction |
+| 200 | Grant updated AND every affected enforcement point recompiled, in one transaction |
 | 400 | The patched grant names a scope level as "" (Ranger's "every value at that level", not a resource name), names a level beneath a "*" one (a path cannot skip a level, and a "*" names none), cannot be compiled, names no principal or no... |
 | 401 | Not authenticated |
 | 403 | Missing policy:update permission |
@@ -464,6 +472,135 @@ Operation id: `delete_grant`. Auth: Session cookie and `X-Egret-CSRF` header. Fo
 | 409 | A rule overlap: two mask (or two row-filter) rules would decide one request differently: this write would compile such a pair, or a profile it recompiles already holds one, which refuses every recompile of that profile until one rule is... |
 | 500 | Internal error |
 
+## POST `/api/control-plane/perm/migrate/clearances`
+
+Operation id: `migrate_clearances`. Auth: Session cookie and `X-Egret-CSRF` header. Forbidden (403): Missing policy:update permission.
+
+SP3c-2: migrate every gated clearance into a `withhold` rule exempting the holders of its required roles and groups, PROVABLY — the compiled artifact of every affected profile is fingerprinted before and after and the whole transaction rolls back on any difference. Reversible via the `undo` route.
+
+**Response 200 (application/json)**: `ClearanceMigration`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `id` | integer (int64) | yes |  |
+| `tags` | string[] | yes |  |
+| `rules_created` | integer | yes |  |
+
+| Status | Meaning |
+|---|---|
+| 200 | Every gated clearance migrated into a withhold rule; the compiled output of each affected profile is byte-identical |
+| 401 | Not authenticated |
+| 403 | Missing policy:update permission |
+| 409 | Nothing was changed: the equivalence gate refused, or a recompile it needed was refused |
+| 500 | Internal error |
+
+## POST `/api/control-plane/perm/migrate/clearances/undo`
+
+Operation id: `undo_clearances`. Auth: Session cookie and `X-Egret-CSRF` header. Forbidden (403): Missing policy:update permission.
+
+SP3c-2: undo one clearance migration, restoring `classification_policies` and removing the withhold rules it created. Refuses, changing nothing, if a created rule's exemptions changed since.
+
+**Request body (application/json)**: `UndoClearancesRequest`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `id` | integer (int64) | yes | The `id` the migration answered with. |
+
+| Status | Meaning |
+|---|---|
+| 200 | The migration undone |
+| 401 | Not authenticated |
+| 403 | Missing policy:update permission |
+| 404 | No such migration |
+| 409 | Nothing was changed: a created rule was edited since |
+| 500 | Internal error |
+
+## POST `/api/control-plane/perm/migrate/role-principals`
+
+Operation id: `migrate_role_principals`. Auth: Session cookie and `X-Egret-CSRF` header. Forbidden (403): Missing policy:update permission.
+
+SP3c-1: rewrite every `role` principal (grants, rule exemptions, engine grants) into a ref to that role's managed `role:&lt;name> holders` group, PROVABLY — the compiled artifact of every affected profile is fingerprinted before and after and the whole transaction rolls back on any difference. Reversible via the `undo` route.
+
+**Response 200 (application/json)**: `RolePrincipalMigration`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `id` | integer (int64) | yes |  |
+| `roles` | string[] | yes |  |
+| `rewritten` | integer | yes |  |
+
+| Status | Meaning |
+|---|---|
+| 200 | Every role principal rewritten; the compiled output of each affected profile is byte-identical |
+| 401 | Not authenticated |
+| 403 | Missing policy:update permission |
+| 409 | Nothing was changed: the equivalence gate refused, or a recompile it needed was refused |
+| 500 | Internal error |
+
+## POST `/api/control-plane/perm/migrate/role-principals/undo`
+
+Operation id: `undo_role_principals`. Auth: Session cookie and `X-Egret-CSRF` header. Forbidden (403): Missing policy:update permission.
+
+SP3c-1: undo one role-principal migration, restoring the `role` refs it rewrote. Refuses, changing nothing, if a rewritten row changed since.
+
+**Request body (application/json)**: `UndoRolePrincipalsRequest`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `id` | integer (int64) | yes | The `id` the migration answered with. |
+
+| Status | Meaning |
+|---|---|
+| 200 | The migration undone |
+| 401 | Not authenticated |
+| 403 | Missing policy:update permission |
+| 404 | No such migration |
+| 409 | Nothing was changed: a rewritten row was edited since |
+| 500 | Internal error |
+
+## POST `/api/control-plane/perm/migrate/ws-assignments`
+
+Operation id: `migrate_ws_assignments`. Auth: Session cookie and `X-Egret-CSRF` header. Forbidden (403): Missing policy:update permission.
+
+SP3c-3: rewrite every implicit workspace-assignment grant into an explicit grant on the managed `ws:&lt;slug> members` group, PROVABLY — the compiled artifact of every affected profile is fingerprinted before and after and the whole transaction rolls back on any difference. Reversible via the `undo` route.
+
+**Response 200 (application/json)**: `WsAssignmentMigration`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `id` | integer (int64) | yes |  |
+| `catalogs` | string (uuid)[] | yes |  |
+| `rewritten` | integer | yes |  |
+
+| Status | Meaning |
+|---|---|
+| 200 | Every implicit workspace grant rewritten; the compiled output of each affected profile is byte-identical |
+| 401 | Not authenticated |
+| 403 | Missing policy:update permission |
+| 409 | Nothing was changed: the equivalence gate refused, or a recompile it needed was refused |
+| 500 | Internal error |
+
+## POST `/api/control-plane/perm/migrate/ws-assignments/undo`
+
+Operation id: `undo_ws_assignments`. Auth: Session cookie and `X-Egret-CSRF` header. Forbidden (403): Missing policy:update permission.
+
+SP3c-3: undo one workspace-assignment migration, restoring the implicit grants it rewrote. Refuses, changing nothing, if a rewritten row changed since.
+
+**Request body (application/json)**: `UndoWsAssignmentsRequest`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `id` | integer (int64) | yes | The `id` the migration answered with. |
+
+| Status | Meaning |
+|---|---|
+| 200 | The migration undone |
+| 401 | Not authenticated |
+| 403 | Missing policy:update permission |
+| 404 | No such migration |
+| 409 | Nothing was changed: a rewritten row was edited since |
+| 500 | Internal error |
+
 ## GET `/api/control-plane/perm/overlaps`
 
 Operation id: `list_overlaps`. Auth: Session cookie. Forbidden (403): Missing policy:read permission.
@@ -485,7 +622,7 @@ Every mask / row-filter pair already stored in a profile's download. Writes refu
 
 | Status | Meaning |
 |---|---|
-| 200 | Every overlapping mask or row-filter pair stored in a profile's download, compiled or hand-written, with the profile that serves it |
+| 200 | Every overlapping mask or row-filter pair stored in an enforcement point's download, compiled or hand-written, with the enforcement point that serves it |
 | 401 | Not authenticated |
 | 403 | Missing policy:read permission |
 | 500 | Internal error |
@@ -658,10 +795,10 @@ SP4d-3 Task 5: every policy of one profile, classified — its owner, whether it
 
 | Status | Meaning |
 |---|---|
-| 200 | Every policy of the profile, ordered by id, with its owner, verdict and blocker sentences |
+| 200 | Every policy of the enforcement point, ordered by id, with its owner, verdict and blocker sentences |
 | 401 | Not authenticated |
 | 403 | Missing policy:read permission |
-| 404 | No such policy profile |
+| 404 | No such enforcement point |
 | 500 | Internal error |
 
 ## POST `/api/control-plane/perm/policies/services/{service_id}/migrate`
@@ -700,13 +837,13 @@ SP4d-3 Task 7: migrate hand-written policies of one profile into the permission 
 
 | Status | Meaning |
 |---|---|
-| 200 | Proved equivalent on every affected profile; committed unless `dry_run` |
+| 200 | Proved equivalent on every affected enforcement point; committed unless `dry_run` |
 | 400 | A named policy is not migratable (the classifier's sentences), or the request names no policy / a policy twice |
 | 401 | Not authenticated |
 | 403 | Missing policy:update permission |
-| 404 | No such profile, or no policy of that name in it |
+| 404 | No such enforcement point, or no policy of that name in it |
 | 409 | Already migrated, not hand-written (compiler or infra owned), or a rule name it would create is taken; or two mask (or two row-filter) rules would decide one request differently: this write would compile such a pair, or a profile it... |
-| 422 | Not proved: the disagreements on any affected profile, or why the gate could not answer. Nothing was written |
+| 422 | Not proved: the disagreements on any affected enforcement point, or why the gate could not answer. Nothing was written |
 | 500 | Internal error |
 
 ## POST `/api/control-plane/perm/policies/services/{service_id}/migrate/undo`
@@ -743,6 +880,56 @@ SP4d-3 Task 7: undo migrations — delete the grants and rules provenance names,
 | 409 | Nothing was changed: an object the migration created was edited or deleted since, or the original was edited or switched on (each change is named); or a profile became reachable from the migrated objects while undo waited for its locks... |
 | 500 | Internal error |
 
+## GET `/api/control-plane/perm/policies/services/{service_id}/migration-gate`
+
+Operation id: `service_migration_gate`. Auth: Session cookie. Forbidden (403): Missing policy:read permission.
+
+| Parameter | In | Type | Required | Description |
+|---|---|---|---|---|
+| `service_id` | path | integer (int64) | yes | policy.authz_services id |
+
+**Response 200 (application/json)**: `GateVerdict`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `complete` | boolean | yes |  |
+| `refusals` | GateRefusal[] | yes |  |
+
+| Status | Meaning |
+|---|---|
+| 200 | Whether the enforcement point's migration is complete, and if not, why |
+| 401 | Not authenticated |
+| 403 | Missing policy:read permission |
+| 404 | No such policy profile |
+| 500 | Internal error |
+
+## GET `/api/control-plane/perm/policies/services/{service_id}/migration-status`
+
+Operation id: `service_migration_status`. Auth: Session cookie. Forbidden (403): Missing policy:read permission.
+
+SP3b: the enforcement point's migration standing — how many of its operator policies are migrated, pending or blocked, and whether it is complete (every operator policy migrated). Read-only; rolled up from the same classification `GET .../classify` returns.
+
+| Parameter | In | Type | Required | Description |
+|---|---|---|---|---|
+| `service_id` | path | integer (int64) | yes | policy.authz_services id |
+
+**Response 200 (application/json)**: `EpMigrationStatus`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `complete` | boolean | yes |  |
+| `migrated` | integer | yes | Operator policies already migrated (recorded in `perm.migrated_from`). |
+| `pending` | integer | yes | Operator policies that are convertible but not yet migrated. |
+| `blocked` | BlockedPolicy[] | yes | Operator policies that cannot be migrated at all; each blocks completeness until the operator removes or rewrites it. |
+
+| Status | Meaning |
+|---|---|
+| 200 | The profile's migration standing: migrated/pending counts, the blocked operator policies, and whether it is complete |
+| 401 | Not authenticated |
+| 403 | Missing policy:read permission |
+| 404 | No such policy profile |
+| 500 | Internal error |
+
 ## GET `/api/control-plane/perm/policies/services/{service_id}/warnings`
 
 Operation id: `service_policy_warnings`. Auth: Session cookie. Forbidden (403): Missing policy:read permission.
@@ -762,10 +949,10 @@ SP4d-4 Task 11: the policies of one profile whose stored resource levels Ranger 
 
 | Status | Meaning |
 |---|---|
-| 200 | `warningCount` and, ordered by id, the policies of the profile that carry a warning |
+| 200 | `warningCount` and, ordered by id, the policies of the enforcement point that carry a warning |
 | 401 | Not authenticated |
 | 403 | Missing policy:read permission |
-| 404 | No such policy profile |
+| 404 | No such enforcement point |
 | 500 | Internal error |
 
 ## POST `/api/control-plane/perm/preview`
@@ -774,7 +961,7 @@ Operation id: `preview`. Auth: Session cookie and `X-Egret-CSRF` header. Forbidd
 
 **The dry run — SP4b D2. It runs the REAL write and rolls it back.**
 
-Dry-run a grant or rule write: report the policy profiles it would recompile, and the compile error it would fail with, without storing anything. Runs the real write in a transaction that is rolled back, so the answer cannot differ from what the write would do.
+Dry-run a grant or rule write: report the enforcement points it would recompile, and the compile error it would fail with, without storing anything. Runs the real write in a transaction that is rolled back, so the answer cannot differ from what the write would do.
 
 **Request body (application/json)**: `PreviewRequest`
 
@@ -794,7 +981,7 @@ Dry-run a grant or rule write: report the policy profiles it would recompile, an
 
 | Status | Meaning |
 |---|---|
-| 200 | The profiles the write would touch, and what its recompile would do |
+| 200 | The enforcement points the write would touch, and what its recompile would do |
 | 400 | The same refusal the write itself would have returned (including code `table_tag_mask_conflict` for a tag-addressed mask over a table-level attachment) |
 | 401 | Not authenticated |
 | 403 | Missing policy:update permission |
@@ -829,7 +1016,7 @@ Operation id: `list_rules`. Auth: Session cookie. Forbidden (403): Missing polic
 
 Operation id: `create_rule`. Auth: Session cookie and `X-Egret-CSRF` header. Forbidden (403): Missing policy:update permission.
 
-Create a named mask or row-filter rule and recompile the profiles it affects, in one transaction. A tag-selected rule is installation-wide: it recompiles every Trino and StarRocks profile an engine binds, and a compile failure on any one of them fails this request and rolls the rule back.
+Create a named mask or row-filter rule and recompile the enforcement points it affects, in one transaction. A tag-selected rule is installation-wide: it recompiles every Trino and StarRocks profile an engine binds, and a compile failure on any one of them fails this request and rolls the rule back.
 
 **Request body (application/json)**: `NewRule`
 
@@ -842,7 +1029,7 @@ Create a named mask or row-filter rule and recompile the profiles it affects, in
 
 | Status | Meaning |
 |---|---|
-| 201 | Rule created AND the profiles it affects recompiled, in one transaction |
+| 201 | Rule created AND the enforcement points it affects recompiled, in one transaction |
 | 400 | The rule names a path level as "" (Ranger's "every value at that level", not a resource name), names a path level beneath a "*" one (a path cannot skip a level, and a "*" names none), is a tag-addressed mask whose tag is attached to a whole... |
 | 401 | Not authenticated |
 | 403 | Missing policy:update permission |
@@ -910,7 +1097,7 @@ Replace a rule's body, keeping its id, and recompile the UNION of the profiles i
 
 | Status | Meaning |
 |---|---|
-| 200 | Rule updated AND every affected profile recompiled, in one transaction |
+| 200 | Rule updated AND every affected enforcement point recompiled, in one transaction |
 | 400 | The patched rule names a path level as "" (Ranger's "every value at that level", not a resource name), names a path level beneath a "*" one (a path cannot skip a level, and a "*" names none), is a tag-addressed mask whose tag is attached to... |
 | 401 | Not authenticated |
 | 403 | Missing policy:update permission |

@@ -48,9 +48,22 @@ Above the list the tab shows a status badge for the enforcement point. It counts
 
 A blocked policy keeps the enforcement point **incomplete** until you remove it or rewrite it so that it can be migrated. Migrating the other policies does not complete the enforcement point while one is still blocked.
 
-This completeness is the signal the per-enforcement-point switch to the model is planned to use.
+The badge above counts **operator policies only**. It is one input to a wider verdict.
 
-<!-- TODO(SP3d): screenshot of the migration-complete badge once the demo stack is rebuilt -->
+## The per-enforcement-point migration gate
+
+Beyond the operator-policy badge, egret computes a full **migration-complete** verdict for each enforcement point and records it on **every compile**. An enforcement point is migration-complete only when **all** of the following hold:
+
+1. **No operator policy is pending or blocked** — the completeness above.
+2. **No `role` principal remains** on its grants, rule exemptions or engine grants — they have been migrated to managed `role:<name> holders` groups (SP3c-1).
+3. **No implicit workspace-assignment grant remains** — they have been migrated to explicit grants on managed `ws:<slug> members` groups (SP3c-3).
+4. **Every gated clearance has a `withhold` rule** — groups-only clearance is enforced on engines (SP3c-2). This condition is installation-wide, not per-catalog.
+
+The verdict is **read-only and never changes enforcement**: while an enforcement point is incomplete the current model keeps enforcing exactly as before. The verdict is a status signal for the planned per-enforcement-point switch to the model — not a switch, and not a live engine check.
+
+Read one enforcement point's verdict at `GET /api/control-plane/perm/policies/services/{id}/migration-gate` (requires **policy:read**); it returns `complete` and, when false, the list of reasons. The **Governance Overview** counts the enforcement points whose last compile was incomplete (`migrationIncomplete`).
+
+A dedicated badge for the full verdict, the switch itself and the live engine checks are planned follow-ups.
 
 ## Migrate policies
 
