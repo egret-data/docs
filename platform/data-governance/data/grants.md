@@ -180,7 +180,7 @@ Iceberg has no column rename for a view: a view's columns change only with a new
 
 ## Limits and known issues
 
-- The grant dialog offers kinds **user** and **group** only. Role principals are migrated to managed groups ([Roles are migrated to groups](#roles-are-migrated-to-groups)); the workspace-members kind that exists internally is written by egret itself.
+- The grant dialog offers kinds **user** and **group** only. Role principals are migrated to managed groups ([Roles are migrated to groups](#roles-are-migrated-to-groups)); a catalog's workspace assignment is now written as an explicit grant to a managed group **`ws:<slug> members`** (whose membership egret keeps in step with the workspace), the same way a role clearance uses `role:<name> holders` — so workspace reads and role grants both resolve through the one group model. These managed groups are maintained by egret and are not offered for hand authoring.
 - A grant whose principals include nobody is refused, both by the form and by the API, so an edit can never silently revoke a grant.
 - After a rename, a person who reads the table through an allow grant can be refused on the new name for up to about two policy polls, until the engines apply the moved grant (KI-317).
 - A rename that copies a restriction is held for up to 90 seconds; run from SQL Lab, a hold longer than 60 seconds shows a timeout, which says that the rename may still complete (KI-310).
