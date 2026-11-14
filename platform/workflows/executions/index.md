@@ -70,7 +70,7 @@ The answer is the new execution, in the `RUNNING` state. With the worker off it 
 
 ## What is stored with an execution
 
-- **A frozen copy of the flow's YAML and of the inputs.** A replay uses them, not the flow's current text.
+- **A frozen copy of the flow's YAML and of the inputs.** A replay uses them by default (you can pick the flow's current version or a published one instead).
 - **Task runs**, each with its state, attempts, timing and outputs.
 - **Log lines**, kept for `workflow.log_retention_days` (30 by default).
 - **Files** created by tasks, kept for `workflow.storage_retention_days` (30 by default).
@@ -80,7 +80,7 @@ When the files or logs have been removed, the **Logs** and **Outputs** tabs say 
 ## Limits and known issues
 
 - There is no bulk action (kill, restart, replay or delete several runs) and no delete.
-- **Restart** runs the failed tasks again in the same execution; **Replay** starts a new execution from the beginning. Restart with a `revision` is not available. See [Run actions](./actions.md).
+- **Restart** runs the failed tasks again in the same execution, or in a new one on another version of the flow; **Replay** starts a new execution from the beginning or from a task you pick, on the version you pick, with the same inputs or new ones. See [Run actions](./actions.md).
 - The page polls rather than streaming. A long-running execution can lag behind by a few seconds.
 - An execution can stay in **Running** longer than its tasks need when another execution's long task holds the worker; see [Runtime and operations](../runtime.md#limits-and-known-issues).
 

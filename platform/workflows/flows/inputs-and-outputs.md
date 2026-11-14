@@ -80,7 +80,7 @@ A `SECRET` input is masked in the run form, and stays masked after the run start
 
 - Every read shows `******` in its place: the answer to **Run**, the execution's **Overview** tab, the executions lists, the topology and the API responses (`GET …/executions`, `…/executions/{id}`, `…/graph`, `…/logs`, and the replay and resume answers).
 - The run logs and a failed run's message are masked too: a log line that contains the value shows `******` instead.
-- The real value is stored encrypted (AES-256-GCM) with the server's `secrets.master_key`, and only the worker opens it, so `{{ inputs.<id> }}` still renders the real value in a task. A **Replay** uses the stored value, and a loop iteration and a retry keep it; a `Subflow` child masks the inputs that its own flow declares as `SECRET`.
+- The real value is stored encrypted (AES-256-GCM) with the server's `secrets.master_key`, and only the worker opens it, so `{{ inputs.<id> }}` still renders the real value in a task. A **Replay** uses the stored value unless you change the inputs (a `SECRET` field is then empty and must be entered again), and a loop iteration and a retry keep it; a `Subflow` child masks the inputs that its own flow declares as `SECRET`.
 - Executions stored before this masking existed are masked at the first start of the upgraded server, together with the log lines they wrote.
 - A server without `secrets.master_key` cannot store the value, so a start that would store one is refused with 400: *the flow declares SECRET input(s) …, and this deployment cannot store a secret value: set secrets.master_key*. See [Configuration keys](../../reference/configuration-keys.md).
 
