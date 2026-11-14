@@ -18,8 +18,8 @@ Open an execution to see what happened in a run: its inputs, the tasks that ran 
 | **Started** | The start time in your time zone. |
 | **Duration** | The run time. While the execution runs it says *so far* and keeps counting. |
 | **Trigger** | What started it: **API**, **Schedule**, **Webhook**, **Flow trigger**, **Subflow**, **Loop iteration**, **Retry** or **Replay**. |
-| **Replayed from** | Appears on a replay, with the id of the original. A child execution shows its parent instead. |
-| Buttons | **Resume**, **Restart**, **Change status**, **Replay** and **Kill**, each only when it applies. A **Change state** button on each row of the **Task runs** table sets one task run's state. See [Run actions](./actions.md). |
+| **Replayed from** | Appears on a replay, with the id of the original; a replay carries the label `system.replay: true`. A child execution shows its parent instead. |
+| Buttons | **Resume**, **Restart**, **Change status**, **Replay** and **Kill**, each only when it applies. An **Actions for *task*** menu on each row of the **Task runs** table offers **Change state** (sets one task run's state) and **Replay from this task**. See [Run actions](./actions.md). |
 
 While an execution is not finished, the page polls and updates itself every two seconds. It stops when the execution ends. Until then the header offers only the actions that apply to an unfinished execution (**Kill**, and **Resume** and **Restart** when it is paused); **Replay** and **Change status** appear once the execution has finished, as **Kill** disappears.
 
@@ -35,7 +35,7 @@ The **Overview** tab is the summary. Its sections:
 - **Trigger**: the trigger that started the run. For a schedule it names the trigger id, a **Backfill** badge if a backfill started it, and a table of the trigger's variables (`date`, `next`, `previous`). A run started by hand says *No trigger started this execution, so it has no trigger variables.*
 - **Labels**: the flow's labels plus any added by the trigger, a backfill or a `Labels` task.
 - **Child executions**: executions this one started, with **Started by** (**Loop iteration**, **Subflow** or **Flow trigger**), the iteration number and value, the state and the start time. Select a row to open the child.
-- **Task runs**: each task with its **Value** (the loop value for a task inside a loop), **State** and **Duration**.
+- **Task runs**: each task with its **Value** (the loop value for a task inside a loop), **State** and **Duration**, and an **Actions for *task*** menu with **Change state** and **Replay from this task** on a finished execution.
 
 ![A loop's execution lists one child execution per value](/img/platform/workflows/execution-children.png)
 
