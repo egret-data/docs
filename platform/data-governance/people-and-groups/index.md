@@ -125,11 +125,10 @@ Rules that **exempt** the principal. *No egret rule exempts Member SSO* is follo
 
 ### Clearances
 
-For each gated classification, whether the principal is cleared. Without any gated tag the tab says *No classification is gated*. The table columns are **Classification**, **Gate requires**, and two verdicts: **Engines** (what the query engines enforce) and **egret objects** (what egret enforces on datasets, charts and dashboards). A verdict is **Cleared** (for example *Cleared through role data_steward*), *Cleared through public*, or **Not cleared** with a reason, such as:
+For each gated classification, whether the principal is cleared. Without any gated tag the tab says *No classification is gated*. The table columns are **Classification**, **Gate requires**, and two verdicts: **Engines** (what the query engines enforce) and **egret objects** (what egret enforces on datasets, charts and dashboards). A verdict is **Cleared** (for example *Cleared through role data_steward*, or *Cleared through group data-stewards* when the requirement is a group the person belongs to), *Cleared through public*, or **Not cleared** with a reason, such as:
 
 - *no username yet*
-- *the required role has expired. Engines may apply it until the next recompile.*
-- *engines enforce only the gate's roles, not its groups*
+- *the required role has expired. Engines may apply it until the next recompile.* (A person who is also in a required group is still **Cleared through** that group — the expired role does not override an active group.)
 
 For example, Farid Haddad is **Cleared through role data_steward** for *Confidential*, because the role is given to him directly.
 

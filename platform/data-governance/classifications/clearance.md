@@ -30,15 +30,11 @@ A clearance is enforced in two places, which behave differently:
 | Where | Roles | Groups |
 |---|---|---|
 | **On object access** in the platform (opening an object that carries the tag) | Enforced. | Enforced. |
-| **In the query engine** (SQL Lab, notebooks, any client) | Enforced: the role's holders are written into a deny policy by username. | **Not enforced.** |
+| **In the query engine** (SQL Lab, notebooks, any client) | Enforced: the role's holders are written into a deny policy by username. | Enforced: the group's members are written into a deny policy by username, the same way. |
 
-Egret serves the engine no group names (no group provider, no usersync), and a role name does not reach it either, so only the **enumerated usernames of a required role's members** do. When a group is among the requirements the page shows:
+Egret serves the engine no group or role names (no group provider, no usersync), so for either requirement only the **enumerated usernames of its members** reach the engine. A required role contributes its holders' usernames; a required group contributes its members' usernames; both are written into the clearance's deny the same way, so a **group-only clearance is enforced in the query engine** exactly as a role clearance is. A person cleared through a group is shown as **cleared through** that group.
 
-:::warning
-Not enforced in the engine: no group provider or usersync means a group name never reaches Trino or StarRocks, and a role name does not either — only a required role's enumerated members do. A group requirement is enforced on object access only; opening the object is gated, but reading the same data through SQL Lab or a notebook is not.
-:::
-
-If a clearance names only groups, egret saves it but warns *Clearance saved but not enforced in any engine*.
+Because a required group is resolved to real members, egret refuses to save a clearance that names a **group that does not exist** (a stale or mistyped id): *group … not found*. Pick the group from the picker.
 
 ### On columns or on a whole table
 
