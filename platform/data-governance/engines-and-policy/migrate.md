@@ -71,6 +71,10 @@ The Migrate tab shows this verdict as its own badge, beside the operator-only on
 
 The per-enforcement-point switch itself and the live engine checks are planned follow-ups.
 
+## Close the switch
+
+Once every enforcement point is migration-complete, an admin can make the move to the permission model **irreversible** with `POST /api/control-plane/perm/migrate/finalize` (requires **policy:update**). It refuses unless every enforcement point reads complete, then deletes the migration provenance — so an undo can no longer restore a hand-written policy — and the switched-off originals. It is installation-wide and idempotent. There is no UI for it yet.
+
 ## Migrate policies
 
 1. Tick the migratable policies you want. The line below the table reads *Selected: …* or *No policy selected.*

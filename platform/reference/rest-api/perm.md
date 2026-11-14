@@ -8,7 +8,7 @@ description: REST endpoints in the perm group.
 
 Data permission model (grants, rules, explain).
 
-This page lists 42 endpoints (OpenAPI tag `perm`). It is generated from `openapi.json`; see the [REST API overview](../rest-api) for authentication, CSRF and error conventions.
+This page lists 43 endpoints (OpenAPI tag `perm`). It is generated from `openapi.json`; see the [REST API overview](../rest-api) for authentication, CSRF and error conventions.
 
 | Method | Path | Operation id | Notes |
 |---|---|---|---|
@@ -29,6 +29,7 @@ This page lists 42 endpoints (OpenAPI tag `perm`). It is generated from `openapi
 | DELETE | `/api/control-plane/perm/grants/{id}` | `delete_grant` |  |
 | POST | `/api/control-plane/perm/migrate/clearances` | `migrate_clearances` | SP3c-2: migrate every gated clearance into a `withhold` rule exempting the holders of its required roles and groups, PROVABLY — the compiled artifact of ever... |
 | POST | `/api/control-plane/perm/migrate/clearances/undo` | `undo_clearances` | SP3c-2: undo one clearance migration, restoring `classification_policies` and removing the withhold rules it created. |
+| POST | `/api/control-plane/perm/migrate/finalize` | `finalize_migration` | SP3d Package C: close the switch to the permission model, irreversibly. |
 | POST | `/api/control-plane/perm/migrate/role-principals` | `migrate_role_principals` | SP3c-1: rewrite every `role` principal (grants, rule exemptions, engine grants) into a ref to that role's managed `role:&lt;name> holders` group, PROVABLY — the... |
 | POST | `/api/control-plane/perm/migrate/role-principals/undo` | `undo_role_principals` | SP3c-1: undo one role-principal migration, restoring the `role` refs it rewrote. |
 | POST | `/api/control-plane/perm/migrate/ws-assignments` | `migrate_ws_assignments` | SP3c-3: rewrite every implicit workspace-assignment grant into an explicit grant on the managed `ws:&lt;slug> members` group, PROVABLY — the compiled artifact o... |
@@ -513,6 +514,30 @@ SP3c-2: undo one clearance migration, restoring `classification_policies` and re
 | 403 | Missing policy:update permission |
 | 404 | No such migration |
 | 409 | Nothing was changed: a created rule was edited since |
+| 500 | Internal error |
+
+## POST `/api/control-plane/perm/migrate/finalize`
+
+Operation id: `finalize_migration`. Auth: Session cookie and `X-Egret-CSRF` header. Forbidden (403): Missing policy:update permission.
+
+SP3d Package C: close the switch to the permission model, irreversibly. Refused (409, nothing written) unless every enforcement point is migration-complete; then deletes all migration provenance and the switched-off original operator policies in one transaction. Idempotent.
+
+**Response 200 (application/json)**: `FinalizeSummary`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `policy_migrations_deleted` | integer (int64) | yes | Rows deleted from `perm.migrated_from`. |
+| `clearance_migrations_deleted` | integer (int64) | yes | Rows deleted from `perm.clearance_migration`. |
+| `role_principal_migrations_deleted` | integer (int64) | yes | Rows deleted from `perm.role_principal_migration`. |
+| `ws_assignment_migrations_deleted` | integer (int64) | yes | Rows deleted from `perm.ws_assignment_migration`. |
+| `original_policies_deleted` | integer (int64) | yes | Switched-off original operator policies deleted. |
+
+| Status | Meaning |
+|---|---|
+| 200 | The switch is closed; what was removed (all zeros when already finalized) |
+| 401 | Not authenticated |
+| 403 | Missing policy:update permission |
+| 409 | Nothing was changed: an enforcement point is not migration-complete |
 | 500 | Internal error |
 
 ## POST `/api/control-plane/perm/migrate/role-principals`
