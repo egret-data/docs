@@ -57,7 +57,7 @@ An execution and each of its task runs move through these states. The first thre
 | `CREATED`, `QUEUED` | Accepted, waiting for the engine. | No |
 | `RUNNING` | At least one task run is working. | No |
 | `PAUSED` | A `Pause` task or a `LoopUntil` is waiting. | No |
-| `RETRYING`, `RESTARTED` | A task is being tried again, or a paused execution was resumed. | No |
+| `RETRYING`, `RESTARTED` | A task is being tried again, or a paused execution was resumed, or a failed one was restarted. | No |
 | `KILLING` | A kill was sent and a worker is stopping the running task. | No |
 | `SUCCESS` | Everything finished without a failure. | Yes |
 | `WARNING` | Finished, but a task failed under `allowFailure: true` or timed out under it. | Yes |
@@ -74,7 +74,7 @@ An execution and each of its task runs move through these states. The first thre
 
 ## Permissions
 
-Workflows use two permissions in each workspace: `workflow:read` to see flows and executions, and `workflow:manage` to create, edit, run, kill and replay. A third, `workflow:use_secrets`, is needed to save a flow that calls `secret()`. The [Runtime and operations](./runtime.md) page lists what each role gets.
+Workflows use two permissions in each workspace: `workflow:read` to see flows and executions, and `workflow:manage` to create, edit, run, kill, restart and replay executions and change their state. A third, `workflow:use_secrets`, is needed to save a flow that calls `secret()`. The [Runtime and operations](./runtime.md) page lists what each role gets.
 
 ## Further reading
 

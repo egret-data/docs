@@ -19,9 +19,9 @@ Open an execution to see what happened in a run: its inputs, the tasks that ran 
 | **Duration** | The run time. While the execution runs it says *so far* and keeps counting. |
 | **Trigger** | What started it: **API**, **Schedule**, **Webhook**, **Flow trigger**, **Subflow**, **Loop iteration**, **Retry** or **Replay**. |
 | **Replayed from** | Appears on a replay, with the id of the original. A child execution shows its parent instead. |
-| Buttons | **Resume**, **Replay** and **Kill**, each only when it applies. See [Run actions](./actions.md). |
+| Buttons | **Resume**, **Restart**, **Change status**, **Replay** and **Kill**, each only when it applies. A **Change state** button on each row of the **Task runs** table sets one task run's state. See [Run actions](./actions.md). |
 
-While an execution is not finished, the page polls and updates itself every two seconds. It stops when the execution ends. Until then the header offers only the actions that apply to an unfinished execution (**Kill**, and **Resume** when it is paused); **Replay** appears once the execution has finished, as **Kill** disappears.
+While an execution is not finished, the page polls and updates itself every two seconds. It stops when the execution ends. Until then the header offers only the actions that apply to an unfinished execution (**Kill**, and **Resume** and **Restart** when it is paused); **Replay** and **Change status** appear once the execution has finished, as **Kill** disappears.
 
 ![A running execution: the Duration counts up, the Sleep task is Running and the next task has not started](/img/platform/workflows/execution-running.png)
 
