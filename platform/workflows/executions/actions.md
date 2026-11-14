@@ -89,7 +89,7 @@ Use this to tell the engine that a task's result should count differently, for e
 2. Open the menu on the row and choose **Change state**.
 3. In the dialog **Change the state of *task*?**, pick the **New state** and press **Change state**. The dialog says *Sets the state of this task run's last attempt only. Earlier attempts keep theirs. The execution continues or ends from the new state.*
 
-![The Change the state of flaky? dialog with Success picked, above the Task runs table](/img/platform/workflows/execution-change-task-state.png)
+![The Change the state of b? dialog with Success picked, above the Task runs table](/img/platform/workflows/execution-change-task-state.png)
 
 The **New state** list offers **Success**, **Warning**, **Failed** and **Cancelled**, without the state the task run is already in. Only the last attempt changes; no attempt is added. The execution then continues from the new state:
 
