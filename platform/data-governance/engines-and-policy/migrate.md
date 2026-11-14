@@ -63,7 +63,13 @@ The verdict is **read-only and never changes enforcement**: while an enforcement
 
 Read one enforcement point's verdict at `GET /api/control-plane/perm/policies/services/{id}/migration-gate` (requires **policy:read**); it returns `complete` and, when false, the list of reasons. The **Governance Overview** counts the enforcement points whose last compile was incomplete (`migrationIncomplete`).
 
-A dedicated badge for the full verdict, the switch itself and the live engine checks are planned follow-ups.
+The Migrate tab shows this verdict as its own badge, beside the operator-only one: **Fully on the model — every input is migrated** when complete, or **N steps remain** with one line per reason when not.
+
+![The migration-gate badge when the enforcement point is fully on the model](/img/platform/admin/gov-migration-gate-complete.png)
+
+![The migration-gate badge listing the steps that remain](/img/platform/admin/gov-migration-gate-incomplete.png)
+
+The per-enforcement-point switch itself and the live engine checks are planned follow-ups.
 
 ## Migrate policies
 
