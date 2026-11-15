@@ -38,6 +38,8 @@ What happens:
 - **A loop keeps going where it already is.** Iterations of a `Loop` are separate executions and may still start under a paused loop.
 - **Resume** sends the execution on: the tasks that were waiting start. A pause by hand has no `Pause` task, so it takes no inputs.
 
+A toast says *Paused the execution*. **Pause** is shown while the execution runs. It is disabled, with the reason next to it, while the execution is being killed, while a `Pause` or `LoopUntil` task is waiting, and on a loop iteration.
+
 The API route is `POST /api/ws/{workspace}/workflows/executions/{id}/pause`. It answers `200` with the execution, which has `paused_by_hand: true`.
 
 ```bash
@@ -55,7 +57,7 @@ A pause is refused, and nothing changes, when:
 
 1. Open the paused execution.
 2. Press **Resume**.
-3. Confirm in the dialog. What it asks depends on why the execution is paused (see below).
+3. Confirm in the dialog. When it opens, it asks the server which inputs the waiting `Pause` wants, so it shows a short loading state first. What it then says depends on why the execution is paused (see below).
 
 A `Pause` task ends `SUCCESS`, the execution moves through `RESTARTED` and `RUNNING`, and the tasks after the pause run.
 
@@ -79,6 +81,10 @@ A paused execution shows **Resume** and **Kill** at the top right (the screensho
 
 Resuming releases every paused `Pause` task of the execution at once, whatever its `pauseDuration`. If the execution is paused only because a `LoopUntil` is waiting for its next check, **Resume** is disabled and says *Waiting on a loop condition, not a Pause task*. A resume feedback toast says *Resumed the execution*, or warns if the execution then ended in a failure.
 
+### A Pause without `onResume`
+
+The dialog says *Every paused task ends now as a success, whatever its duration or timeout, and the execution continues with the tasks after it.* Confirm to resume.
+
 ### A pause by hand
 
 The dialog says *The execution continues: the tasks that were waiting start now.* There is nothing to fill in.
@@ -90,7 +96,7 @@ A `Pause` task can declare `onResume` inputs, questions it asks whoever resumes 
 ![The Resume dialog with one field per onResume input](/img/platform/workflows/execution-resume-inputs-dialog.png)
 
 - **One field per input.** A required input is marked. Defaults are filled in.
-- **Errors show under the field.** The page checks your values with the server before it resumes, as a run form does for flow inputs. Nothing resumes while an input has an error.
+- **Errors show under the field.** When you press **Resume**, the page first checks your values with the server, as a run form does for flow inputs. Nothing resumes while an input has an error.
 - **The values become the Pause's outputs.** The `Pause` run's outputs are `onResume` (the values) and `resumed`:
 
 ```json
@@ -104,7 +110,7 @@ A later task reads a value as `{{ outputs.<pause>.onResume.<input> }}`.
 
 - **Files are kept with the Pause run.** A `FILE` input is stored under the `Pause` run, and its value is the file's URI. A `SECRET` value reads `******`.
 - **If several `Pause` tasks wait,** the first one in run order gets the inputs. The others end successfully with an empty `onResume`.
-- **The values are not logged.** The audit event records the resume, never the inputs.
+- **The values are not logged.** The audit event records the resume and whether inputs were given (yes or no), never the inputs.
 
 On a flow that has an `egret.sql` task, which runs as the flow's creator, only its creator can resume a `Pause` that declares `onResume` (`400`).
 
@@ -301,7 +307,7 @@ A state outside **Success**, **Warning**, **Failed** and **Cancelled** is refuse
 
 ## Permission and audit
 
-**Pause**, **Resume**, **Restart**, **Replay**, **Change status** and **Change state** need `workflow:manage`, and so does `resume/validate`; without it the buttons are hidden. Each one is written to the audit log: `workflow_execution:pause`, `workflow_execution:resume`, `workflow_execution:restart`, `workflow_execution:replay`, `workflow_execution:set_status` and `workflow_execution:set_task_run_state`. Resume events carry no input values. Replay and restart events carry `task_run_id`, `source`, `inputs_replaced` and `replayed_from`.
+**Pause**, **Resume**, **Restart**, **Replay**, **Change status** and **Change state** need `workflow:manage`, and so does `resume/validate`; without it the buttons are hidden. Each one is written to the audit log: `workflow_execution:pause`, `workflow_execution:resume`, `workflow_execution:restart`, `workflow_execution:replay`, `workflow_execution:set_status` and `workflow_execution:set_task_run_state`. The pause event carries the state it left (`from_state`). The resume event carries `from_state`, `by_hand`, `task_run_id` and `inputs_given`, a yes or no, never the values. Replay and restart events carry `task_run_id`, `source`, `inputs_replaced` and `replayed_from`.
 
 ## Replay an execution
 

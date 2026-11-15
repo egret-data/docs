@@ -323,6 +323,8 @@ When the execution resumes, the `Pause` run ends `SUCCESS` and has two outputs:
 | `onResume` | The values, by input id: `{{ outputs.gate.onResume.reason }}`. A `SECRET` value reads `******`. A `FILE` input is stored under the `Pause` run and its value is the file's URI. |
 | `resumed` | Who and when: `by`, `on` (the time) and `to` (`SUCCESS`). |
 
+A `Pause` that ends on its `pauseDuration` or `timeout` is not resumed by anyone, so it gets no `onResume` or `resumed` outputs. Only a resume by hand writes them.
+
 To resume with inputs from the page or the API, see [Resume with inputs](../executions/actions.md#a-pause-with-onresume).
 
 On a flow that has an `egret.sql` task, only the flow's creator can resume a `Pause` that declares `onResume`.
