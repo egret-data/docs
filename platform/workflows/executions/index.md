@@ -55,7 +55,7 @@ The **Trigger** column says how the run began:
 
 ## Open an execution
 
-Press an execution's id. The [execution page](./detail.md) has tabs for **Overview**, **Topology**, **Gantt**, **Logs** and **Outputs**, and the [actions](./actions.md) **Resume**, **Restart**, **Replay**, **Kill** and **Change status**.
+Press an execution's id. The [execution page](./detail.md) has tabs for **Overview**, **Topology**, **Gantt**, **Logs** and **Outputs**, and the [actions](./actions.md) **Pause**, **Resume**, **Restart**, **Replay**, **Kill** and **Change status**.
 
 ## Start an execution
 

@@ -2,13 +2,14 @@
 sidebar_position: 3
 ---
 
-# Run actions: resume, restart, replay, kill and change state
+# Run actions: pause, resume, restart, replay, kill and change state
 
-Actions work on an execution from its page: **Resume** releases a paused run, **Restart** runs the failed tasks again in the same execution (or in a new one, on another version of the flow), **Replay** runs a finished execution again as a new one, from the start or from a task you pick, **Kill** stops one that has not ended, and **Change status** and **Change state** set the state of an execution or of one of its task runs by hand. Each needs the `workflow:manage` permission; `workflow:read` is not enough. A button that does not apply is hidden, or disabled with the reason printed next to it.
+Actions work on an execution from its page: **Pause** holds a running execution by hand, **Resume** releases a paused run (and can answer questions the flow asks), **Restart** runs the failed tasks again in the same execution (or in a new one, on another version of the flow), **Replay** runs a finished execution again as a new one, from the start or from a task you pick, **Kill** stops one that has not ended, and **Change status** and **Change state** set the state of an execution or of one of its task runs by hand. Each needs the `workflow:manage` permission; `workflow:read` is not enough. A button that does not apply is hidden, or disabled with the reason printed next to it.
 
 | Action | Shown when | Result |
 |---|---|---|
-| **Resume** | The execution is **Paused** | The paused `Pause` tasks end successfully and the execution goes on. |
+| **Pause** | The execution is **Running** (or **Restarted**) | Tasks that are running finish; nothing new starts until you resume. |
+| **Resume** | The execution is **Paused** | The paused `Pause` tasks end successfully and the execution goes on. A `Pause` with `onResume` asks for its inputs first. |
 | **Restart** | The execution is **Failed** or **Paused** | The failed tasks run again in the same execution. On another version of the flow, a new execution does it. |
 | **Change status** | The execution has ended, and was not killed | The execution gets the state you pick. Its task runs are not touched. |
 | **Change state** (on a task run) | The execution has ended, and was not killed | The task run gets the state you pick and the execution continues or ends from it. |
@@ -16,15 +17,47 @@ Actions work on an execution from its page: **Resume** releases a paused run, **
 | **Replay from this task** (task-run row menu) | The execution has finished | A new execution that keeps the results of the tasks before the one you pick and runs it and the rest again. |
 | **Kill** | The execution has not ended | The execution ends `KILLED`. |
 
+## Pause an execution by hand
+
+Use this to hold a running execution without changing the flow, for example while you fix a source or check a result. The execution waits until you resume it.
+
+1. Open a **Running** execution.
+2. Press **Pause**.
+3. In the dialog **Pause this execution?**, confirm. The dialog says *Runs that are already running finish; nothing new starts until you resume.*
+
+![The Pause this execution? dialog](/img/platform/workflows/execution-pause-dialog.png)
+
+The execution moves to **Paused**. Next to the **Paused** badge the page shows **Paused by hand**.
+
+![An execution paused by hand, with the Paused by hand note next to the Paused badge](/img/platform/workflows/execution-paused-by-hand.png)
+
+What happens:
+
+- **Tasks that are running finish.** They record their results as usual.
+- **Nothing new starts.** No task run is created or started until you resume, so the tasks that were waiting for a finished task stay waiting.
+- **A loop keeps going where it already is.** Iterations of a `Loop` are separate executions and may still start under a paused loop.
+- **Resume** sends the execution on: the tasks that were waiting start. A pause by hand has no `Pause` task, so it takes no inputs.
+
+The API route is `POST /api/ws/{workspace}/workflows/executions/{id}/pause`. It answers `200` with the execution, which has `paused_by_hand: true`.
+
+```bash
+curl -b cookies.txt -H "X-Egret-CSRF: $CSRF" \
+  -X POST "http://egret.localtest.me:8080/api/ws/default/workflows/executions/$EXECUTION_ID/pause"
+```
+
+A pause is refused, and nothing changes, when:
+
+- the execution is not **Running** or **Restarted** (`409`, `not_running`; the message names the state). A **Paused**, **Killing** or finished execution cannot be paused.
+- a `Pause` or `LoopUntil` task is already waiting (`409`, `not_running`). Resume that task instead.
+- the execution is a loop iteration (`400`). Pause its loop's execution; the message names it.
+
 ## Resume a paused execution
 
-1. Open the paused execution. A `Pause` task is waiting.
+1. Open the paused execution.
 2. Press **Resume**.
-3. Confirm in the dialog **Resume this execution?**, which says every paused task ends now as a success, whatever its duration or timeout, and the execution continues.
+3. Confirm in the dialog. What it asks depends on why the execution is paused (see below).
 
-![The Resume this execution? dialog](/img/platform/workflows/execution-resume.png)
-
-The `Pause` task ends `SUCCESS`, the execution moves through `RESTARTED` and `RUNNING`, and the tasks after the pause run.
+A `Pause` task ends `SUCCESS`, the execution moves through `RESTARTED` and `RUNNING`, and the tasks after the pause run.
 
 ```yaml
 id: approval-gate
@@ -44,9 +77,62 @@ A paused execution shows **Resume** and **Kill** at the top right (the screensho
 
 ![A paused execution with Resume, Replay and Kill](/img/platform/workflows/execution-paused.png)
 
-Resuming releases every paused `Pause` task of the execution at once, whatever its `pauseDuration`. If the execution is paused only because a `LoopUntil` is waiting for its next check, **Resume** is disabled and says *Waiting on a loop condition, not a Pause task*. A resume that arrives just as the pause's own timer ends is refused with a conflict and the page asks you to refresh. A resume feedback toast says *Resumed the execution*, or warns if the execution then ended in a failure.
+Resuming releases every paused `Pause` task of the execution at once, whatever its `pauseDuration`. If the execution is paused only because a `LoopUntil` is waiting for its next check, **Resume** is disabled and says *Waiting on a loop condition, not a Pause task*. A resume feedback toast says *Resumed the execution*, or warns if the execution then ended in a failure.
 
-The API route is `POST /api/ws/{workspace}/workflows/executions/{id}/resume`. It does not take inputs.
+### A pause by hand
+
+The dialog says *The execution continues: the tasks that were waiting start now.* There is nothing to fill in.
+
+### A Pause with `onResume`
+
+A `Pause` task can declare `onResume` inputs, questions it asks whoever resumes it (see [Flow control: Pause](../flows/flow-control.md#pause)). The dialog says *Fill in what the paused task asks for. It then ends as a success and the execution continues.*
+
+![The Resume dialog with one field per onResume input](/img/platform/workflows/execution-resume-inputs-dialog.png)
+
+- **One field per input.** A required input is marked. Defaults are filled in.
+- **Errors show under the field.** The page checks your values with the server before it resumes, as a run form does for flow inputs. Nothing resumes while an input has an error.
+- **The values become the Pause's outputs.** The `Pause` run's outputs are `onResume` (the values) and `resumed`:
+
+```json
+{
+  "onResume": { "reason": "checked by hand", "retries": 3 },
+  "resumed": { "by": null, "on": "2026-11-16T09:30:00Z", "to": "SUCCESS" }
+}
+```
+
+A later task reads a value as `{{ outputs.<pause>.onResume.<input> }}`.
+
+- **Files are kept with the Pause run.** A `FILE` input is stored under the `Pause` run, and its value is the file's URI. A `SECRET` value reads `******`.
+- **If several `Pause` tasks wait,** the first one in run order gets the inputs. The others end successfully with an empty `onResume`.
+- **The values are not logged.** The audit event records the resume, never the inputs.
+
+On a flow that has an `egret.sql` task, which runs as the flow's creator, only its creator can resume a `Pause` that declares `onResume` (`400`).
+
+### The API
+
+`POST /api/ws/{workspace}/workflows/executions/{id}/resume` answers `200` with the execution. With no body it resumes with no inputs. Send inputs as JSON, or as `multipart/form-data` with one part per input when an input is a `FILE`.
+
+```bash
+curl -b cookies.txt -H "X-Egret-CSRF: $CSRF" -H "Content-Type: application/json" \
+  -d '{"inputs": {"reason": "checked by hand", "retries": 3}}' \
+  -X POST "http://egret.localtest.me:8080/api/ws/default/workflows/executions/$EXECUTION_ID/resume"
+```
+
+To check values without resuming, call `POST …/resume/validate` with the same body. It answers `200` with one entry for each `onResume` input of the waiting `Pause`: the value it would get, whether it is a default, and its errors. An empty body returns every input with its default. It stores nothing (a file is read and dropped) and writes no audit event. For a pause by hand, or a `Pause` without `onResume`, the list is empty. A `SECRET` value reads `******`. The page uses this call to build the form.
+
+```bash
+curl -b cookies.txt -H "X-Egret-CSRF: $CSRF" -H "Content-Type: application/json" \
+  -d '{"inputs": {"retries": "many"}}' \
+  -X POST "http://egret.localtest.me:8080/api/ws/default/workflows/executions/$EXECUTION_ID/resume/validate"
+```
+
+A resume is refused, and nothing changes, in these cases. See also [Why an action is refused](#why-an-action-is-refused).
+
+- A value is not valid for its input, or a key is not an `onResume` input of the `Pause` (`400`, the message names the input).
+- An input is required, has no default, and the request sent none (`400`, the message names it).
+- Inputs were sent but none apply: the execution is paused by hand, the waiting `Pause` has no `onResume`, or only a `LoopUntil` waits (`400`, `resume_inputs_unexpected`).
+- The execution is not paused (`409`, `not_paused`).
+- The execution changed between the moment it was read and the moment it was locked, for example someone else resumed it first (`409`). Reload the page and resume again.
 
 ## Restart a failed execution
 
@@ -192,6 +278,9 @@ The page shows the refusal in the dialog or as a message and changes nothing. In
 
 | Code | Status | Meaning |
 |---|---|---|
+| `not_running` | 409 | For **Pause**: the execution is not **Running** or **Restarted**, or a `Pause` or `LoopUntil` task is already waiting. |
+| `not_paused` | 409 | For **Resume** and `resume/validate`: the execution is not **Paused**, or its pause ended before the resume reached it. |
+| `resume_inputs_unexpected` | 400 | Inputs were sent to a resume that takes none: the execution is paused by hand, the waiting `Pause` declares no `onResume`, or no `Pause` waits. |
 | `nothing_to_restart` | 409 | The execution has no failed or paused task to restart from. |
 | `not_restartable` | 409 | For **Restart**: the execution is not **Failed** or **Paused**. For a state change: the execution has not ended, or it was killed. Refresh to see its latest state. |
 | `after_execution_running` | 409 | The `afterExecution` tasks are still running. Try again once they have ended. |
@@ -212,7 +301,7 @@ A state outside **Success**, **Warning**, **Failed** and **Cancelled** is refuse
 
 ## Permission and audit
 
-**Restart**, **Replay**, **Change status** and **Change state** need `workflow:manage`; without it the buttons are hidden. Each one is written to the audit log: `workflow_execution:restart`, `workflow_execution:replay`, `workflow_execution:set_status` and `workflow_execution:set_task_run_state`. Replay and restart events carry `task_run_id`, `source`, `inputs_replaced` and `replayed_from`.
+**Pause**, **Resume**, **Restart**, **Replay**, **Change status** and **Change state** need `workflow:manage`, and so does `resume/validate`; without it the buttons are hidden. Each one is written to the audit log: `workflow_execution:pause`, `workflow_execution:resume`, `workflow_execution:restart`, `workflow_execution:replay`, `workflow_execution:set_status` and `workflow_execution:set_task_run_state`. Resume events carry no input values. Replay and restart events carry `task_run_id`, `source`, `inputs_replaced` and `replayed_from`.
 
 ## Replay an execution
 
@@ -253,7 +342,8 @@ A killed execution cannot be resumed; replay it to run it again. Killing an exec
 
 - No bulk actions: each execution is acted on from its own page.
 - Replay with breakpoints (stopping before chosen tasks) is not available: it is refused with `replay_breakpoints_unsupported`.
-- Not available: delete an execution and force-run.
+- Not available: delete an execution and force-run, and pause or resume many executions at once.
+- A pause by hand is refused while a `Pause` or `LoopUntil` task waits, and **Resume** takes inputs only for the first waiting `Pause`.
 - A restart cannot be started on a loop iteration, on an execution whose `afterExecution` tasks are still running, or after the pruner deleted its files.
 - **Change state** is not offered for a task run inside a `WorkingDirectory` block. A task-run state change is refused with `after_execution_running` while a task run of the ended execution is still **Paused**.
 - A `Subflow` inside a `LoopUntil` is matched to its earlier child by position only, so a restarted iteration starts a new child. A restarted `Subflow` whose child is still running waits for it.

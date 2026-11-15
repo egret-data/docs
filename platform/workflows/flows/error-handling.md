@@ -137,13 +137,13 @@ The editor does not warn about a top-level `finally:` or `afterExecution:`. If a
 
 ## Kill, resume and replay
 
-A running execution can be killed, a paused one resumed and a finished one replayed. See [Run actions](../executions/actions.md).
+A running execution can be paused or killed, a paused one resumed and a finished one replayed. See [Run actions](../executions/actions.md).
 
 ## Limits and known issues
 
 - Flow-level `finally:` and `afterExecution:` do not run, and the editor does not warn about them.
 - `errorLogs()` and `render()` do not work yet, and `warningOnRetry` has no effect. See [Expressions](./expressions.md).
-- `Pause` does not accept `errors` or `finally`.
+- `Pause` does not accept `errors` or `finally`: they are refused when you save.
 - Flow-level `concurrency:` and `sla:` are not enforced, so a flow cannot cancel or queue a second run, and a maximum duration is not checked.
 
 ## Further reading

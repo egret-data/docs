@@ -281,7 +281,7 @@ The run ends in the **Warning** state, with `may_fail` failed and `after` succes
 
 ## Pause
 
-`Pause` stops the execution in the **Paused** state until a person resumes it or a timer ends.
+`Pause` stops the execution in the **Paused** state until a person resumes it or a timer ends. It can also ask the person who resumes it a few questions with `onResume`.
 
 ```yaml
 - id: gate
@@ -293,7 +293,39 @@ Without `pauseDuration` it waits until someone resumes it: open the execution an
 
 ![A paused execution with the Resume, Replay and Kill buttons](/img/platform/workflows/execution-paused.png)
 
-A pause can only be released through the page or the API (`POST /executions/{id}/resume`). `Pause` accepts `pauseDuration` only: `tasks`, `errors`, `behavior` and `onPause` are refused when you save, and `onResume` is accepted and ignored (the editor warns `ignored_property`). Killing a paused execution ends it `KILLED` at once.
+A pause can only be released through the page or the API (`POST /executions/{id}/resume`). `Pause` accepts `pauseDuration` and `onResume`: `tasks`, `errors`, `finally`, `behavior` and `onPause` are refused when you save. Killing a paused execution ends it `KILLED` at once.
+
+### Ask for inputs when it resumes
+
+`onResume` is a list of inputs with the same types and fields as the flow's `inputs:` (`id`, `type`, `required`, `defaults`, `min`, `values` and the rest; see [Inputs and outputs](./inputs-and-outputs.md)). Whoever resumes the execution fills them in. They are checked as a run form checks flow inputs, and a bad value or a missing required input stops the resume. An `onResume` input may use the same id as a flow input. Mistakes in the list, such as a repeated id or a default that does not fit, are refused when you save, with the path `tasks.<id>.onResume.<input>`.
+
+```yaml
+id: approval-gate
+namespace: docs.demo
+tasks:
+  - id: gate
+    type: io.kestra.plugin.core.flow.Pause
+    onResume:
+      - id: reason
+        type: STRING
+      - id: retries
+        type: INT
+        defaults: 3
+  - id: after
+    type: io.kestra.plugin.core.log.Log
+    message: "{{ outputs.gate.onResume.reason }}, {{ outputs.gate.onResume.retries }} retries"
+```
+
+When the execution resumes, the `Pause` run ends `SUCCESS` and has two outputs:
+
+| Output | Content |
+|---|---|
+| `onResume` | The values, by input id: `{{ outputs.gate.onResume.reason }}`. A `SECRET` value reads `******`. A `FILE` input is stored under the `Pause` run and its value is the file's URI. |
+| `resumed` | Who and when: `by`, `on` (the time) and `to` (`SUCCESS`). |
+
+To resume with inputs from the page or the API, see [Resume with inputs](../executions/actions.md#a-pause-with-onresume).
+
+On a flow that has an `egret.sql` task, only the flow's creator can resume a `Pause` that declares `onResume`.
 
 ## WorkingDirectory
 
@@ -320,7 +352,7 @@ Script tasks need a container runner (`workflow.container_runner = docker`) and 
 ## Limits and known issues
 
 - Flow-level `finally:` and `afterExecution:` never run. On flowable tasks only `AllowFailure` runs `finally`. See [Retries, errors and timeouts](./error-handling.md).
-- `Pause` cannot hold child tasks, `errors` or `onPause`.
+- `Pause` cannot hold child tasks, `errors`, `finally`, `behavior` or `onPause`.
 - `LoopUntil` bounds must be literals.
 
 ## Further reading

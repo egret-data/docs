@@ -12,16 +12,16 @@ Open an execution to see what happened in a run: its inputs, the tasks that ran 
 
 | Item | What it shows |
 |---|---|
-| Title | The execution's full id, and its state as a coloured chip. |
+| Title | The execution's full id, and its state as a coloured chip. An execution you paused with **Pause** shows a **Paused by hand** note beside the **Paused** chip. |
 | **Flow** | The flow as `namespace.id`. |
 | **Namespace** | The flow's namespace. |
 | **Started** | The start time in your time zone. |
 | **Duration** | The run time. While the execution runs it says *so far* and keeps counting. |
 | **Trigger** | What started it: **API**, **Schedule**, **Webhook**, **Flow trigger**, **Subflow**, **Loop iteration**, **Retry** or **Replay**. |
 | **Replayed from** | Appears on a replay, with the id of the original; a replay carries the label `system.replay: true`. A child execution shows its parent instead. |
-| Buttons | **Resume**, **Restart**, **Change status**, **Replay** and **Kill**, each only when it applies. An **Actions for *task*** menu on each row of the **Task runs** table offers **Change state** (sets one task run's state) and **Replay from this task**. See [Run actions](./actions.md). |
+| Buttons | **Pause**, **Resume**, **Restart**, **Change status**, **Replay** and **Kill**, each only when it applies. An **Actions for *task*** menu on each row of the **Task runs** table offers **Change state** (sets one task run's state) and **Replay from this task**. See [Run actions](./actions.md). |
 
-While an execution is not finished, the page polls and updates itself every two seconds. It stops when the execution ends. Until then the header offers only the actions that apply to an unfinished execution (**Kill**, and **Resume** and **Restart** when it is paused); **Replay** and **Change status** appear once the execution has finished, as **Kill** disappears.
+While an execution is not finished, the page polls and updates itself every two seconds. It stops when the execution ends. Until then the header offers only the actions that apply to an unfinished execution (**Pause** and **Kill** while it runs, and **Resume**, **Restart** and **Kill** when it is paused); **Replay** and **Change status** appear once the execution has finished, as **Kill** disappears.
 
 ![A running execution: the Duration counts up, the Sleep task is Running and the next task has not started](/img/platform/workflows/execution-running.png)
 

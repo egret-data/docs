@@ -8,7 +8,7 @@ description: REST endpoints in the workflow group.
 
 Flow drafts and published versions (W1).
 
-This page lists 55 endpoints (OpenAPI tag `workflow`). It is generated from `openapi.json`; see the [REST API overview](../rest-api) for authentication, CSRF and error conventions.
+This page lists 57 endpoints (OpenAPI tag `workflow`). It is generated from `openapi.json`; see the [REST API overview](../rest-api) for authentication, CSRF and error conventions.
 
 | Method | Path | Operation id | Notes |
 |---|---|---|---|
@@ -20,8 +20,10 @@ This page lists 55 endpoints (OpenAPI tag `workflow`). It is generated from `ope
 | GET | `/api/ws/{workspace}/workflows/executions/{id}/graph` | `get_execution_graph` |  |
 | POST | `/api/ws/{workspace}/workflows/executions/{id}/kill` | `kill_execution` | Kill an execution that has not ended. |
 | GET | `/api/ws/{workspace}/workflows/executions/{id}/logs` | `get_execution_logs` | An execution's log lines after a cursor, in `id` order. |
+| POST | `/api/ws/{workspace}/workflows/executions/{id}/pause` | `pause_execution` | Pause a running execution by hand. |
 | POST | `/api/ws/{workspace}/workflows/executions/{id}/replay` | `replay_execution` | Run a finished execution again. |
-| POST | `/api/ws/{workspace}/workflows/executions/{id}/resume` | `resume_execution` | Resume a `PAUSED` execution by hand. |
+| POST | `/api/ws/{workspace}/workflows/executions/{id}/resume` | `resume_execution` | Resume a `PAUSED` execution by hand, with `onResume` inputs when the waiting `Pause` declares them. |
+| POST | `/api/ws/{workspace}/workflows/executions/{id}/resume/validate` | `validate_resume_inputs` | Check resume inputs without resuming. |
 | GET | `/api/ws/{workspace}/workflows/flows` | `list_flows` |  |
 | POST | `/api/ws/{workspace}/workflows/flows` | `create_flow` |  |
 | POST | `/api/ws/{workspace}/workflows/flows/graph` | `graph_unsaved_flow` |  |
@@ -420,19 +422,16 @@ Run a finished execution again.
 | 409 | The execution has not finished, **or its flow is disabled** (by the `state` column or by its own YAML's `disabled: true`). A replay of something still running would put two copies of one flow in flight at once. |
 | 500 | Internal error |
 
-## POST `/api/ws/{workspace}/workflows/executions/{id}/resume`
+## POST `/api/ws/{workspace}/workflows/executions/{id}/pause`
 
-Operation id: `resume_execution`. Auth: Session cookie and `X-Egret-CSRF` header. Forbidden (403): Missing workflow:manage permission, or the workflows module is disabled for this workspace. **workflow:read is not enough.**.
+Operation id: `pause_execution`. Auth: Session cookie and `X-Egret-CSRF` header. Forbidden (403): Missing workflow:manage permission, or the workflows module is disabled for this workspace. **workflow:read is not enough.**
 
-Resume a `PAUSED` execution by hand.
-
-W7b Task 3 fix round 1, the user's ruling of 2026-10-11, after review found the old route released nothing a human needs: it only re-settled, which ends a pause whose deadline had passed -- what the waker does anyway. It now calls [`worker::resume_by_hand`](crate::worker::resume_by_hand), Kestra's `ExecutionService.resume`: every paused `Pause` run ends `SUCCESS` now, through the natural end's own path, and the execution settles on.
+Pause a running execution by hand. Runs that are already running finish and record their results; no run is created or started until the execution is resumed. The execution's detail then has `paused_by_hand: true`. The request has no body.
 
 | Parameter | In | Type | Required | Description |
 |---|---|---|---|---|
 | `workspace` | path | string | yes | Workspace slug |
 | `id` | path | string (uuid) | yes | Execution id |
-| `workspace` | path | string | yes |  |
 
 **Response 200 (application/json)**: `ExecutionDto`
 
@@ -471,11 +470,109 @@ W7b Task 3 fix round 1, the user's ruling of 2026-10-11, after review found the 
 
 | Status | Meaning |
 |---|---|
-| 200 | Every paused `Pause` run was released at once and ends `SUCCESS`, whatever its `pauseDuration:` or `timeout:` (Kestra: a pause resumed by hand always succeeds); the execution then runs on. The body is its detail afterwards. |
+| 200 | The execution is `PAUSED`. The body is its detail afterwards, with `paused_by_hand: true`. |
+| 400 | The execution is a loop iteration: pause its loop's execution instead (the message names it). Nothing is written. |
+| 401 | Not authenticated |
+| 403 | Missing workflow:manage permission, or the workflows module is disabled for this workspace. |
+| 404 | No such execution in this workspace, or its flow is in the trash or no longer exists. |
+| 409 | `not_running`: the execution is not `RUNNING` or `RESTARTED` (the message names the state), or a `Pause` or `LoopUntil` task is already waiting (resume that task instead). Nothing is written. |
+| 500 | Internal error |
+
+Writes the audit event `workflow_execution:pause`.
+
+## POST `/api/ws/{workspace}/workflows/executions/{id}/resume`
+
+Operation id: `resume_execution`. Auth: Session cookie and `X-Egret-CSRF` header. Forbidden (403): Missing workflow:manage permission, or the workflows module is disabled for this workspace. **workflow:read is not enough.**
+
+Resume a `PAUSED` execution by hand, with `onResume` inputs when the waiting `Pause` declares them. Every paused `Pause` run ends `SUCCESS` now, whatever its `pauseDuration:` or `timeout:`, and the execution runs on. For a pause by hand, the tasks that were waiting start.
+
+The first waiting `Pause` in run order gets the inputs: its outputs are `onResume` (the checked values; a `SECRET` value is `******`, a `FILE` value is the URI of the file stored under the `Pause` run) and `resumed` (`by`, `on`, `to`). Every other waiting `Pause` ends `SUCCESS` with `onResume: {}`.
+
+| Parameter | In | Type | Required | Description |
+|---|---|---|---|---|
+| `workspace` | path | string | yes | Workspace slug |
+| `id` | path | string (uuid) | yes | Execution id |
+
+**Request body (optional)**: no body, `{}` or `"inputs": null` resumes with no inputs. Otherwise send `{"inputs": {"<id>": <value>}}` as `application/json` (at most 2 MiB; no `Content-Type` is read as JSON), or `multipart/form-data` with one part per input id (a file part is stored under the `Pause` run, at most `workflow.storage.max_file_bytes` plus 1 MiB). The values are checked against the first waiting `Pause`'s `onResume` as a start checks the flow's `inputs:`. A `Pause` whose `onResume` has a required input with no default needs a body.
+
+**Response 200 (application/json)**: `ExecutionDto`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `id` | string (uuid) | yes |  |
+| `flow_id` | string (uuid), nullable | no | The draft this execution came from, and `NULL` once that flow was deleted permanently from the trash (`FlowRepo::purge`, KI-119) — **trashing a flow does not clear it**, because `FlowRepo`'s delete is soft. A trashed flow's executions are... |
+| `namespace` | string | yes |  |
+| `flow_key` | string | yes | The YAML's own `id`; `flow_id` is taken by the draft's uuid above. |
+| `state` | string | yes | Kestra's wire spelling — `RUNNING`, `SUCCESS`, `FAILED`, … |
+| `history` | string[] | yes | The state timeline, as stored: an array of state NAMES, e.g. `["CREATED","RUNNING","SUCCESS"]`. It carries no timestamps — see [`TaskRunDto::history`], which is written by the same function. |
+| `inputs` | object | yes |  |
+| `outputs` | object | no | The flow's `outputs:` as evaluated when the execution ended; absent when none were. A `SECRET` value is `******`. Only the single-execution `GET` fills it; the executions list does not carry it. |
+| `seq` | integer (int64) | yes |  |
+| `execution_trigger` | object, nullable | no | The trigger record, `NULL` for an API start. |
+| `trigger_execution_id` | string (uuid), nullable | no |  |
+| `trigger_run_ix` | integer (int32), nullable | no |  |
+| `parent_execution_id` | string (uuid), nullable | no |  |
+| `parent_run_ix` | integer (int32), nullable | no |  |
+| `loop_index` | integer (int32), nullable | no |  |
+| `loop_value` | string, nullable | no |  |
+| `attempt_number` | integer (int32) | yes |  |
+| `origin_offset_ms` | integer (int64) | yes |  |
+| `replayed_from_execution_id` | string (uuid), nullable | no | The execution this one is a manual replay of (`POST …/replay`), `NULL` for every other start. A `CREATE_NEW_EXECUTION` retry is NOT linked here; it carries `parent_execution_id` instead. |
+| `started_at` | string (date-time), nullable | no | The first time the execution entered `RUNNING`. `NULL` before it runs, for one that never ran (an SLA that cancelled it at creation), and for an execution recorded before these times existed — a UI shows that last case as estimated, never... |
+| `ended_at` | string (date-time), nullable | no | When the execution entered a terminal state; `NULL` while it has not (a paused execution has none), and for an execution recorded before these times existed. Written once: later writes to a finished execution do not move it. |
+| `created_at` | string (date-time) | yes |  |
+| `updated_at` | string (date-time) | yes |  |
+| `labels` | LabelDto[], nullable | no | The execution's own label column; `null` for none. At start it holds the labels beyond the flow's own `labels:` (a backfill's, a replay's copy); once a `Labels` task has run it holds the full merged list, the flow's labels included. The... |
+| `backfill_id` | string (uuid), nullable | no | The backfill that fired this execution (W7f), `null` otherwise. |
+| `source` | string | yes | The flow source this execution runs, frozen at start. The plan is pure over it, which is why a detail page can draw the topology from this string alone. |
+| `runs` | TaskRunDto[] | yes | Every task run, in `run_ix` order — the executor's creation order. |
+| `can_manage` | boolean | yes | Whether the caller may resume and replay this execution: they hold `workflow:manage` in this workspace. A detail page hides both actions when this is false; the routes still check for themselves. |
+| `effective_labels` | LabelDto[] | yes | What the run sees as `labels`: the flow's, then `labels`, the later key winning. Empty when the frozen source does not parse. |
+| `worker_enabled` | boolean | yes | Whether this deployment runs the workflow worker (`workflow.worker_enabled`, `EGRET_WORKFLOW__WORKER_ENABLED`; off by default). **False: an execution is created and stays `RUNNING`, and nothing runs it until an administrator turns the... |
+
+| Status | Meaning |
+|---|---|
+| 200 | Resumed. The body is the execution's detail afterwards. |
+| 400 | `resume_inputs_unexpected`: inputs were sent, and the execution is paused by hand, the waiting `Pause` declares no `onResume`, or no `Pause` waits. No code: `inputs` is not a JSON object; an input is refused by the start check or names no `onResume` input (the message names it), including a required input with no default when no body was sent; the flow runs `egret.sql`, the `Pause` declares `onResume` and the caller is not the flow's creator; a `SECRET` input was given and the deployment has no `secrets.master_key`; or a multipart part names no `onResume` input, names one twice, carries a file for a non-`FILE` input, or a file whose extension is not allowed. Nothing is written and an uploaded file is deleted. |
 | 401 | Not authenticated |
 | 403 | Missing workflow:manage permission, or the workflows module is disabled for this workspace. **workflow:read is not enough.** |
-| 404 | No such execution in this workspace, indistinguishably from one that never existed |
-| 409 | The execution is not PAUSED (or its pause ended before the resume took the execution's lock), or it is PAUSED only because a `LoopUntil` waits for its next iteration and no `Pause` task is waiting. A resume that changes nothing must not... |
+| 404 | No such execution in this workspace, or its flow is in the trash or no longer exists. A disabled flow is not refused. |
+| 409 | `not_paused`: the execution is not `PAUSED`, or its pause ended before the resume took the execution's lock. No code: it is `PAUSED` only because a `LoopUntil` waits for its next iteration and no `Pause` is waiting; or what waits changed between the request's read and the lock (another request resumed first, the execution was paused by hand since, or a `Pause` that declares `onResume` started waiting). Reload the execution and resume again. |
+| 413 | An uploaded file is over `workflow.storage.max_file_bytes`, a text part is over 1 MiB, or the JSON body is over 2 MiB. Nothing is written. |
+| 415 | A `Content-Type` that is neither `application/json` nor `multipart/form-data`. |
+| 500 | Internal error |
+| 503 | Internal storage failed while an uploaded file was being stored. Nothing is written; retry. |
+
+Writes the audit event `workflow_execution:resume`. No input value is logged.
+
+## POST `/api/ws/{workspace}/workflows/executions/{id}/resume/validate`
+
+Operation id: `validate_resume_inputs`. Auth: Session cookie and `X-Egret-CSRF` header. Forbidden (403): Missing workflow:manage permission, or the workflows module is disabled for this workspace. **workflow:read is not enough.**
+
+Check the inputs a resume would be given, without resuming. The request body is the same as the resume's: none, JSON or `multipart/form-data`. A file part is read and dropped; nothing is stored. No audit event is written.
+
+| Parameter | In | Type | Required | Description |
+|---|---|---|---|---|
+| `workspace` | path | string | yes | Workspace slug |
+| `id` | path | string (uuid) | yes | Execution id |
+
+**Response 200 (application/json)**: `ValidateInputsDto`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `id` | string | yes | The flow's `id:`. |
+| `namespace` | string | yes | The flow's namespace. |
+| `inputs` | object[] | yes | One entry for each `onResume` input of the first waiting `Pause`, in declared order: the input as declared, its `value` (a `SECRET` value is `******`, a `FILE` value is the file name), `enabled`, `isDefault` and `errors`. An empty body answers each input with its default. The list is empty when the execution is paused by hand or the `Pause` has no `onResume`. |
+| `checks` | object[] | yes | Always empty. |
+
+| Status | Meaning |
+|---|---|
+| 200 | The inputs with the start check's errors. |
+| 400 | `inputs` is not a JSON object, or a multipart part names no `onResume` input of the waiting `Pause`, names one twice, carries a file for a non-`FILE` input or with an extension that input does not allow, or is not readable. |
+| 401 | Not authenticated |
+| 403 | Missing workflow:manage permission, or the workflows module is disabled for this workspace. |
+| 404 | No such execution in this workspace, or its flow is in the trash or no longer exists. |
+| 409 | `not_paused`: the execution is not `PAUSED`. |
 | 500 | Internal error |
 
 ## GET `/api/ws/{workspace}/workflows/flows`
