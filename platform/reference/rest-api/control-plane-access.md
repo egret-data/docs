@@ -8,7 +8,7 @@ description: REST endpoints in the control-plane-access group.
 
 Platform access control: users, groups, roles, and the permission catalog.
 
-This page lists 26 endpoints (OpenAPI tag `control-plane-access`). It is generated from `openapi.json`; see the [REST API overview](../rest-api) for authentication, CSRF and error conventions.
+This page lists 36 endpoints (OpenAPI tag `control-plane-access`). It is generated from `openapi.json`; see the [REST API overview](../rest-api) for authentication, CSRF and error conventions.
 
 | Method | Path | Operation id | Notes |
 |---|---|---|---|
@@ -31,6 +31,16 @@ This page lists 26 endpoints (OpenAPI tag `control-plane-access`). It is generat
 | POST | `/api/control-plane/groups/{id}/roles` | `assign_group_role` |  |
 | DELETE | `/api/control-plane/groups/{id}/roles/{role_id}` | `unassign_group_role` |  |
 | GET | `/api/control-plane/permissions` | `list_permissions` | `GET /permissions` — the code-defined catalog (`egret_core::rbac`), each permission annotated with the role names that currently grant it. |
+| GET | `/api/control-plane/service-accounts` | `list_service_accounts` |  |
+| POST | `/api/control-plane/service-accounts` | `create_service_account` |  |
+| GET | `/api/control-plane/service-accounts/{id}` | `get_service_account` |  |
+| DELETE | `/api/control-plane/service-accounts/{id}` | `delete_service_account` |  |
+| POST | `/api/control-plane/service-accounts/{id}/disable` | `disable_service_account` |  |
+| POST | `/api/control-plane/service-accounts/{id}/enable` | `enable_service_account` |  |
+| POST | `/api/control-plane/service-accounts/{id}/groups` | `add_service_account_group` |  |
+| DELETE | `/api/control-plane/service-accounts/{id}/groups/{group_id}` | `remove_service_account_group` |  |
+| POST | `/api/control-plane/service-accounts/{id}/roles` | `add_service_account_role` |  |
+| DELETE | `/api/control-plane/service-accounts/{id}/roles/{role_id}` | `remove_service_account_role` |  |
 | GET | `/api/control-plane/users` | `list_users` |  |
 | POST | `/api/control-plane/users` | `create_user` |  |
 | PATCH | `/api/control-plane/users/{id}` | `update_user` |  |
@@ -494,6 +504,326 @@ Operation id: `list_permissions`. Auth: Session cookie. Forbidden (403): Missing
 | 200 | The code-defined permission catalog, grouped, annotated with granting roles |
 | 401 | Not authenticated |
 | 403 | Missing role:read permission |
+| 500 | Internal error |
+
+## GET `/api/control-plane/service-accounts`
+
+Operation id: `list_service_accounts`. Auth: Session cookie. Forbidden (403): Missing user:read permission.
+
+| Parameter | In | Type | Required | Description |
+|---|---|---|---|---|
+| `scope` | query | string | no | Filter by `platform` or `workspace` |
+| `workspace_id` | query | string (uuid) | no | Filter by workspace |
+
+**Response 200 (application/json)**: array of `ServiceAccountDto`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `user_id` | string (uuid) | yes |  |
+| `scope` | string | yes | `platform` or `workspace`. |
+| `workspace_id` | string (uuid), nullable | no |  |
+| `name` | string | yes |  |
+| `description` | string | yes |  |
+| `created_by` | string (uuid), nullable | no |  |
+| `created_at` | string (date-time) | yes |  |
+| `status` | string | yes | Mirrors `users.status` (`active` / `disabled`). |
+
+| Status | Meaning |
+|---|---|
+| 200 | Service accounts, newest first |
+| 401 | Not authenticated |
+| 403 | Missing user:read permission |
+| 500 | Internal error |
+
+## POST `/api/control-plane/service-accounts`
+
+Operation id: `create_service_account`. Auth: Session cookie and `X-Egret-CSRF` header. Forbidden (403): Missing user:create permission.
+
+**Request body (application/json)**: `CreateServiceAccountBody`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `scope` | string | yes | `platform` or `workspace`. |
+| `workspace_id` | string (uuid), nullable | no | Required for `workspace`, forbidden for `platform`. |
+| `name` | string | yes |  |
+| `description` | string, nullable | no |  |
+
+**Response 200 (application/json)**: `ServiceAccountDto`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `user_id` | string (uuid) | yes |  |
+| `scope` | string | yes | `platform` or `workspace`. |
+| `workspace_id` | string (uuid), nullable | no |  |
+| `name` | string | yes |  |
+| `description` | string | yes |  |
+| `created_by` | string (uuid), nullable | no |  |
+| `created_at` | string (date-time) | yes |  |
+| `status` | string | yes | Mirrors `users.status` (`active` / `disabled`). |
+
+| Status | Meaning |
+|---|---|
+| 200 | Service account created |
+| 400 | Scope and workspace disagree, or the name is unusable |
+| 401 | Not authenticated |
+| 403 | Missing user:create permission |
+| 404 | No such workspace |
+| 409 | A service account with this name already exists |
+| 500 | Internal error |
+
+## GET `/api/control-plane/service-accounts/{id}`
+
+Operation id: `get_service_account`. Auth: Session cookie. Forbidden (403): Missing user:read permission.
+
+| Parameter | In | Type | Required | Description |
+|---|---|---|---|---|
+| `id` | path | string (uuid) | yes | Service account user id |
+
+**Response 200 (application/json)**: `ServiceAccountDetailDto`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `user_id` | string (uuid) | yes |  |
+| `scope` | string | yes | `platform` or `workspace`. |
+| `workspace_id` | string (uuid), nullable | no |  |
+| `name` | string | yes |  |
+| `description` | string | yes |  |
+| `created_by` | string (uuid), nullable | no |  |
+| `created_at` | string (date-time) | yes |  |
+| `status` | string | yes | Mirrors `users.status` (`active` / `disabled`). |
+| `groups` | string[] | yes | Names of the groups the account is a member of. |
+| `roles` | string[] | yes | Names of the platform roles granted to the account directly. |
+
+| Status | Meaning |
+|---|---|
+| 200 | The service account with its group and role memberships |
+| 401 | Not authenticated |
+| 403 | Missing user:read permission |
+| 404 | No such service account |
+| 500 | Internal error |
+
+## DELETE `/api/control-plane/service-accounts/{id}`
+
+Operation id: `delete_service_account`. Auth: Session cookie and `X-Egret-CSRF` header. Forbidden (403): Missing user:delete permission.
+
+| Parameter | In | Type | Required | Description |
+|---|---|---|---|---|
+| `id` | path | string (uuid) | yes | Service account user id |
+
+| Status | Meaning |
+|---|---|
+| 204 | Deleted along with its sessions, memberships and grants; its engine username is retired |
+| 401 | Not authenticated |
+| 403 | Missing user:delete permission |
+| 404 | No such service account |
+| 409 | The account still owns content |
+| 500 | Internal error |
+
+## POST `/api/control-plane/service-accounts/{id}/disable`
+
+Operation id: `disable_service_account`. Auth: Session cookie and `X-Egret-CSRF` header. Forbidden (403): Missing user:update permission.
+
+| Parameter | In | Type | Required | Description |
+|---|---|---|---|---|
+| `id` | path | string (uuid) | yes | Service account user id |
+
+**Response 200 (application/json)**: `ServiceAccountDetailDto`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `user_id` | string (uuid) | yes |  |
+| `scope` | string | yes | `platform` or `workspace`. |
+| `workspace_id` | string (uuid), nullable | no |  |
+| `name` | string | yes |  |
+| `description` | string | yes |  |
+| `created_by` | string (uuid), nullable | no |  |
+| `created_at` | string (date-time) | yes |  |
+| `status` | string | yes | Mirrors `users.status` (`active` / `disabled`). |
+| `groups` | string[] | yes | Names of the groups the account is a member of. |
+| `roles` | string[] | yes | Names of the platform roles granted to the account directly. |
+
+| Status | Meaning |
+|---|---|
+| 200 | Disabled: its credentials stop verifying, engine profiles are recompiled and live sessions revoked |
+| 401 | Not authenticated |
+| 403 | Missing user:update permission |
+| 404 | No such service account |
+| 409 | Would remove the last active platform admin |
+| 500 | Internal error |
+
+## POST `/api/control-plane/service-accounts/{id}/enable`
+
+Operation id: `enable_service_account`. Auth: Session cookie and `X-Egret-CSRF` header. Forbidden (403): Missing user:update permission.
+
+| Parameter | In | Type | Required | Description |
+|---|---|---|---|---|
+| `id` | path | string (uuid) | yes | Service account user id |
+
+**Response 200 (application/json)**: `ServiceAccountDetailDto`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `user_id` | string (uuid) | yes |  |
+| `scope` | string | yes | `platform` or `workspace`. |
+| `workspace_id` | string (uuid), nullable | no |  |
+| `name` | string | yes |  |
+| `description` | string | yes |  |
+| `created_by` | string (uuid), nullable | no |  |
+| `created_at` | string (date-time) | yes |  |
+| `status` | string | yes | Mirrors `users.status` (`active` / `disabled`). |
+| `groups` | string[] | yes | Names of the groups the account is a member of. |
+| `roles` | string[] | yes | Names of the platform roles granted to the account directly. |
+
+| Status | Meaning |
+|---|---|
+| 200 | Re-enabled |
+| 401 | Not authenticated |
+| 403 | Missing user:update permission |
+| 404 | No such service account |
+| 500 | Internal error |
+
+## POST `/api/control-plane/service-accounts/{id}/groups`
+
+Operation id: `add_service_account_group`. Auth: Session cookie and `X-Egret-CSRF` header. Forbidden (403): Missing group:manage_members permission.
+
+| Parameter | In | Type | Required | Description |
+|---|---|---|---|---|
+| `id` | path | string (uuid) | yes | Service account user id |
+
+**Request body (application/json)**: `AddGroupBody`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `group_id` | string (uuid) | yes |  |
+
+**Response 200 (application/json)**: `ServiceAccountDetailDto`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `user_id` | string (uuid) | yes |  |
+| `scope` | string | yes | `platform` or `workspace`. |
+| `workspace_id` | string (uuid), nullable | no |  |
+| `name` | string | yes |  |
+| `description` | string | yes |  |
+| `created_by` | string (uuid), nullable | no |  |
+| `created_at` | string (date-time) | yes |  |
+| `status` | string | yes | Mirrors `users.status` (`active` / `disabled`). |
+| `groups` | string[] | yes | Names of the groups the account is a member of. |
+| `roles` | string[] | yes | Names of the platform roles granted to the account directly. |
+
+| Status | Meaning |
+|---|---|
+| 200 | Added to the group |
+| 401 | Not authenticated |
+| 403 | Missing group:manage_members permission |
+| 404 | No such service account or group |
+| 409 | OIDC-synced groups are IdP-owned; a service account cannot join one |
+| 500 | Internal error |
+
+## DELETE `/api/control-plane/service-accounts/{id}/groups/{group_id}`
+
+Operation id: `remove_service_account_group`. Auth: Session cookie and `X-Egret-CSRF` header. Forbidden (403): Missing group:manage_members permission.
+
+| Parameter | In | Type | Required | Description |
+|---|---|---|---|---|
+| `id` | path | string (uuid) | yes | Service account user id |
+| `group_id` | path | string (uuid) | yes | Group id |
+
+**Response 200 (application/json)**: `ServiceAccountDetailDto`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `user_id` | string (uuid) | yes |  |
+| `scope` | string | yes | `platform` or `workspace`. |
+| `workspace_id` | string (uuid), nullable | no |  |
+| `name` | string | yes |  |
+| `description` | string | yes |  |
+| `created_by` | string (uuid), nullable | no |  |
+| `created_at` | string (date-time) | yes |  |
+| `status` | string | yes | Mirrors `users.status` (`active` / `disabled`). |
+| `groups` | string[] | yes | Names of the groups the account is a member of. |
+| `roles` | string[] | yes | Names of the platform roles granted to the account directly. |
+
+| Status | Meaning |
+|---|---|
+| 200 | Removed from the group |
+| 401 | Not authenticated |
+| 403 | Missing group:manage_members permission |
+| 404 | No such service account |
+| 409 | Would remove the last active platform admin |
+| 500 | Internal error |
+
+## POST `/api/control-plane/service-accounts/{id}/roles`
+
+Operation id: `add_service_account_role`. Auth: Session cookie and `X-Egret-CSRF` header. Forbidden (403): Missing user:assign_role permission.
+
+| Parameter | In | Type | Required | Description |
+|---|---|---|---|---|
+| `id` | path | string (uuid) | yes | Service account user id |
+
+**Request body (application/json)**: `AddRoleBody`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `role_id` | string (uuid) | yes |  |
+| `scope_type` | string | yes | Only `platform` is supported on this surface. |
+| `workspace_id` | string (uuid), nullable | no |  |
+
+**Response 200 (application/json)**: `ServiceAccountDetailDto`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `user_id` | string (uuid) | yes |  |
+| `scope` | string | yes | `platform` or `workspace`. |
+| `workspace_id` | string (uuid), nullable | no |  |
+| `name` | string | yes |  |
+| `description` | string | yes |  |
+| `created_by` | string (uuid), nullable | no |  |
+| `created_at` | string (date-time) | yes |  |
+| `status` | string | yes | Mirrors `users.status` (`active` / `disabled`). |
+| `groups` | string[] | yes | Names of the groups the account is a member of. |
+| `roles` | string[] | yes | Names of the platform roles granted to the account directly. |
+
+| Status | Meaning |
+|---|---|
+| 200 | Role granted |
+| 400 | platform_admin may not be granted to a service account, or the scope is unsupported |
+| 401 | Not authenticated |
+| 403 | Missing user:assign_role permission |
+| 404 | No such service account or role |
+| 500 | Internal error |
+
+## DELETE `/api/control-plane/service-accounts/{id}/roles/{role_id}`
+
+Operation id: `remove_service_account_role`. Auth: Session cookie and `X-Egret-CSRF` header. Forbidden (403): Missing user:assign_role permission.
+
+| Parameter | In | Type | Required | Description |
+|---|---|---|---|---|
+| `id` | path | string (uuid) | yes | Service account user id |
+| `role_id` | path | string (uuid) | yes | Role id to revoke |
+
+**Response 200 (application/json)**: `ServiceAccountDetailDto`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `user_id` | string (uuid) | yes |  |
+| `scope` | string | yes | `platform` or `workspace`. |
+| `workspace_id` | string (uuid), nullable | no |  |
+| `name` | string | yes |  |
+| `description` | string | yes |  |
+| `created_by` | string (uuid), nullable | no |  |
+| `created_at` | string (date-time) | yes |  |
+| `status` | string | yes | Mirrors `users.status` (`active` / `disabled`). |
+| `groups` | string[] | yes | Names of the groups the account is a member of. |
+| `roles` | string[] | yes | Names of the platform roles granted to the account directly. |
+
+| Status | Meaning |
+|---|---|
+| 200 | Role revoked |
+| 401 | Not authenticated |
+| 403 | Missing user:assign_role permission |
+| 404 | No such service account or role |
+| 409 | Would remove the last active platform admin |
 | 500 | Internal error |
 
 ## GET `/api/control-plane/users`
