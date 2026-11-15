@@ -14,6 +14,7 @@ Platform administration of identity and permissions lives under **Overview**, **
 | **Identity → Users** | [Users](./users.md) | Create local accounts, disable people, assign platform roles. |
 | **Identity → Groups** | [Groups](./groups.md) | Create local groups, see synced groups, assign roles to a group. |
 | **Identity → Roles** | [Roles](./roles.md) | Create custom roles and choose their permissions. |
+| **Identity** (API only) | [Service accounts](./service-accounts.md) | Create and disable non-human principals through the REST API. |
 | **Access → Access Explorer** | [Access Explorer](./access-explorer.md) | See what a person reaches, or who reaches an object. |
 | **Access → Permissions** | [Permissions catalog](./permissions.md) | Browse every permission and the roles that grant it. |
 
