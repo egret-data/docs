@@ -8,7 +8,7 @@ description: REST endpoints in the control-plane-access group.
 
 Platform access control: users, groups, roles, and the permission catalog.
 
-This page lists 36 endpoints (OpenAPI tag `control-plane-access`). It is generated from `openapi.json`; see the [REST API overview](../rest-api) for authentication, CSRF and error conventions.
+This page lists 41 endpoints (OpenAPI tag `control-plane-access`). It is generated from `openapi.json`; see the [REST API overview](../rest-api) for authentication, CSRF and error conventions.
 
 | Method | Path | Operation id | Notes |
 |---|---|---|---|
@@ -35,6 +35,11 @@ This page lists 36 endpoints (OpenAPI tag `control-plane-access`). It is generat
 | POST | `/api/control-plane/service-accounts` | `create_service_account` |  |
 | GET | `/api/control-plane/service-accounts/{id}` | `get_service_account` |  |
 | DELETE | `/api/control-plane/service-accounts/{id}` | `delete_service_account` |  |
+| GET | `/api/control-plane/service-accounts/{id}/credentials` | `list_credentials` |  |
+| POST | `/api/control-plane/service-accounts/{id}/credentials` | `create_credential` |  |
+| POST | `/api/control-plane/service-accounts/{id}/credentials/{cid}/expiry` | `set_credential_expiry` |  |
+| POST | `/api/control-plane/service-accounts/{id}/credentials/{cid}/revoke` | `revoke_credential` |  |
+| POST | `/api/control-plane/service-accounts/{id}/credentials/{cid}/rotate` | `rotate_credential` |  |
 | POST | `/api/control-plane/service-accounts/{id}/disable` | `disable_service_account` |  |
 | POST | `/api/control-plane/service-accounts/{id}/enable` | `enable_service_account` |  |
 | POST | `/api/control-plane/service-accounts/{id}/groups` | `add_service_account_group` |  |
@@ -617,6 +622,183 @@ Operation id: `delete_service_account`. Auth: Session cookie and `X-Egret-CSRF` 
 | 403 | Missing user:delete permission |
 | 404 | No such service account |
 | 409 | The account still owns content |
+| 500 | Internal error |
+
+## GET `/api/control-plane/service-accounts/{id}/credentials`
+
+Operation id: `list_credentials`. Auth: Session cookie. Forbidden (403): Missing user:read permission.
+
+| Parameter | In | Type | Required | Description |
+|---|---|---|---|---|
+| `id` | path | string (uuid) | yes | Service account user id |
+
+**Response 200 (application/json)**: array of `Credential`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `id` | string (uuid) | yes |  |
+| `service_account_id` | string (uuid) | yes |  |
+| `audience` | Audience | yes |  |
+| `name` | string | yes |  |
+| `client_id` | string | yes | The OAuth2 `client_id` the client presents. |
+| `status` | CredentialStatus | yes |  |
+| `created_at` | string (date-time) | yes |  |
+| `last_used_at` | string (date-time), nullable | no |  |
+| `expires_at` | string (date-time), nullable | no |  |
+| `catalog` | CatalogBinding | no |  |
+
+| Status | Meaning |
+|---|---|
+| 200 | The account's credentials across both audiences, newest first |
+| 401 | Not authenticated |
+| 403 | Missing user:read permission |
+| 404 | No such service account |
+| 500 | Internal error |
+
+## POST `/api/control-plane/service-accounts/{id}/credentials`
+
+Operation id: `create_credential`. Auth: Session cookie and `X-Egret-CSRF` header. Forbidden (403): Missing service_account:manage in the account's workspace (data-api) or catalog_registry:create (catalog).
+
+| Parameter | In | Type | Required | Description |
+|---|---|---|---|---|
+| `id` | path | string (uuid) | yes | Service account user id |
+
+**Request body (application/json)**: `CreateCredentialBody`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `audience` | Audience | yes |  |
+| `name` | string, nullable | no | Defaults to `&lt;service account name> &lt;audience> credential`. |
+| `catalog` | CatalogBinding | no |  |
+| `expires_at` | string (date-time), nullable | no |  |
+
+**Response 201 (application/json)**: `CreatedCredential`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `id` | string (uuid) | yes |  |
+| `service_account_id` | string (uuid) | yes |  |
+| `audience` | Audience | yes |  |
+| `name` | string | yes |  |
+| `client_id` | string | yes | The OAuth2 `client_id` the client presents. |
+| `status` | CredentialStatus | yes |  |
+| `created_at` | string (date-time) | yes |  |
+| `last_used_at` | string (date-time), nullable | no |  |
+| `expires_at` | string (date-time), nullable | no |  |
+| `catalog` | CatalogBinding | no |  |
+| `client_secret` | string | yes | Shown ONCE; only a hash is stored. |
+
+| Status | Meaning |
+|---|---|
+| 201 | Credential minted; client_secret is shown ONCE |
+| 400 | Bad audience/binding, or the warehouse is in a different workspace than a workspace service account |
+| 401 | Not authenticated |
+| 403 | Missing service_account:manage in the account's workspace (data-api) or catalog_registry:create (catalog) |
+| 404 | No such service account or warehouse |
+| 500 | Internal error |
+
+## POST `/api/control-plane/service-accounts/{id}/credentials/{cid}/expiry`
+
+Operation id: `set_credential_expiry`. Auth: Session cookie and `X-Egret-CSRF` header. Forbidden (403): Missing user:update permission.
+
+| Parameter | In | Type | Required | Description |
+|---|---|---|---|---|
+| `id` | path | string (uuid) | yes | Service account user id |
+| `cid` | path | string (uuid) | yes | Credential id |
+
+**Request body (application/json)**: `SetExpiryBody`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `expires_at` | string (date-time), nullable | no | `null` clears the expiry. A time in the past expires the credential now. |
+
+**Response 200 (application/json)**: `Credential`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `id` | string (uuid) | yes |  |
+| `service_account_id` | string (uuid) | yes |  |
+| `audience` | Audience | yes |  |
+| `name` | string | yes |  |
+| `client_id` | string | yes | The OAuth2 `client_id` the client presents. |
+| `status` | CredentialStatus | yes |  |
+| `created_at` | string (date-time) | yes |  |
+| `last_used_at` | string (date-time), nullable | no |  |
+| `expires_at` | string (date-time), nullable | no |  |
+| `catalog` | CatalogBinding | no |  |
+
+| Status | Meaning |
+|---|---|
+| 200 | Expiry set (null clears it) |
+| 401 | Not authenticated |
+| 403 | Missing user:update permission |
+| 404 | No such service account or credential |
+| 500 | Internal error |
+
+## POST `/api/control-plane/service-accounts/{id}/credentials/{cid}/revoke`
+
+Operation id: `revoke_credential`. Auth: Session cookie and `X-Egret-CSRF` header. Forbidden (403): Missing user:update permission.
+
+| Parameter | In | Type | Required | Description |
+|---|---|---|---|---|
+| `id` | path | string (uuid) | yes | Service account user id |
+| `cid` | path | string (uuid) | yes | Credential id |
+
+**Response 200 (application/json)**: `Credential`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `id` | string (uuid) | yes |  |
+| `service_account_id` | string (uuid) | yes |  |
+| `audience` | Audience | yes |  |
+| `name` | string | yes |  |
+| `client_id` | string | yes | The OAuth2 `client_id` the client presents. |
+| `status` | CredentialStatus | yes |  |
+| `created_at` | string (date-time) | yes |  |
+| `last_used_at` | string (date-time), nullable | no |  |
+| `expires_at` | string (date-time), nullable | no |  |
+| `catalog` | CatalogBinding | no |  |
+
+| Status | Meaning |
+|---|---|
+| 200 | Revoked: the verifier refuses it from now on |
+| 401 | Not authenticated |
+| 403 | Missing user:update permission |
+| 404 | No such service account or credential |
+| 500 | Internal error |
+
+## POST `/api/control-plane/service-accounts/{id}/credentials/{cid}/rotate`
+
+Operation id: `rotate_credential`. Auth: Session cookie and `X-Egret-CSRF` header. Forbidden (403): Missing user:update, or the audience mint permission (service_account:manage in the account workspace / catalog_registry:create).
+
+| Parameter | In | Type | Required | Description |
+|---|---|---|---|---|
+| `id` | path | string (uuid) | yes | Service account user id |
+| `cid` | path | string (uuid) | yes | Credential id |
+
+**Response 200 (application/json)**: `CreatedCredential`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `id` | string (uuid) | yes |  |
+| `service_account_id` | string (uuid) | yes |  |
+| `audience` | Audience | yes |  |
+| `name` | string | yes |  |
+| `client_id` | string | yes | The OAuth2 `client_id` the client presents. |
+| `status` | CredentialStatus | yes |  |
+| `created_at` | string (date-time) | yes |  |
+| `last_used_at` | string (date-time), nullable | no |  |
+| `expires_at` | string (date-time), nullable | no |  |
+| `catalog` | CatalogBinding | no |  |
+| `client_secret` | string | yes | Shown ONCE; only a hash is stored. |
+
+| Status | Meaning |
+|---|---|
+| 200 | A replacement minted (same audience, name and binding) and the old one revoked; client_secret is shown ONCE |
+| 401 | Not authenticated |
+| 403 | Missing user:update, or the audience mint permission (service_account:manage in the account workspace / catalog_registry:create) |
+| 404 | No such service account or credential |
+| 409 | The credential is already revoked |
 | 500 | Internal error |
 
 ## POST `/api/control-plane/service-accounts/{id}/disable`
