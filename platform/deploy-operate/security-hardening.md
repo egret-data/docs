@@ -110,6 +110,7 @@ Expose only what clients need.
 - [ ] **Pin engine images** to the measured versions. Floating tags are not modelled, and Explain refuses for them.
 - [ ] **Turn on governance for connections whose data is sensitive** (**Governed data**) and use per-user delegation where
   the engine supports it, so row filters and masks apply per person. A shared service account bypasses them.
+- [ ] **Know what a service account can never do.** It never holds `platform_admin` and never signs in interactively, and its Catalog credentials bypass engine masks, so grant those narrowly. See [Service accounts: security guarantees](../control-plane/access-control/service-accounts.md#security-guarantees).
 - [ ] **Remember StarRocks' Ranger plugin enforces resource-based policies only.** Egret's rules and clearances by
   classification reach it as resource policies; hand-written tag policies do not.
 - [ ] **Re-check `access_control = ranger` after StarRocks container recreation.** It is lost silently.
