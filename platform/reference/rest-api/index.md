@@ -132,7 +132,7 @@ described by their auth line here.
 | Data governance | [Ranger-compatible policy service](rest-api/ranger) | 6 |
 | Data governance | [Governance data browser](rest-api/control-plane-governance) | 11 |
 | Data governance | [Classification tags](rest-api/control-plane-tags) | 8 |
-| Control plane | [Access control](rest-api/control-plane-access) | 36 |
+| Control plane | [Access control](rest-api/control-plane-access) | 41 |
 | Control plane | [Engines](rest-api/control-plane-engines) | 32 |
 | Control plane | [Catalog registry](rest-api/control-plane-catalog-registry) | 14 |
 | Control plane | [Egret warehouses](rest-api/control-plane-catalog) | 30 |
