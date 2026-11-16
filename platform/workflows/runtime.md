@@ -28,7 +28,7 @@ The Docker demo stack (`just demo-up`) sets `EGRET_WORKFLOW__WORKER_ENABLED=true
 | Core tasks: log, outputs, variables, labels, assert, fail, exit, sleep, storage files, namespace files, KV | Run. |
 | Flow control: `If`, `Switch`, `Parallel`, `Sequential`, `Dag`, `Loop`, `LoopUntil`, `AllowFailure`, `Subflow`, `Pause` | Run. A loop and a subflow create child executions. |
 | Retries, timeouts, `errors:` handlers | Run. Flow-level `finally:` and `afterExecution:` do not run anywhere (see [Retries, errors and timeouts](./flows/error-handling.md)). |
-| Pause, resume (with `onResume` inputs), restart, change state, kill, replay | Work. A kill of a sleeping task ended `KILLED` about 4 seconds later. |
+| Pause, resume (with `onResume` inputs), restart, change state, kill, replay, edit labels, delete, log download and delete | Work. A kill of a sleeping task ended `KILLED` about 4 seconds later. |
 | Schedule triggers, backfills, flow triggers | Fire. |
 | Webhook triggers | Not reachable: webhooks are off (the routes answer 404), and the frontend's web server does not forward `/workflows/v1/` to the backend. |
 | Script tasks (`scripts.shell.*`, `scripts.python.*`) and `WorkingDirectory` with them | Refused before they start: no container runner is configured. Egret reaches Docker only through a socket proxy that is used to start engines. |
@@ -79,7 +79,7 @@ Script and plugin tasks also need a `container_runner`, and the image on the pla
 | Permission | Allows |
 |---|---|
 | `workflow:read` | See flows, versions, executions, logs, namespaces, files, KV keys and triggers. |
-| `workflow:manage` | Create, edit, version, run and delete flows, restore them from the trash or delete them permanently; pause, resume, restart, replay and kill executions, and change the state of an execution or a task run; edit namespace files and KV; switch triggers and start backfills. Granted to workspace editors and admins. |
+| `workflow:manage` | Create, edit, version, run and delete flows, restore them from the trash or delete them permanently; pause, resume, restart, replay and kill executions, change the state of an execution or a task run, edit an execution's labels, delete an ended execution, and delete log lines; edit namespace files and KV; switch triggers and start backfills. Granted to workspace editors and admins. |
 | `workflow:use_secrets` | Save or publish a flow that calls `secret()`. Granted to workspace admins only. |
 
 `workflow:read` is not enough for any action. A person with only read access sees read-only editors and disabled buttons with the reason beside them. A person without `workflow:read` does not see the Workflows items in the sidebar; opened by their address, Flows, Executions, Namespaces and Triggers show *You don't have access to this page.* with *Workflows need the workflow:read permission in this workspace.*
@@ -92,6 +92,7 @@ Script and plugin tasks also need a `container_runner`, and the image on the pla
 - A replica runs at most `max_concurrent_runs` task runs at once (8 by default). With that many long tasks running, further ready tasks wait for a free slot or another replica.
 - Restarting Egret while a long task runs can leave the run in *Running* until the reaper takes it back after `working_timeout_s`, an hour by default (KI-237).
 - The webhook URL is served by the backend under `/workflows/v1/`, a path the frontend's web server and the Helm ingress do not forward to the backend. Route it yourself before you switch webhooks on.
+- Deleting an execution detaches the executions its Flow triggers started from it; one that is still running loses read access to the deleted execution's files. See [Run actions](./executions/actions.md#limits-and-known-issues).
 - Script tasks, plugin tasks and webhook calls were not run on the Docker demo stack; see the table above.
 
 ## Further reading

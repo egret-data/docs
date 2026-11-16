@@ -8,18 +8,22 @@ description: REST endpoints in the workflow group.
 
 Flow drafts and published versions (W1).
 
-This page lists 57 endpoints (OpenAPI tag `workflow`). It is generated from `openapi.json`; see the [REST API overview](../rest-api) for authentication, CSRF and error conventions.
+This page lists 61 endpoints (OpenAPI tag `workflow`). It is generated from `openapi.json`; see the [REST API overview](../rest-api) for authentication, CSRF and error conventions.
 
 | Method | Path | Operation id | Notes |
 |---|---|---|---|
 | GET | `/api/ws/{workspace}/workflows/executions` | `list_executions` |  |
 | GET | `/api/ws/{workspace}/workflows/executions/{id}` | `get_execution` |  |
+| DELETE | `/api/ws/{workspace}/workflows/executions/{id}` | `delete_execution` | Delete an ended execution and its loop iterations and retries. |
 | GET | `/api/ws/{workspace}/workflows/executions/{id}/file` | `download_execution_file` |  |
 | GET | `/api/ws/{workspace}/workflows/executions/{id}/file/metas` | `execution_file_metas` |  |
 | GET | `/api/ws/{workspace}/workflows/executions/{id}/file/preview` | `preview_execution_file` |  |
 | GET | `/api/ws/{workspace}/workflows/executions/{id}/graph` | `get_execution_graph` |  |
 | POST | `/api/ws/{workspace}/workflows/executions/{id}/kill` | `kill_execution` | Kill an execution that has not ended. |
+| POST | `/api/ws/{workspace}/workflows/executions/{id}/labels` | `set_execution_labels` | Replace an ended execution's labels. |
 | GET | `/api/ws/{workspace}/workflows/executions/{id}/logs` | `get_execution_logs` | An execution's log lines after a cursor, in `id` order. |
+| DELETE | `/api/ws/{workspace}/workflows/executions/{id}/logs` | `delete_execution_logs` | Delete an execution's log lines by filter. |
+| GET | `/api/ws/{workspace}/workflows/executions/{id}/logs/download` | `download_execution_logs` | An execution's log as one text file. |
 | POST | `/api/ws/{workspace}/workflows/executions/{id}/pause` | `pause_execution` | Pause a running execution by hand. |
 | POST | `/api/ws/{workspace}/workflows/executions/{id}/replay` | `replay_execution` | Run a finished execution again. |
 | POST | `/api/ws/{workspace}/workflows/executions/{id}/resume` | `resume_execution` | Resume a `PAUSED` execution by hand, with `onResume` inputs when the waiting `Pause` declares them. |
@@ -161,6 +165,32 @@ Operation id: `get_execution`. Auth: Session cookie. Forbidden (403): Missing wo
 | 403 | Missing workflow:read permission, or the workflows module is disabled for this workspace |
 | 404 | No such execution in this workspace. **An execution belonging to another workspace answers exactly this**, indistinguishably from one that never existed: a 403 would confirm the id is real. |
 | 500 | Internal error |
+
+## DELETE `/api/ws/{workspace}/workflows/executions/{id}`
+
+Operation id: `delete_execution`. Auth: Session cookie and `X-Egret-CSRF` header. Forbidden (403): Missing workflow:manage permission, or the workflows module is disabled for this workspace. **workflow:read is not enough.**
+
+Delete an ended execution with its loop iterations, retries, task runs, logs and file index. Only an ended execution can be deleted, and only a root one. The checks are made under the execution's lock, so a call answered `409` changes nothing.
+
+| Parameter | In | Type | Required | Description |
+|---|---|---|---|---|
+| `workspace` | path | string | yes | Workspace slug |
+| `id` | path | string (uuid) | yes | Execution id |
+| `deleteStorage` | query | boolean | no | Default true: also delete the stored files of the execution, its loop iterations and its retries. |
+| `deleteLogs` | query | boolean | no | Default true. `false` is refused (400 `delete_logs_required`): an execution's logs always go with it. |
+| `deleteMetrics` | query | boolean | no | Accepted for Kestra compatibility; egret keeps no metrics. |
+
+| Status | Meaning |
+|---|---|
+| 204 | Deleted, with its loop iterations and retries, their task runs, logs and file index; with `deleteStorage` (the default) their stored files too. Executions its Flow triggers fired are kept, their link to it cleared. |
+| 400 | `delete_logs_required`: `deleteLogs=false`. No code: a flag that is not `true` or `false`, or a malformed `{id}`. |
+| 401 | Not authenticated |
+| 403 | Missing workflow:manage permission, or the workflows module is disabled for this workspace. **workflow:read is not enough.** |
+| 404 | No such execution in this workspace, indistinguishably from one that never existed. A flow in the trash or deleted does not matter. |
+| 409 | `not_terminated`: the execution, or a loop iteration or retry of it, has not ended or still runs `afterExecution:` tasks; or its Flow triggers have not all heard it ended (try again shortly). `has_dependents`: subflow children, replays or restarts into a new execution point at it; `details.executions` names up to 20, `details.total` counts them; delete them first. `not_a_root`: a loop iteration or retry; `details.root` is the execution to delete. Nothing is deleted. |
+| 500 | Internal error, including the file store failing: nothing was deleted, and the call can be repeated |
+
+Writes the audit event `workflow_execution:delete`, with what the execution was and how many executions and files went, and no input or output value.
 
 ## GET `/api/ws/{workspace}/workflows/executions/{id}/file`
 
@@ -326,6 +356,33 @@ Tasks retrying, paused or not yet started end `KILLED` at once; a running task i
 | 409 | The execution has already ended (code `execution_terminated`). Nothing is written. |
 | 500 | Internal error |
 
+## POST `/api/ws/{workspace}/workflows/executions/{id}/labels`
+
+Operation id: `set_execution_labels`. Auth: Session cookie and `X-Egret-CSRF` header. Forbidden (403): Missing workflow:manage permission, or the workflows module is disabled for this workspace. **workflow:read is not enough.**
+
+Replace an ended execution's labels. The body is the whole list the execution shows afterwards, the flow's labels included, so a flow label left out of it is removed from this execution only.
+
+| Parameter | In | Type | Required | Description |
+|---|---|---|---|---|
+| `workspace` | path | string | yes | Workspace slug |
+| `id` | path | string (uuid) | yes | Execution id |
+
+**Request body (application/json)**: an array of `LabelDto` (`key`, `value`). Each key is a lower-case letter then letters, digits, `.`, `_`, `-` (a key the execution already shows may be sent back as it is); values are non-empty; at most 50 labels, keys of 128 and values of 1024 characters. `system.*` labels the execution has are kept whether sent or not; one sent must be unchanged.
+
+**Response 200 (application/json)**: `ExecutionDto`, the execution afterwards. `effective_labels` is the new list.
+
+| Status | Meaning |
+|---|---|
+| 200 | The labels are saved. |
+| 400 | `invalid_labels`, naming the label. No code: the body is not a list of `{key, value}`. |
+| 401 | Not authenticated |
+| 403 | Missing workflow:manage permission, or the workflows module is disabled for this workspace. **workflow:read is not enough.** |
+| 404 | No such execution in this workspace, indistinguishably from one that never existed. A flow in the trash or deleted does not matter. |
+| 409 | `not_terminated`: it has not ended, or still runs `afterExecution:` tasks. Nothing is written. |
+| 500 | Internal error |
+
+Writes the audit event `workflow_execution:labels`, with the label keys before and after and no value.
+
 ## GET `/api/ws/{workspace}/workflows/executions/{id}/logs`
 
 Operation id: `get_execution_logs`. Auth: Session cookie. Forbidden (403): Missing workflow:read permission, or the workflows module is disabled for this workspace.
@@ -362,6 +419,57 @@ An execution's log lines after a cursor, in `id` order.
 | 403 | Missing workflow:read permission, or the workflows module is disabled for this workspace |
 | 404 | No such execution in this workspace. **An execution belonging to another workspace answers exactly this**, indistinguishably from one that never existed. |
 | 500 | Internal error |
+
+## DELETE `/api/ws/{workspace}/workflows/executions/{id}/logs`
+
+Operation id: `delete_execution_logs`. Auth: Session cookie and `X-Egret-CSRF` header. Forbidden (403): Missing workflow:manage permission, or the workflows module is disabled for this workspace. **workflow:read is not enough.**
+
+Delete an execution's log lines. The filters are combined; with none, every line of the execution is deleted. It is allowed while the execution runs, and a line written after the call stays.
+
+| Parameter | In | Type | Required | Description |
+|---|---|---|---|---|
+| `workspace` | path | string | yes | Workspace slug |
+| `id` | path | string (uuid) | yes | Execution id |
+| `task_id` | query | string | no | Only lines of this task (the YAML's task `id`). |
+| `task_run_id` | query | string (uuid) | no | Only lines of this task run. |
+| `attempt` | query | integer | no | Only lines of this attempt, counted from 0 as in `LogLineDto.attempt`. |
+| `min_level` | query | LogLevel | no | Only lines at this level or above. The five names, upper case; anything else is a 400. |
+
+| Status | Meaning |
+|---|---|
+| 204 | The matching lines are deleted; a line written after this call stays. |
+| 400 | A `min_level` that is not one of TRACE/DEBUG/INFO/WARN/ERROR, or a malformed `{id}`, `task_run_id` or `attempt`. |
+| 401 | Not authenticated |
+| 403 | Missing workflow:manage permission, or the workflows module is disabled for this workspace. **workflow:read is not enough.** |
+| 404 | No such execution in this workspace, indistinguishably from one that never existed. |
+| 500 | Internal error |
+
+Writes the audit event `workflow_execution:logs_delete`, with the filters and the number of lines deleted.
+
+## GET `/api/ws/{workspace}/workflows/executions/{id}/logs/download`
+
+Operation id: `download_execution_logs`. Auth: Session cookie. Forbidden (403): Missing workflow:read permission, or the workflows module is disabled for this workspace.
+
+An execution's log as one text file, with the same filters as the log list (there is no `attempt` filter). Lines are in `id` order, as `<instant RFC 3339 UTC, ms> <LEVEL> <message>` joined with `\n`. At most 100 000 lines are served, and a longer log ends with the line `… truncated at 100000 lines`. While the execution runs, the lines of the last 2 seconds can be missing (the settle lag of the log list); download again after it has ended.
+
+| Parameter | In | Type | Required | Description |
+|---|---|---|---|---|
+| `workspace` | path | string | yes | Workspace slug |
+| `id` | path | string (uuid) | yes | Execution id |
+| `task_id` | query | string | no | Only lines of this task (the YAML's task `id`). |
+| `task_run_id` | query | string (uuid) | no | Only lines of this task run. |
+| `min_level` | query | LogLevel | no | Only lines at this level or above. The five names, upper case; anything else is a 400. |
+
+**Response 200 (text/plain)**: the file, with `Content-Disposition: attachment; filename="<id>.log"`. `Cache-Control: no-cache` while the execution has not ended.
+
+| Status | Meaning |
+|---|---|
+| 200 | The log file. |
+| 400 | A `min_level` that is not one of TRACE/DEBUG/INFO/WARN/ERROR, or a malformed `{id}` or `task_run_id`. |
+| 401 | Not authenticated |
+| 403 | Missing workflow:read permission, or the workflows module is disabled for this workspace |
+| 404 | No such execution in this workspace, indistinguishably from one that never existed. |
+| 500 | Internal error. A database error after the first lines were sent ends the body early and is logged. |
 
 ## POST `/api/ws/{workspace}/workflows/executions/{id}/replay`
 

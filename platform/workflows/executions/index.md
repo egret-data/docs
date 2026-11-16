@@ -55,7 +55,7 @@ The **Trigger** column says how the run began:
 
 ## Open an execution
 
-Press an execution's id. The [execution page](./detail.md) has tabs for **Overview**, **Topology**, **Gantt**, **Logs** and **Outputs**, and the [actions](./actions.md) **Pause**, **Resume**, **Restart**, **Replay**, **Kill** and **Change status**.
+Press an execution's id. The [execution page](./detail.md) has tabs for **Overview**, **Topology**, **Gantt**, **Logs** and **Outputs**, and the [actions](./actions.md) **Pause**, **Resume**, **Restart**, **Replay**, **Kill**, **Change status**, **Edit labels** and **Delete**.
 
 ## Start an execution
 
@@ -72,14 +72,14 @@ The answer is the new execution, in the `RUNNING` state. With the worker off it 
 
 - **A frozen copy of the flow's YAML and of the inputs.** A replay uses them by default (you can pick the flow's current version or a published one instead).
 - **Task runs**, each with its state, attempts, timing and outputs.
-- **Log lines**, kept for `workflow.log_retention_days` (30 by default).
+- **Log lines**, kept for `workflow.log_retention_days` (30 by default). You can [download or delete](./detail.md#download-and-delete-logs) them earlier.
 - **Files** created by tasks, kept for `workflow.storage_retention_days` (30 by default).
 
 When the files or logs have been removed, the **Logs** and **Outputs** tabs say so instead of showing an empty list.
 
 ## Limits and known issues
 
-- There is no bulk action (kill, restart, replay or delete several runs) and no delete.
+- There is no bulk action (kill, restart, replay or delete several runs). An ended execution can be deleted, one at a time, from its page; see [Delete an execution](./actions.md#delete-an-execution).
 - **Restart** runs the failed tasks again in the same execution, or in a new one on another version of the flow; **Replay** starts a new execution from the beginning or from a task you pick, on the version you pick, with the same inputs or new ones. See [Run actions](./actions.md).
 - The page polls rather than streaming. A long-running execution can lag behind by a few seconds.
 - An execution can stay in **Running** longer than its tasks need when another execution's long task holds the worker; see [Runtime and operations](../runtime.md#limits-and-known-issues).
