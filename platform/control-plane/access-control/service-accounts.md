@@ -7,15 +7,36 @@ sidebar_position: 7
 A **service account** is an identity for software, not a person: a pipeline, a scheduled job or an integration that calls egret or reaches the data. It is a first-class principal, a peer of a user. You can put it in groups, give it roles and grant it access to objects, and you can disable or delete it on its own.
 
 :::note
-Service accounts are managed through the REST API. A dedicated **Service accounts** page and a credentials screen in the Control Plane are not available yet.
+Manage service accounts in the console, on the **Service accounts** tab of the Control Plane, or through the REST API. The tab covers the list, create, disable and delete, group and role membership, and the full credential lifecycle (create, rotate, revoke, set expiry). The identity details (name, description) are read-only in the console for now.
 :::
-
 ## What a service account is
 
 A service account is stored as a user record, so every place that takes a user (a group, a role assignment, a grant) takes a service account too. It differs from a person in two ways:
 
 - **It never signs in interactively.** It has no password and no single sign-on session.
 - **It can never hold `platform_admin`.** egret refuses to grant it the role, directly or through a group.
+
+## In the console
+
+Open **Service accounts** in the Control Plane sidebar, next to **People & groups**. It uses the same permissions as the API calls listed under [Manage service accounts](#manage-service-accounts).
+
+![The Service accounts tab listing each account with its scope, workspace and status, and a scope filter](/img/platform/admin/service-accounts-list.png)
+
+- **List.** Every service account with its scope (platform or workspace), workspace and status. Filter by scope. Each row has actions to disable or enable and to delete the account.
+- **Create.** Choose the scope (platform or workspace), then give a name and an optional description. For a workspace-scoped account, pick the workspace.
+
+![The Create service account dialog with scope, name and description](/img/platform/admin/service-account-create.png)
+
+Select a row to open its detail page. It has three tabs, and the address carries `?tab=` so you can link straight to one:
+
+- **Identity.** Name, description, scope and status. Read-only for now.
+- **Membership.** Add or remove groups and roles. When egret refuses a change, the reason appears inline, for example for an OIDC-synced group or for `platform_admin`. See [Guards](#guards).
+
+![The Membership tab of a service account with its groups and roles](/img/platform/admin/service-account-membership.png)
+
+- **Credentials.** Lists credentials across both audiences (Data API and Catalog) with their status: active, revoked or expired. Create a credential here; for Catalog, pick the warehouse, the catalog role and the consumer type. The new secret is shown **once**: copy it then, because it is never shown again. Each credential can be rotated, revoked, or given an expiry. A platform-scoped account cannot hold Data API credentials. A note on the tab reminds you that Catalog credentials read the lake directly and sit outside data governance masking. See [Credentials](#credentials).
+
+![The Credentials tab with an active credential and the one-time secret shown after creation](/img/platform/admin/service-account-credentials.png)
 
 ## Scope
 
