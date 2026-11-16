@@ -56,7 +56,7 @@ An execution and each of its task runs move through these states. The first thre
 |---|---|---|
 | `CREATED`, `QUEUED` | Accepted, waiting for the engine. | No |
 | `RUNNING` | At least one task run is working. | No |
-| `PAUSED` | A `Pause` task or a `LoopUntil` is waiting. | No |
+| `PAUSED` | A `Pause` task or a `LoopUntil` is waiting, or a person paused the execution by hand. | No |
 | `RETRYING`, `RESTARTED` | A task is being tried again, or a paused execution was resumed, or a failed one was restarted. | No |
 | `KILLING` | A kill was sent and a worker is stopping the running task. | No |
 | `SUCCESS` | Everything finished without a failure. | Yes |
