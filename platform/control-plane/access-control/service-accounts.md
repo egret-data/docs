@@ -14,7 +14,7 @@ Manage service accounts in the console, on the **Service accounts** tab of the C
 A service account is stored as a user record, so every place that takes a user (a group, a role assignment, a grant) takes a service account too. It differs from a person in two ways:
 
 - **It never signs in interactively.** It has no password and no single sign-on session.
-- **It can never hold `platform_admin`.** egret refuses to grant it the role, directly or through a group.
+- **It can never hold `platform_admin`.** egret refuses to grant it the role, directly or through a group, on every route. See [Security guarantees](#security-guarantees).
 
 ## In the console
 
@@ -34,7 +34,7 @@ Select a row to open its detail page. It has three tabs, and the address carries
 
 ![The Membership tab of a service account with its groups and roles](/img/platform/admin/service-account-membership.png)
 
-- **Credentials.** Lists credentials across both audiences (Data API and Catalog) with their status: active, revoked or expired. Create a credential here; for Catalog, pick the warehouse, the catalog role and the consumer type. The new secret is shown **once**: copy it then, because it is never shown again. Each credential can be rotated, revoked, or given an expiry. A platform-scoped account cannot hold Data API credentials. A note on the tab reminds you that Catalog credentials read the lake directly and sit outside data governance masking. See [Credentials](#credentials).
+- **Credentials.** Lists credentials across both audiences (Data API and Catalog) with their status: active, revoked or expired. Create a credential here; for Catalog, pick the warehouse, the catalog role and the consumer type. The new secret is shown **once**: copy it then, because it is never shown again. Each credential can be rotated, revoked, or given an expiry. A platform-scoped account cannot hold Data API credentials. A note on the tab reminds you that Catalog credentials read the lake directly and sit outside data governance masking. See [Credentials](#credentials) and [Security guarantees](#security-guarantees).
 
 ![The Credentials tab with an active credential and the one-time secret shown after creation](/img/platform/admin/service-account-credentials.png)
 
@@ -104,10 +104,38 @@ Role membership here is at platform scope.
 
 egret refuses these changes:
 
-- **Adding a service account to an OIDC-synced group.** The identity provider owns that membership, and a service account is not in the provider. Use a local group.
-- **Granting it `platform_admin`**, or adding it to a group that holds `platform_admin`.
+- **Adding a service account to an OIDC-synced group.** The identity provider owns that membership, and a service account is not in the provider. Use a local group. OIDC group sync never touches a service account.
+- **Anything that would give it `platform_admin`.** See [Security guarantees](#security-guarantees).
 
 See [Groups](./groups.md) for synced and local groups.
+
+## Security guarantees
+
+Two guarantees about service accounts hold on every path, not only on this tab.
+
+### A service account never holds `platform_admin`
+
+egret enforces this where a role is assigned, not in each route, so every caller is covered: the service-account routes, the ordinary "assign a role to a user" route (`POST /users/{id}/roles`), the group-roles route, and any caller added later. egret refuses all three of these:
+
+- Granting `platform_admin` to a service account.
+- Granting `platform_admin` to a group that contains a service account.
+- Adding a service account to a group that holds `platform_admin`.
+
+Revoking is always allowed, so you can undo a mistaken grant. A service account also never signs in interactively, because it has no password.
+
+### Catalog credentials sit outside data governance
+
+A [Catalog credential](#credentials) reads the data lake (Iceberg) directly, through the lake's REST catalog and its object storage. egret enforces masks, row filters and clearance in the engines (Trino and StarRocks), and a Catalog credential never goes through an engine, so none of those controls apply to it.
+
+:::warning
+Treat a Catalog credential as unmasked, unfiltered read access to whatever its catalog role allows. The control surface is the credential and its owner, not engine policy.
+:::
+
+In practice:
+
+- **Scope it narrowly.** The catalog role's grants decide what the credential can read, so give it the smallest role that works.
+- **Cut access with disable, revoke or expiry.** Revoke the credential, let it expire, or [disable the service account](#disable-and-delete). Engine masks cannot do this.
+- **Prefer an expiry** on credentials you do not rotate.
 
 ## Disable and delete
 
@@ -163,8 +191,8 @@ For `catalog`, supply `warehouse_id`, `catalog_role_id` and `consumer_type` (`en
 
 egret refuses a catalog credential when the owning service account is disabled, the credential is revoked or expired, or the credential's workspace is archived.
 
-:::warning
-Catalog credentials read the data lake (Iceberg) directly. They sit **outside** the data governance masking, row-filter and clearance model: engine policy does not apply to them. What governs them is the service account itself, so use **disable**, **revoke** and **expiry** to control access, and grant the catalog role sparingly.
+:::info
+Catalog credentials are outside data governance masking, row filters and clearance. See [Security guarantees](#catalog-credentials-sit-outside-data-governance).
 :::
 
 ### Upgrade
