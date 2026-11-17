@@ -217,6 +217,7 @@ What readers notice on an OPA engine:
 - **Lineage capture through EXPLAIN does not work.** A view-lineage `EXPLAIN` by `egret-lineage` on an OPA engine fails closed, so lineage capture through an OPA engine is a gap (KI-353).
 - **`information_schema`.** On both mechanisms, a user needs a read on `<catalog>.information_schema` for `SHOW TABLES` and `SHOW COLUMNS`. A mask on a whole catalog does not reach that catalog's `information_schema`.
 - `count(*)` is a read of the table, as on Ranger.
+- **Only read and write are enforced.** The privileges CREATE, MANAGE and BROWSE are reported as **Not enforced** by this mechanism, with a reason, rather than granted. See [Privileges and ownership](/platform/data-governance/data/privileges#which-enforcement-points-enforce-what).
 
 ## Explain
 

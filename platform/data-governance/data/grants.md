@@ -13,7 +13,7 @@ A **grant** says who can read or write which part of a catalog. Grants are the m
 | Part | Meaning |
 |---|---|
 | **Effect** | **Allow** or **Deny**. A deny grant is marked with a **Deny** badge in lists. |
-| **Actions** | **Read**, **Write**, or both. Ranger has no "write": egret evaluates it as insert and delete on Trino, and as insert, update and delete on StarRocks. |
+| **Actions** | **Read**, **Write**, or both in the dialog below. The model also has **BROWSE**, **CREATE** and **MANAGE**; see [Privileges and ownership](/platform/data-governance/data/privileges). Ranger has no "write": egret evaluates it as insert and delete on Trino, and as insert, update and delete on StarRocks. |
 | **Scope** | A catalog, narrowed to a schema, a table and a column. Each narrower level is optional. |
 | **Principals** | Who the grant is for: **Include** (users or groups) and **Exclude** (principals removed from the include set). |
 
@@ -187,6 +187,7 @@ Iceberg has no column rename for a view: a view's columns change only with a new
 
 ## Further reading
 
+- [Privileges and ownership](/platform/data-governance/data/privileges)
 - [Masks and row filters](./masks-and-filters.md)
 - [Explain access](./explain-access.md)
 - [People & groups](../people-and-groups/index.md)

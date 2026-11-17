@@ -46,7 +46,7 @@ The data plane is where Governance works. Egret holds an authoritative model of 
 
 The model has three kinds of statement:
 
-- A **grant** says who can read or write which catalog, schema, table or column. It can allow or deny, and can exclude principals. See [Grants](./data/grants.md).
+- A **grant** says who can read or write which catalog, schema, table or column. It can allow or deny, and can exclude principals. See [Grants](./data/grants.md) and [Privileges and ownership](/platform/data-governance/data/privileges).
 - A **rule** masks a column or filters rows, selected by a tag or by a path, with optional exemptions. See [Masks and row filters](./data/masks-and-filters.md).
 - A **clearance** on a classification tag says only principals holding a required role or group can open objects carrying the tag. See [Clearance](./classifications/clearance.md).
 
