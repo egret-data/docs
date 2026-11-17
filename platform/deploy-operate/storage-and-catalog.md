@@ -127,6 +127,21 @@ curl -s http://localhost:8080/.well-known/openid-configuration
 
 If `issuer` is not an address your clients can reach, set `idp.issuer`; see [Configuration](./configuration#address-settings-that-people-confuse).
 
+### Folding a catalog into the permission model
+
+The embedded catalog starts with its own roles and grants (the **Roles & grants** tab above). A platform admin can fold a catalog's access into egret's unified permission model — the same grants the Governance pages manage — so there is one grant store, not two. The move is **reversible while open** and **proved equivalent** before it takes effect: the enforced allow/deny decision does not change.
+
+It runs through four platform-admin endpoints (all `platform_admin` only):
+
+| Step | Endpoint | What it does |
+|---|---|---|
+| **Plan** | `POST /api/control-plane/perm/catalog-migrate/{catalog}/plan` | Previews the fold and returns the equivalence report (legacy vs unified over every authenticatable client and object). Writes nothing. |
+| **Switch** | `POST …/{catalog}/switch` | Switches the catalog's enforcement to the unified model. Refused unless the gate proves parity. |
+| **Undo** | `POST …/{catalog}/undo` | Switches back and removes the folded rows by recorded id. Refused if the source roles or grants changed since the fold. |
+| **Finalize** | `POST …/{catalog}/finalize` | Makes the move irreversible: drops the catalog's roles and grants. Refused unless the catalog is already on the unified model and all of its names are plain ASCII. |
+
+Each engine attached to the catalog gets its own grant in the unified model in place of the shared `engine` role. There is no UI for this yet; see the [permission model API](../reference/rest-api/perm.md).
+
 ## Demo data
 
 With a running server and the catalog on, `just seed-demo` creates a storage connection, a warehouse in the `demo`
