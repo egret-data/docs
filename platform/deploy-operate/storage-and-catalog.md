@@ -142,6 +142,20 @@ It runs through four platform-admin endpoints (all `platform_admin` only):
 
 Each engine attached to the catalog gets its own grant in the unified model in place of the shared `engine` role. There is no UI for this yet; see the [permission model API](../reference/rest-api/perm.md).
 
+### Enforcing masks, row filters and clearance at the catalog
+
+An external Iceberg client reads a table's data files directly through vended storage credentials, so a mask or row filter — which rewrites columns or rows at query time — cannot apply to it, and a clearance would be bypassed. Once a catalog is on the unified model, a platform admin can turn on **rule enforcement** so the catalog **denies both read and write** on any table that carries a mask, row filter or withhold (clearance), to everyone but that rule's exemptions. A denied table vends no storage credential at all. Masking a single column or filtering any row withholds the whole table, because the storage layer cannot mask a column or filter a row.
+
+Rule enforcement is **opt-in per catalog** (off by default) and **reversible**:
+
+| Step | Endpoint | What it does |
+|---|---|---|
+| **Plan** | `POST /api/control-plane/perm/iceberg-rest/{catalog}/plan` | Previews the tables that will flip to denied, as `(principal, table)` pairs, with a `previewComplete` flag (false when a catalog- or schema-wide rule denies tables the preview cannot list one by one). Writes nothing. |
+| **Switch** | `POST …/iceberg-rest/{catalog}/switch` | Turns enforcement on. Refused unless the catalog is already on the unified model. |
+| **Undo** | `POST …/iceberg-rest/{catalog}/undo` | Turns enforcement back off. |
+
+It is `platform_admin` only, with no UI yet. **Known limitation:** a storage credential vended before a table is withheld keeps working until it expires (up to the token lifetime, ~1h); only new table loads are denied immediately.
+
 ## Demo data
 
 With a running server and the catalog on, `just seed-demo` creates a storage connection, a warehouse in the `demo`
