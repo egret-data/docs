@@ -12,6 +12,10 @@ This page lists 43 endpoints (OpenAPI tag `perm`). It is generated from `openapi
 
 | Method | Path | Operation id | Notes |
 |---|---|---|---|
+| POST | `/api/control-plane/perm/catalog-migrate/{catalog}/plan` | `catalog_migrate_plan` | SP5b: preview folding an embedded catalog's RBAC into the unified permission model — the equivalence report (legacy vs unified over every authenticatable client and named object), writing nothing. `platform_admin` only (403 otherwise). |
+| POST | `/api/control-plane/perm/catalog-migrate/{catalog}/switch` | `catalog_migrate_switch` | SP5b: switch the catalog's enforcement to the unified model, refused unless the equivalence gate proves parity. Reversible — see `undo`. `platform_admin` only. |
+| POST | `/api/control-plane/perm/catalog-migrate/{catalog}/undo` | `catalog_migrate_undo` | SP5b: switch the catalog back and remove the folded grants and owners by recorded id, refused if the source RBAC changed since the fold. `platform_admin` only. |
+| POST | `/api/control-plane/perm/catalog-migrate/{catalog}/finalize` | `catalog_migrate_finalize` | SP5b: make the move irreversible — drop the catalog's `catalog_roles` and `catalog_grants`; refused unless the catalog is on the unified model and all its names are ASCII-exact. `platform_admin` only. |
 | GET | `/api/control-plane/perm/clearances/{tag_id}/people` | `cleared_people` |  |
 | POST | `/api/control-plane/perm/compile/{service_id}` | `compile` | The manual/repair trigger. |
 | GET | `/api/control-plane/perm/engine-capabilities` | `list_engine_capabilities` |  |
