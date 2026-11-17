@@ -31,6 +31,9 @@ This page lists 43 endpoints (OpenAPI tag `perm`). It is generated from `openapi
 | POST | `/api/control-plane/perm/grants` | `create_grant` |  |
 | PATCH | `/api/control-plane/perm/grants/{id}` | `patch_grant` | **Edit in place, keeping the id — SP4b D1.** The body is the whole grant, exactly the create route's shape: this replaces the grant's body and keeps its iden... |
 | DELETE | `/api/control-plane/perm/grants/{id}` | `delete_grant` |  |
+| POST | `/api/control-plane/perm/iceberg-rest/{catalog}/plan` | `iceberg_rest_plan` | SP5c: preview enabling rule enforcement on the embedded catalog — the `(principal, table)` pairs that will flip read/write allow→deny because a mask, row filter or withhold applies, with a `previewComplete` flag. Writes nothing. `platform_admin` only (403 otherwise). |
+| POST | `/api/control-plane/perm/iceberg-rest/{catalog}/switch` | `iceberg_rest_switch` | SP5c: turn on rule enforcement for the catalog (deny read and write on any masked/filtered/withheld table bar exemptions). Refused unless the catalog is on the unified model and its grant decisions are unchanged. Reversible — see `undo`. `platform_admin` only. |
+| POST | `/api/control-plane/perm/iceberg-rest/{catalog}/undo` | `iceberg_rest_undo` | SP5c: turn rule enforcement back off for the catalog. `platform_admin` only. |
 | POST | `/api/control-plane/perm/migrate/clearances` | `migrate_clearances` | SP3c-2: migrate every gated clearance into a `withhold` rule exempting the holders of its required roles and groups, PROVABLY — the compiled artifact of ever... |
 | POST | `/api/control-plane/perm/migrate/clearances/undo` | `undo_clearances` | SP3c-2: undo one clearance migration, restoring `classification_policies` and removing the withhold rules it created. |
 | POST | `/api/control-plane/perm/migrate/finalize` | `finalize_migration` | SP3d Package C: close the switch to the permission model, irreversibly. |
