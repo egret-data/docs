@@ -4,7 +4,7 @@ sidebar_position: 5
 
 # Shared objects
 
-**Workspace settings → Access → Shared objects** is a workspace-wide roll-up of everything that has been shared with someone: dashboards, charts, datasets, folders, notebooks and saved queries, and who holds a grant on each. It is the place to audit sharing and to change it in one spot.
+**Workspace settings → Access → Shared objects** is a workspace-wide roll-up of everything that has been shared with someone: dashboards, charts, datasets, folders, saved queries, data apps, workflows and alerts (which also covers reports), and who holds a grant on each. It is the place to audit sharing and to change it in one spot.
 
 ![The Shared objects page: nine shares on dashboards, a folder, a chart and a dataset, two of them denied](/img/platform/admin/ws-shares.png)
 
@@ -26,7 +26,7 @@ Columns are sortable. A null expiry sorts last.
 
 ## Share an object
 
-Sharing is done on the object, not on this page: open the object's **Share** control (for a dataset, chart, dashboard, folder, saved query or notebook), choose a user or group, a role, and optionally an expiry. The share then appears here.
+Sharing is done on the object, not on this page: open the object's **Share** control (for a dataset, chart, dashboard, folder, saved query, data app, workflow or alert), choose a user or group, a role, and optionally an expiry. The share then appears here. Sharing a workflow or an alert grants that one object to the recipient even if they have no workspace-wide workflow or alert permission; a shared `dataapi_alert` still requires the recipient to be able to read its Data API endpoint.
 
 You can also create a share through the API, which is how the demo's example was made:
 
