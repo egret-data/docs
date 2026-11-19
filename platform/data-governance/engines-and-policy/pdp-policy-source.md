@@ -6,19 +6,21 @@ sidebar_position: 7
 
 egret's permission decision point (PDP) decides every access request from an in-memory policy set it rebuilds on each reload. That set can be built two ways: the **legacy** builder, which assembles it from SQL as egret always has, and the **compiled** builder, which compiles it from the permission model's intermediate representation. The two are meant to produce the same decisions; the **policy source** switch lets an operator prove that on live data and move from one to the other safely, and back.
 
-The switch is **reversible by design**. The default is the legacy builder, and nothing a switch does is irreversible — there is no step in this runbook you cannot undo.
+The switch is **reversible by design**. The shipped default is now **shadow** (observe): egret builds and compares both sets while still serving the proven legacy decisions, so the soak begins on every installation. `legacy` remains the fail-safe floor. Nothing a switch does is irreversible — there is no step in this runbook you cannot undo.
 
 Reading and changing the switch needs **platform admin**. Every endpoint is under `/api/control-plane/perm/pdp-source`; a caller who is not a platform admin gets `403`. There is no UI for the switch yet — it is operated over the API.
 
 ## The three states
 
-The switch is a single installation-wide value, re-read by the PDP on **every reload**. An absent value means `legacy`, so a fresh installation behaves exactly as it always has.
+The switch is a single installation-wide value, re-read by the PDP on **every reload**. egret **seeds** the switch to `shadow` on install/upgrade (without overwriting a value you have already set), so a fresh installation boots in observe. An absent or unreadable value still falls back to `legacy` — the **fail-safe floor** — so a broken switch behaves exactly as egret always has.
 
 | State | What the PDP builds | What it serves |
 |---|---|---|
-| **legacy** | The legacy (SQL) set only. | The legacy set. This is the default and is byte-for-byte the pre-switch behaviour. |
-| **shadow** | Both the legacy set and the compiled set, every reload. It compares them and logs any divergence. | The **legacy** set. Decisions do not change; shadow only observes. |
+| **legacy** | The legacy (SQL) set only. | The legacy set — byte-for-byte the pre-switch behaviour, and the fail-safe floor for an absent/unreadable switch. |
+| **shadow** | Both the legacy set and the compiled set, every reload. It compares them and logs any divergence. | The **legacy** set. Decisions do not change; shadow only observes. **This is the shipped default.** |
 | **compiled** | The compiled set. | The compiled set, with a fail-safe: if the compiled build errors, the PDP serves the legacy set instead and raises an alarm. |
+
+Because the shipped default is `shadow`, **every** reload (on each `RolesChanged`) builds the compiled set alongside the legacy set and diffs them. This is the intended soak cost; on a large permission model it adds reload latency and CPU. Move to `legacy` to switch the comparison off, or to `compiled` once the soak is clean.
 
 In no state does the PDP serve the compiled set without the switch explicitly reading `compiled`. `legacy` and `shadow` both enforce exactly the legacy decisions.
 
