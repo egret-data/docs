@@ -91,7 +91,7 @@ External single sign-on. See [Authentication setup](../deploy-operate/authentica
 | `issuer_url` | `EGRET_OIDC__ISSUER_URL` | empty (required with `enabled`) | The identity provider's issuer, for example `http://localhost:8081/realms/egret`. Discovery is read from it. |
 | `client_id` | `EGRET_OIDC__CLIENT_ID` | empty (required with `enabled`) | The OIDC client id registered for Egret. |
 | `client_secret` | `EGRET_OIDC__CLIENT_SECRET` | empty | The OIDC client secret. |
-| `redirect_url` | `EGRET_OIDC__REDIRECT_URL` | `http://localhost:8080/api/auth/oidc/callback` | The callback URL registered at the provider. It must be on the origin the browser uses, so the session cookie lands on the app. |
+| `redirect_url` | `EGRET_OIDC__REDIRECT_URL` | `http://localhost:<server.port>/api/auth/oidc/callback` | The callback URL registered at the provider. It must be on the origin the browser uses, so the session cookie lands on the app. When unset, the default follows `server.port` (so `8080` by default); set it explicitly when the browser reaches Egret under another name. |
 | `scopes` | `EGRET_OIDC__SCOPES` | `["openid","email","profile"]` | Scopes requested at sign-in. |
 | `groups_claim` | `EGRET_OIDC__GROUPS_CLAIM` | `groups` | Name of the token claim that lists the user's groups. |
 | `post_login_redirect` | `EGRET_OIDC__POST_LOGIN_REDIRECT` | `/` | Where the browser goes after a successful sign-in. |
@@ -297,7 +297,7 @@ The Data Apps query gateway and the pods that run marimo. See [Data Apps](../exp
 | `egret_origin` | `EGRET_APPS__EGRET_ORIGIN` | empty | Egret's own browser-facing origin, the only one allowed to frame the apps origin. Required when `origin` is set, and must differ from it. |
 | `ticket_ttl_secs` | `EGRET_APPS__TICKET_TTL_SECS` | `30` | How long a one-time ticket may wait to be redeemed. |
 | `cookie_ttl_secs` | `EGRET_APPS__COOKIE_TTL_SECS` | `28800` | Lifetime of the apps-origin cookie. |
-| `listen` | `EGRET_APPS__LISTEN` | `0.0.0.0:8081` | Where the apps host listens. A separate listener from the API. |
+| `listen` | `EGRET_APPS__LISTEN` | `0.0.0.0:8083` | Where the apps host listens. A separate listener from the API, and clear of the dev Keycloak port (`8081`). |
 
 ### apps.pod
 
