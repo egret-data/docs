@@ -73,7 +73,7 @@ EGRET_STORAGE__ACCESS_KEY=egret EGRET_STORAGE__SECRET_KEY=egretsecret \
 ```
 
 If you also enable Data Apps (`apps.origin`), give each instance its own `apps.listen`: that listener binds
-`0.0.0.0:8081` by default. When `EGRET_CATALOG__PUBLIC_URL` is unset, the catalog's advertised address (and with it the token issuer in
+`0.0.0.0:8083` by default. When `EGRET_CATALOG__PUBLIC_URL` is unset, the catalog's advertised address (and with it the token issuer in
 `/.well-known/openid-configuration`) follows the port: `http://localhost:18080` here. Set it yourself when clients reach the
 instance under another name.
 
