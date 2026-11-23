@@ -88,6 +88,19 @@ curl -b cookies.txt -H "X-Egret-CSRF: $CSRF" -H "Content-Type: application/json"
   -d '[{"namespace": "company.team", "id": "daily-import"}]'
 ```
 
+## Act on many executions
+
+Tick the checkbox at the start of a row to select it; the box in the header selects the whole page. A **bulk-action toolbar** appears above the list with the eight actions: **Restart**, **Replay**, **Change status**, **Kill**, **Pause**, **Resume**, **Edit labels** and **Delete**. An action is enabled only when every selected execution is eligible for it; otherwise it is greyed out. Each needs `workflow:manage`.
+
+<!-- TODO: screenshot -->
+
+- **Select all matching the current filter.** When you select a whole page and more executions match the filter, the toolbar offers to select all of them. Choosing it switches the action to the by-query variant: it acts on every execution the filter matches, not only the ones on screen.
+- **Confirmation.** **Delete** and **Kill** ask first, in a dialog that shows how many executions they will affect.
+- **All or nothing.** If any selected execution cannot take the action, nothing is changed. The dialog lists each rejected id with the reason and says *Nothing was changed*. Remove those rows, or narrow the filter, and try again.
+- **At most 1000 executions** per action. A larger selection is refused.
+
+See [Bulk actions](./actions.md#bulk-actions) for each action and the API.
+
 ## Other places that list executions
 
 - A flow's **Executions** tab shows the runs of that flow only. The flow and namespace pickers are hidden there because they are fixed.
@@ -120,7 +133,7 @@ When the files or logs have been removed, the **Logs** and **Outputs** tabs say 
 
 ## Limits and known issues
 
-- There is no bulk action (kill, restart, replay or delete several runs). An ended execution can be deleted, one at a time, from its page; see [Delete an execution](./actions.md#delete-an-execution).
+- [Bulk actions](./actions.md#bulk-actions) apply to at most 1000 executions at a time and are all or nothing. The bulk versions of unqueue and force-run are not available yet.
 - **Restart** runs the failed tasks again in the same execution, or in a new one on another version of the flow; **Replay** starts a new execution from the beginning or from a task you pick, on the version you pick, with the same inputs or new ones. See [Run actions](./actions.md).
 - The list polls every few seconds. Only the execution page and its logs stream live; see [Follow an execution live](./detail.md#follow-an-execution-live).
 - An execution can stay in **Running** longer than its tasks need when another execution's long task holds the worker; see [Runtime and operations](../runtime.md#limits-and-known-issues).
