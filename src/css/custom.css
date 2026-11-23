@@ -95,6 +95,9 @@ code {
   border: 1px solid var(--egret-border);
   border-radius: 6px;
   padding: 0.1em 0.35em;
+  /* Let a long inline-code token break inside a narrow cell instead of forcing
+     the table wider than its column. */
+  overflow-wrap: anywhere;
 }
 pre code {
   border: 0;
@@ -127,6 +130,10 @@ table td {
   border: 0;
   border-bottom: 1px solid var(--egret-border);
   padding: 0.7rem 0.9rem;
+  /* Wrap long unbreakable content (code spans, long numbers) so a wide table
+     (e.g. Known issues) stays within the content column instead of overflowing
+     under the right table-of-contents. */
+  overflow-wrap: anywhere;
 }
 table tr:last-child td {
   border-bottom: 0;
