@@ -10,13 +10,13 @@ An execution is one run of a flow. The **Executions** page lists every run in th
 
 ## Find an execution
 
-Go to **Workflows → Executions**. The page refreshes itself every few seconds while it is open; the header shows *Updated 2 s ago* and a **Refresh** button forces a reload.
+Go to **Workflows → Executions**. The list refreshes itself every few seconds while it is open; the header shows *Updated 2 s ago* and a **Refresh** button forces a reload.
 
 | Control | What it does |
 |---|---|
 | **State** | One or more states: for example **Failed** and **Warning** to see everything that did not succeed. **All** clears the choice. |
-| **Namespace** | Runs of flows in one namespace. |
-| **Flow** | Runs of one flow. |
+| **Namespace** | Runs of flows in one namespace. The dropdown lists the namespaces that have executions. |
+| **Flow** | Runs of one flow. After you pick a namespace, the dropdown lists that namespace's flows. |
 | **Time** | **Last hour**, **Last 24 hours**, **Last 7 days**, **Last 30 days**, or **Custom** with a start and an end. **All** shows every run. |
 | **Show child executions** | Off by default. Loop iterations, subflow runs and flow-trigger runs are children of another execution, and are hidden until you switch this on. |
 
@@ -46,6 +46,47 @@ The **Trigger** column says how the run began:
 | **Loop iteration** | One item of a `Loop` task. |
 | **Retry** | A flow-level retry with `CREATE_NEW_EXECUTION`. |
 | **Replay** | A [replay](./actions.md#replay-an-execution) of an earlier execution. |
+
+## Export to CSV
+
+Press **Export CSV** above the list to download the executions that match the current filters (state, namespace, flow, time and **Show child executions**) as `executions.csv`. The export is not limited to the current page. It needs `workflow:read`.
+
+<!-- TODO: screenshot -->
+
+| Column | Meaning |
+|---|---|
+| `id` | The full execution id. |
+| `namespace` | The flow's namespace. |
+| `flow_id` | The flow's id. |
+| `flow_key` | The flow's key. |
+| `state` | The execution's state. |
+| `created_at`, `started_at`, `ended_at` | Timestamps. |
+| `duration_ms` | The run time in milliseconds. |
+| `labels` | The execution's labels. |
+
+The API route is `GET /api/ws/{workspace}/workflows/executions/export.csv`, with the same filter parameters as the list. The answer streams as an attachment.
+
+```bash
+curl -b cookies.txt -o executions.csv \
+  "http://egret.localtest.me:8080/api/ws/default/workflows/executions/export.csv"
+```
+
+## Filter lists and statistics API
+
+These read-only routes live under `/api/ws/{workspace}/workflows/executions` and need `workflow:read`.
+
+| Route | Answer |
+|---|---|
+| `GET /namespaces` | The distinct namespaces. Fills the **Namespace** dropdown. |
+| `GET /namespaces/{namespace}/flows` | The flows (by flow id) in a namespace. Fills the **Flow** dropdown. |
+| `GET /namespaces/{namespace}/flows/{flowId}/average-duration` | `{avgDurationMs, count}`: the mean duration of the flow's terminated executions over the last 30 days. `avgDurationMs` is `null` when there are none. |
+| `POST /latest` | The newest execution of each flow you ask for. The body is a list of `{namespace, id}` filters; each result is `{id, flowId, namespace, startDate, status}`. |
+
+```bash
+curl -b cookies.txt -H "X-Egret-CSRF: $CSRF" -H "Content-Type: application/json" \
+  -X POST "http://egret.localtest.me:8080/api/ws/default/workflows/executions/latest" \
+  -d '[{"namespace": "company.team", "id": "daily-import"}]'
+```
 
 ## Other places that list executions
 
@@ -81,7 +122,7 @@ When the files or logs have been removed, the **Logs** and **Outputs** tabs say 
 
 - There is no bulk action (kill, restart, replay or delete several runs). An ended execution can be deleted, one at a time, from its page; see [Delete an execution](./actions.md#delete-an-execution).
 - **Restart** runs the failed tasks again in the same execution, or in a new one on another version of the flow; **Replay** starts a new execution from the beginning or from a task you pick, on the version you pick, with the same inputs or new ones. See [Run actions](./actions.md).
-- The page polls rather than streaming. A long-running execution can lag behind by a few seconds.
+- The list polls every few seconds. Only the execution page and its logs stream live; see [Follow an execution live](./detail.md#follow-an-execution-live).
 - An execution can stay in **Running** longer than its tasks need when another execution's long task holds the worker; see [Runtime and operations](../runtime.md#limits-and-known-issues).
 
 ## Further reading
