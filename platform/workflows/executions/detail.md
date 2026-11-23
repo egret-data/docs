@@ -16,12 +16,12 @@ Open an execution to see what happened in a run: its inputs, the tasks that ran 
 | **Flow** | The flow as `namespace.id`. |
 | **Namespace** | The flow's namespace. |
 | **Started** | The start time in your time zone. |
-| **Duration** | The run time. While the execution runs it says *so far* and keeps counting. |
+| **Duration** | The run time. While the execution runs it says *so far* and keeps counting, with a progress estimate based on the flow's average duration (see [Progress estimate](#progress-estimate)). |
 | **Trigger** | What started it: **API**, **Schedule**, **Webhook**, **Flow trigger**, **Subflow**, **Loop iteration**, **Retry** or **Replay**. |
 | **Replayed from** | Appears on a replay, with the id of the original; a replay carries the label `system.replay: true`. A child execution shows its parent instead. |
 | Buttons | **Pause**, **Resume**, **Restart**, **Change status**, **Replay** and **Kill**, each only when it applies. **Edit labels** and **Delete** are always listed and are disabled, with the reason printed under the buttons, until the execution has ended. An **Actions for *task*** menu on each row of the **Task runs** table offers **Change state** (sets one task run's state), **Replay from this task** and **Delete logs** (deletes that task run's log lines). See [Run actions](./actions.md). |
 
-While an execution is not finished, the page polls and updates itself every two seconds. It stops when the execution ends. Until then the header offers only the actions that apply to an unfinished execution (**Pause** and **Kill** while it runs, and **Resume**, **Restart** and **Kill** when it is paused); **Replay** and **Change status** appear once the execution has finished, as **Kill** disappears. **Edit labels** and **Delete** stay in the header all the time and are disabled until then; on a running execution the reasons *Labels can be edited once the execution has ended and its afterExecution tasks have finished* and *The execution is still running, or its afterExecution tasks are. Kill it first, then delete it* are printed under the buttons.
+While an execution is not finished, the page follows it live (see [Follow an execution live](#follow-an-execution-live)) and stops when the execution ends. Until then the header offers only the actions that apply to an unfinished execution (**Pause** and **Kill** while it runs, and **Resume**, **Restart** and **Kill** when it is paused); **Replay** and **Change status** appear once the execution has finished, as **Kill** disappears. **Edit labels** and **Delete** stay in the header all the time and are disabled until then; on a running execution the reasons *Labels can be edited once the execution has ended and its afterExecution tasks have finished* and *The execution is still running, or its afterExecution tasks are. Kill it first, then delete it* are printed under the buttons.
 
 ![A running execution: Pause and Kill are active, Edit labels and Delete are disabled with their reasons printed below, and the Duration counts up](/img/platform/workflows/execution-running.png)
 
@@ -81,7 +81,47 @@ The **Logs** tab lists every log line the execution wrote, grouped by task run (
 | **Download** | Saves the lines the **Level**, **Task** and **Task run** filters select as a file. See [Download and delete logs](#download-and-delete-logs). |
 | **⋯** (**More log actions**) | Opens a menu with **Delete logs**. Shown with the `workflow:manage` permission. |
 
-While the execution runs, new lines appear about two seconds after they are written. If you scroll up the page stops following and a **Jump to latest** button appears. A finished execution whose lines were removed after the retention period says so instead of showing an empty list.
+While the execution runs, new lines appear as they are written. If you scroll up the page stops following and a **Jump to latest** button appears. A finished execution whose lines were removed after the retention period says so instead of showing an empty list.
+
+## Follow an execution live
+
+An unfinished execution updates in real time over Server-Sent Events (SSE), so you do not need to refresh. If the stream drops, the page falls back to polling every two seconds. Both routes need `workflow:read`.
+
+- `GET /api/ws/{workspace}/workflows/executions/{id}/follow` sends the current state, then a new event each time it changes, then a final event when the execution finishes, and closes.
+- `GET /api/ws/{workspace}/workflows/executions/{id}/logs/follow` sends log lines as they are written. It closes once the execution has finished and the remaining lines are sent.
+
+```bash
+curl -N -b cookies.txt \
+  "http://egret.localtest.me:8080/api/ws/default/workflows/executions/$EXECUTION_ID/follow"
+```
+
+## Progress estimate
+
+A running execution shows an estimate of its progress next to **Duration**. It compares the time so far with the average duration of the flow's terminated executions over the last 30 days. It is an estimate: with no terminated runs in that period there is nothing to compare, and no estimate is shown. The figure comes from `GET /api/ws/{workspace}/workflows/executions/namespaces/{namespace}/flows/{flowId}/average-duration`, which answers `{avgDurationMs, count}`.
+
+<!-- TODO: screenshot -->
+
+## Evaluate an expression
+
+The **Eval** panel on the execution page and on a task run's panel evaluates a [Pebble](../flows/expressions.md) expression in the context of that execution, or of that one task run. Use it to inspect and debug: check what `{{ outputs.extract.rows }}` or `{{ inputs.date }}` resolves to without changing the flow. The panel shows the **result**, or the **error** when the expression does not evaluate.
+
+<!-- TODO: screenshot -->
+
+:::note Secrets stay sealed
+Eval never reveals secret values. `{{ secret('x') }}` returns an error, and a `SECRET` input renders as its mask (`******`).
+:::
+
+The routes are `POST /api/ws/{workspace}/workflows/executions/{id}/eval` and `POST /api/ws/{workspace}/workflows/executions/{id}/task-runs/{taskRunId}/eval`. They need `workflow:read`. The body is the raw expression (`text/plain`). The answer is `{result, error}`, and an expression error comes back in the body with HTTP `200`.
+
+```bash
+curl -b cookies.txt -H "X-Egret-CSRF: $CSRF" -H "Content-Type: text/plain" \
+  -X POST "http://egret.localtest.me:8080/api/ws/default/workflows/executions/$EXECUTION_ID/eval" \
+  -d "{{ inputs.date }}"
+```
+
+```json
+{ "result": "2026-11-23", "error": null }
+```
 
 ## Download and delete logs
 
