@@ -62,7 +62,7 @@ Typical messages:
 | `… does not recognise as a task type` | The `type:` is misspelled or not supported at all. |
 | `task id '…' is declared more than once` | Two tasks in the flow share an id. |
 | `this egret deployment has no container runner` | A script task needs `workflow.container_runner`. The flow is fine; this deployment cannot run it. |
-| `` `concurrency` is declared … but is not yet enforced `` | A warning: the key is accepted and ignored. |
+| `` `concurrency.behavior` is … but is not yet enforced `` | A warning: `CANCEL` and `FAIL` are accepted and ignored; only `QUEUE` is enforced. See [Flow concurrency](./concurrency.md). |
 | `` …: `colour` is not a property of a flow; egret ignores it `` | A warning (`unknown_property`): a key the flow, a task, a retry or a trigger does not have, often a typo such as `mesage:`. The flow saves; the key does nothing. |
 | `` …: `warningOnRetry` is accepted, but egret does not act on it `` | A warning (`ignored_property`): a Kestra property egret reads and ignores, such as a retry's `warningOnRetry` or `logLevel` on a task. `Pause` `onResume` is not one of them: it works, and its inputs are checked like flow inputs, with findings at paths such as `tasks.gate.onResume.retries`. |
 | `trigger '…' will never fire: …` | A warning (`schedule_not_resolvable`): the scheduler would refuse this schedule (a bad cron, an unknown time zone, `when`, `lateMaximumDelay`). See [Schedule triggers](../triggers/schedule.md). |

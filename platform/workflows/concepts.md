@@ -54,7 +54,8 @@ An execution and each of its task runs move through these states. The first thre
 
 | State | Meaning | Ends the execution |
 |---|---|---|
-| `CREATED`, `QUEUED` | Accepted, waiting for the engine. | No |
+| `CREATED` | Accepted, waiting for the engine. | No |
+| `QUEUED` | Held because the flow is at its `concurrency` limit; the oldest queued execution runs when another ends. See [Flow concurrency](./flows/concurrency.md). | No |
 | `RUNNING` | At least one task run is working. | No |
 | `PAUSED` | A `Pause` task or a `LoopUntil` is waiting, or a person paused the execution by hand. | No |
 | `RETRYING`, `RESTARTED` | A task is being tried again, or a paused execution was resumed, or a failed one was restarted. | No |

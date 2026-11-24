@@ -144,7 +144,7 @@ A running execution can be paused or killed, a paused one resumed and a finished
 - Flow-level `finally:` and `afterExecution:` do not run, and the editor does not warn about them.
 - `errorLogs()` and `render()` do not work yet, and `warningOnRetry` has no effect. See [Expressions](./expressions.md).
 - `Pause` does not accept `errors` or `finally`: they are refused when you save.
-- Flow-level `concurrency:` and `sla:` are not enforced, so a flow cannot cancel or queue a second run, and a maximum duration is not checked.
+- Flow-level `sla:` is not enforced, so a maximum duration is not checked. `concurrency:` can queue a second run (`behavior: QUEUE`), but `CANCEL` and `FAIL` are not enforced yet. See [Flow concurrency](./concurrency.md).
 
 ## Further reading
 
