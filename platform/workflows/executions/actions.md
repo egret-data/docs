@@ -470,7 +470,7 @@ A bulk call acts on at most 1000 executions: the length of the id list, or the n
 
 ### Not available yet
 
-The bulk versions of **unqueue** and **force-run** are not part of this release. They act on queued executions and arrive with the concurrency feature.
+The bulk versions of **unqueue** and **force-run** are not part of this release. They act on queued executions (see [Flow concurrency](../flows/concurrency.md)) and arrive in a later release.
 
 ## Limits and known issues
 

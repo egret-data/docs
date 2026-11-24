@@ -14,7 +14,7 @@ Go to **Workflows → Executions**. The list refreshes itself every few seconds 
 
 | Control | What it does |
 |---|---|
-| **State** | One or more states: for example **Failed** and **Warning** to see everything that did not succeed. **All** clears the choice. |
+| **State** | One or more states: for example **Failed** and **Warning** to see everything that did not succeed, or **Queued** to see executions held by a flow's [concurrency limit](../flows/concurrency.md). **All** clears the choice. |
 | **Namespace** | Runs of flows in one namespace. The dropdown lists the namespaces that have executions. |
 | **Flow** | Runs of one flow. After you pick a namespace, the dropdown lists that namespace's flows. |
 | **Time** | **Last hour**, **Last 24 hours**, **Last 7 days**, **Last 30 days**, or **Custom** with a start and an end. **All** shows every run. |

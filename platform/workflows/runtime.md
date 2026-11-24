@@ -86,7 +86,7 @@ Script and plugin tasks also need a `container_runner`, and the image on the pla
 
 ## Limits and known issues
 
-- Flow `concurrency:`, `sla:`, `checks:` and `quotas:` are accepted and not enforced.
+- Flow `sla:`, `checks:` and `quotas:` are accepted and not enforced. Flow `concurrency:` is enforced with `behavior: QUEUE` only; see [Flow concurrency](./flows/concurrency.md).
 - Flow-level `finally:` and `afterExecution:` do not run.
 - A flow in the trash keeps its namespace and id reserved until it is restored or deleted permanently (see [Flows](./flows/index.md#delete-restore-and-trash)).
 - A replica runs at most `max_concurrent_runs` task runs at once (8 by default). With that many long tasks running, further ready tasks wait for a free slot or another replica.

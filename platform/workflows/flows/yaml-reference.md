@@ -7,7 +7,7 @@ sidebar_position: 2
 This page lists every key a flow document can hold, in the order the editor's **Docs** tab shows them, and says what the engine does with each one. The language is Kestra 2.0's flow language, so a key that is not listed here is either not part of it or is ignored.
 
 :::warning Accepted does not always mean enforced
-A flow can contain keys that the engine reads, stores and then does not act on. The editor warns about `concurrency`, `checks`, `sla` and `quotas` (*not yet enforced*), about every key marked **Ignored** (`ignored_property`), and about a key that is not a property at all, such as a typo (`unknown_property`), on the flow, a task of a Kestra type, a retry and a trigger (egret-only task types are not checked). It does not warn about flow-level `finally` and `afterExecution` (**Not run yet** below). Check the status column before you rely on a key.
+A flow can contain keys that the engine reads, stores and then does not act on. The editor warns about `checks`, `sla` and `quotas` (*not yet enforced*), about every key marked **Ignored** (`ignored_property`), and about a key that is not a property at all, such as a typo (`unknown_property`), on the flow, a task of a Kestra type, a retry and a trigger (egret-only task types are not checked). It does not warn about flow-level `finally` and `afterExecution` (**Not run yet** below). Check the status column before you rely on a key.
 :::
 
 ## A complete example
@@ -52,7 +52,7 @@ errors:
 | `triggers` | list | Works for `Schedule`, `Flow` and `Webhook` | What starts the flow. See [Triggers](../triggers/index.md). |
 | `retry` | retry policy | Works | Runs the whole flow again as a new execution when it fails. See below. |
 | `disabled` | boolean, default `false` | Works | A disabled flow cannot be run and its triggers do not fire. |
-| `concurrency` | `limit`, `behavior` | Accepted, not enforced | The editor warns *`concurrency` is declared in this flow but is not yet enforced*. Two executions of a flow with `limit: 1` ran at the same time in testing. |
+| `concurrency` | `limit`, `behavior` | Works for `QUEUE` | Caps how many executions of the flow run at once; the rest wait as `QUEUED`. `behavior: CANCEL` and `FAIL` are accepted and not enforced yet, and the editor warns about them. See [Flow concurrency](./concurrency.md). |
 | `checks` | list of `when`, `message`, `behavior`, `style` | Accepted, not enforced | Same warning. `when` and `message` are required. |
 | `sla` | list | Accepted, not enforced | Same warning. |
 | `quotas` | list | Accepted, not enforced | Same warning. Kestra marks quotas as an Enterprise feature. |
@@ -128,6 +128,7 @@ Any string value can hold an expression written in `{{ }}`. The flow keys above 
 
 ## Further reading
 
+- [Flow concurrency](./concurrency.md)
 - [Flow control](./flow-control.md)
 - [Retries, errors and timeouts](./error-handling.md)
 - [Triggers](../triggers/index.md)
