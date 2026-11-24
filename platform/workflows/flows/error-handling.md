@@ -126,7 +126,8 @@ There are two ways to let a flow survive a failed step.
 `finally:` is the list of tasks that always runs at the end, whether the work succeeded or not.
 
 - **Inside an `AllowFailure` block**, `finally:` works: its tasks ran after the failed child and before the next task.
-- **At the top level of a flow**, and on every flowable except `AllowFailure`, `finally:` is accepted when you save and **never runs**. The execution's topology marks the tasks *Finally · Not run*.
+- **At the top level of a flow**, and on every flowable except `AllowFailure` and a `Pause` with a `tasks:` body, `finally:` is accepted when you save and **never runs**. The execution's topology marks the tasks *Finally · Not run*.
+- **On a `Pause` with a `tasks:` body**, `finally:` works: its tasks run after the body, once the pause has resumed. A `Pause` with a `finally:` but no `tasks:` is refused when you save. See [Pause](./flow-control.md#pause).
 - **`afterExecution:`** at the top level is accepted and never runs.
 
 Do your cleanup in the `errors:` list for now, or in a task placed after an `AllowFailure` block.
@@ -143,7 +144,7 @@ A running execution can be paused or killed, a paused one resumed and a finished
 
 - Flow-level `finally:` and `afterExecution:` do not run, and the editor does not warn about them.
 - `errorLogs()` and `render()` do not work yet, and `warningOnRetry` has no effect. See [Expressions](./expressions.md).
-- `Pause` does not accept `errors` or `finally`: they are refused when you save.
+- `Pause` runs `errors:` and `finally:` for its `tasks:` body, as an `AllowFailure` does. A `Pause` with a `finally:` but no `tasks:` is still refused when you save. See [Pause](./flow-control.md#pause).
 - Flow-level `sla:` is not enforced, so a maximum duration is not checked. `concurrency:` can queue a second run (`behavior: QUEUE`), but `CANCEL` and `FAIL` are not enforced yet. See [Flow concurrency](./concurrency.md).
 
 ## Further reading
