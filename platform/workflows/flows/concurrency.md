@@ -52,8 +52,9 @@ All three behaviors are enforced. A `CANCELLED` or `FAILED` over-limit execution
 
 ## Limits and known issues
 
-- The limit is enforced for **newly started** executions: scheduled, manual, webhook and flow-trigger runs.
-- Executions created by **replay**, **restart** or as **subflow children** count toward the limit, but are not queued themselves yet. A replay or a restart can therefore briefly take a flow above its limit. A later release closes this gap.
+- The limit applies to **every** way an execution of the flow starts — a scheduled, manual, webhook or flow-trigger run, a **replay** or **restart**, and a **subflow child** — and each obeys the flow's `behavior` (`QUEUE` holds it `QUEUED`, `CANCEL`/`FAIL` makes it terminal at once). A subflow child is gated on its own flow's limit, not the parent's.
+- **A self-referential subflow can stall.** A flow that starts itself as a `Subflow` with `wait: true`, under a limit lower than its recursion depth, can deadlock: the parent holds a slot while it waits, and the child it spawned sits `QUEUED` forever because no slot frees. Use [unqueue or force-run](../executions/actions.md#unqueue-a-queued-execution) to break it, or raise the limit.
+- One edge: a **restart that reopens a `Loop`** over a `QUEUE` limit runs at once rather than queuing — queuing it would lose the restart of its failing iteration — so it can briefly take the flow one over its limit.
 - `limit` below 1 is refused when you save.
 
 ## Further reading

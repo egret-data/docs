@@ -414,7 +414,7 @@ curl -b cookies.txt -H "X-Egret-CSRF: $CSRF" \
 
 **Unqueue** takes an execution out of a flow's concurrency queue (see [Flow concurrency](../flows/concurrency.md)) and ends it without running it. Only a **`QUEUED`** execution can be unqueued; otherwise the call is refused with `409 not_queued`.
 
-The target state defaults to `CANCELLED`. A `state` query parameter may set another **terminal** state (for example `FAILED`); a non-terminal state is refused with `400 unqueue_state_not_terminal`. It needs `workflow:manage`.
+The target state defaults to `CANCELLED`. A `state` query parameter may set another **terminal** state (for example `FAILED`); a value that is not a terminal execution state — non-terminal, or not an execution state at all — is refused with `400 unqueue_state_not_terminal`. It needs `workflow:manage`.
 
 The API route is `POST /api/ws/{workspace}/workflows/executions/{id}/unqueue`.
 
