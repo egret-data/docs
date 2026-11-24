@@ -44,11 +44,11 @@ So queued executions start in the order they were created. A queued execution sh
 
 | `behavior` | Status |
 |---|---|
-| `QUEUE` | Works. The default, and the only behavior enforced in this release. |
-| `CANCEL` | Accepted, not enforced yet. The editor warns about it when you save. |
-| `FAIL` | Accepted, not enforced yet. The editor warns about it when you save. |
+| `QUEUE` | A new execution over the limit is held in `QUEUED` until a slot frees. The default. |
+| `CANCEL` | A new execution over the limit is set to `CANCELLED` at once, without running. |
+| `FAIL` | A new execution over the limit is set to `FAILED` at once, without running. |
 
-`CANCEL` and `FAIL` arrive in a later release. Until then, do not rely on them to refuse a new execution.
+All three behaviors are enforced. A `CANCELLED` or `FAILED` over-limit execution is terminal at once — it runs no task and holds no slot — and still fires the usual end hooks (flow triggers, alerts). You can also act on a `QUEUED` execution by hand: see [unqueue and force-run](../executions/actions.md#unqueue-a-queued-execution).
 
 ## Limits and known issues
 

@@ -90,7 +90,7 @@ curl -b cookies.txt -H "X-Egret-CSRF: $CSRF" -H "Content-Type: application/json"
 
 ## Act on many executions
 
-Tick the checkbox at the start of a row to select it; the box in the header selects the whole page. A **bulk-action toolbar** appears above the list with the eight actions: **Restart**, **Replay**, **Change status**, **Kill**, **Pause**, **Resume**, **Edit labels** and **Delete**. An action is enabled only when every selected execution is eligible for it; otherwise it is greyed out. Each needs `workflow:manage`.
+Tick the checkbox at the start of a row to select it; the box in the header selects the whole page. A **bulk-action toolbar** appears above the list with the ten actions: **Restart**, **Replay**, **Change status**, **Kill**, **Pause**, **Resume**, **Edit labels**, **Delete**, **Unqueue** and **Force run**. **Unqueue** and **Force run** are enabled only when every selected execution is `QUEUED`. An action is enabled only when every selected execution is eligible for it; otherwise it is greyed out. Each needs `workflow:manage`.
 
 <!-- TODO: screenshot -->
 
@@ -133,7 +133,7 @@ When the files or logs have been removed, the **Logs** and **Outputs** tabs say 
 
 ## Limits and known issues
 
-- [Bulk actions](./actions.md#bulk-actions) apply to at most 1000 executions at a time and are all or nothing. The bulk versions of unqueue and force-run are not available yet.
+- [Bulk actions](./actions.md#bulk-actions) apply to at most 1000 executions at a time and are all or nothing.
 - **Restart** runs the failed tasks again in the same execution, or in a new one on another version of the flow; **Replay** starts a new execution from the beginning or from a task you pick, on the version you pick, with the same inputs or new ones. See [Run actions](./actions.md).
 - The list polls every few seconds. Only the execution page and its logs stream live; see [Follow an execution live](./detail.md#follow-an-execution-live).
 - An execution can stay in **Running** longer than its tasks need when another execution's long task holds the worker; see [Runtime and operations](../runtime.md#limits-and-known-issues).
