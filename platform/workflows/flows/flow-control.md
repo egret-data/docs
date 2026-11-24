@@ -293,7 +293,9 @@ Without `pauseDuration` it waits until someone resumes it: open the execution an
 
 ![A paused execution with the Resume, Replay and Kill buttons](/img/platform/workflows/execution-paused.png)
 
-A pause can only be released through the page or the API (`POST /executions/{id}/resume`). `Pause` accepts `pauseDuration` and `onResume`: `tasks`, `errors`, `finally`, `behavior` and `onPause` are refused when you save. Killing a paused execution ends it `KILLED` at once.
+A pause can only be released through the page or the API (`POST /executions/{id}/resume`). Killing a paused execution ends it `KILLED` at once.
+
+Beyond `pauseDuration` and `onResume`, a `Pause` can carry a body and hooks: `tasks:` that run after it resumes, `errors:` and `finally:` handlers for that body, an `onPause:` task that runs the moment it pauses, and a `behavior:` that decides what happens if its timer runs out. The one shape still refused when you save is a `Pause` with a `finally:` but no `tasks:`.
 
 ### Ask for inputs when it resumes
 
@@ -329,6 +331,61 @@ To resume with inputs from the page or the API, see [Resume with inputs](../exec
 
 On a flow that has an `egret.sql` task, only the flow's creator can resume a `Pause` that declares `onResume`.
 
+### Run tasks after it resumes
+
+`tasks:` is a sequence of child tasks that run **after** the pause is released — by a person, or by the timer when `behavior` is `RESUME`. They run in order under the `Pause`, so the body reads the resume values with `{{ outputs.<pause>.onResume.* }}`. The `Pause` run ends in the aggregate state of its body, as a [`Sequential`](#sequential) does, and takes `errors:` and `finally:` handlers for it.
+
+```yaml
+id: deploy-gate
+namespace: docs.demo
+tasks:
+  - id: gate
+    type: io.kestra.plugin.core.flow.Pause
+    onResume:
+      - id: reason
+        type: STRING
+    tasks:
+      - id: deploy
+        type: io.kestra.plugin.core.log.Log
+        message: "Approved: {{ outputs.gate.onResume.reason }}"
+    errors:
+      - id: rollback
+        type: io.kestra.plugin.core.log.Log
+        message: Deploy failed, rolling back
+    finally:
+      - id: notify
+        type: io.kestra.plugin.core.log.Log
+        message: Deploy gate done
+```
+
+A `finally:` only runs when the `Pause` has a `tasks:` body; a `Pause` with a lone `finally:` is refused when you save.
+
+### Run a task when it pauses
+
+`onPause:` is a single task that runs once, as the execution enters **Paused** — before anyone resumes it. Use it to send the request that tells a person there is something to approve.
+
+```yaml
+- id: gate
+  type: io.kestra.plugin.core.flow.Pause
+  onPause:
+    id: ask
+    type: io.kestra.plugin.core.log.Log
+    message: Waiting for approval
+```
+
+### What the timer does
+
+`behavior:` decides the outcome when the pause reaches its `pauseDuration`/`timeout` deadline. It has no effect on a resume by hand: a manual resume before the deadline always runs the body and succeeds. One of:
+
+| `behavior` | At the deadline |
+|---|---|
+| `RESUME` (default) | Run the `tasks:` body, as a manual resume would. |
+| `WARN` | The `Pause` ends **Warning**; the execution carries on. |
+| `CANCEL` | The execution is **Cancelled**. |
+| `FAIL` | The `Pause` ends **Failed**. |
+
+A literal `behavior:` outside those four is refused when you save, with the path `tasks.<id>.behavior`. A `behavior:` written as an expression is only known once it renders at the deadline; if it renders to a value outside the four, the `Pause` fails rather than staying paused.
+
 ## WorkingDirectory
 
 `WorkingDirectory` runs child script tasks one after another on the same filesystem, so files written by one task are visible to the next. It supports `inputFiles`, `outputFiles`, `namespaceFiles` and `cache`. Its children must be script tasks, and flowable tasks inside it are not supported.
@@ -353,8 +410,8 @@ Script tasks need a container runner (`workflow.container_runner = docker`) and 
 
 ## Limits and known issues
 
-- Flow-level `finally:` and `afterExecution:` never run. On flowable tasks only `AllowFailure` runs `finally`. See [Retries, errors and timeouts](./error-handling.md).
-- `Pause` cannot hold child tasks, `errors`, `finally`, `behavior` or `onPause`.
+- Flow-level `finally:` and `afterExecution:` never run. On flowable tasks only `AllowFailure` and a `Pause` with a `tasks:` body run `finally`. See [Retries, errors and timeouts](./error-handling.md).
+- A `Pause` with a `finally:` but no `tasks:` is refused when you save. The graph does not yet draw a `Pause`'s `onPause:` task.
 - `LoopUntil` bounds must be literals.
 
 ## Further reading
