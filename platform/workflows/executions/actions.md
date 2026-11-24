@@ -410,9 +410,33 @@ curl -b cookies.txt -H "X-Egret-CSRF: $CSRF" \
   -X DELETE "http://egret.localtest.me:8080/api/ws/default/workflows/executions/$EXECUTION_ID?deleteStorage=false"
 ```
 
+## Unqueue a queued execution
+
+**Unqueue** takes an execution out of a flow's concurrency queue (see [Flow concurrency](../flows/concurrency.md)) and ends it without running it. Only a **`QUEUED`** execution can be unqueued; otherwise the call is refused with `409 not_queued`.
+
+The target state defaults to `CANCELLED`. A `state` query parameter may set another **terminal** state (for example `FAILED`); a non-terminal state is refused with `400 unqueue_state_not_terminal`. It needs `workflow:manage`.
+
+The API route is `POST /api/ws/{workspace}/workflows/executions/{id}/unqueue`.
+
+```bash
+curl -b cookies.txt -H "X-Egret-CSRF: $CSRF" \
+  -X POST "http://egret.localtest.me:8080/api/ws/default/workflows/executions/$EXECUTION_ID/unqueue?state=CANCELLED"
+```
+
+## Force-run a queued execution
+
+**Force run** starts a **`QUEUED`** execution now, **bypassing the flow's concurrency limit** — it runs even when the flow is already at its limit. Only a `QUEUED` execution can be force-run; otherwise `409 not_queued`. It needs `workflow:manage`.
+
+The API route is `POST /api/ws/{workspace}/workflows/executions/{id}/force-run`.
+
+```bash
+curl -b cookies.txt -H "X-Egret-CSRF: $CSRF" \
+  -X POST "http://egret.localtest.me:8080/api/ws/default/workflows/executions/$EXECUTION_ID/force-run"
+```
+
 ## Bulk actions
 
-Use bulk actions to apply one action to many executions at once, from the [executions list](./index.md#act-on-many-executions) or the API. There are eight: **restart**, **replay**, **change status**, **kill**, **pause**, **resume**, **edit labels** and **delete**. Each needs `workflow:manage`.
+Use bulk actions to apply one action to many executions at once, from the [executions list](./index.md#act-on-many-executions) or the API. There are ten: **restart**, **replay**, **change status**, **kill**, **pause**, **resume**, **edit labels**, **delete**, **unqueue** and **force-run**. Each needs `workflow:manage`. **Unqueue** and **force-run** act only on `QUEUED` executions.
 
 <!-- TODO: screenshot -->
 
@@ -431,6 +455,8 @@ Every action comes in two variants:
 | Resume | `POST .../resume/by-ids` | `POST .../resume/by-query` | The `onResume` inputs, applied to every execution. |
 | Edit labels | `POST .../labels/by-ids` | `POST .../labels/by-query` | The labels to set. |
 | Delete | `DELETE .../by-ids` | `DELETE .../by-query` | `deleteStorage` and `deleteLogs` apply to the whole batch. `deleteLogs=false` is refused. |
+| Unqueue | `POST .../unqueue/by-ids` | `POST .../unqueue/by-query` | The target terminal state: `state` (by-ids) or `target_state` (by-query); default `CANCELLED`. |
+| Force-run | `POST .../force-run/by-ids` | `POST .../force-run/by-query` | None. Runs each queued execution, bypassing the limit. |
 
 All routes live under `/api/ws/{workspace}/workflows/executions`. Delete uses the bare executions path, with no action name.
 
@@ -468,15 +494,10 @@ An execution is invalid when it is not found, is in a state the action does not 
 
 A bulk call acts on at most 1000 executions: the length of the id list, or the number of executions the filter matches. Above that the call is refused with `400`. Narrow the filter, or split the ids, and call again.
 
-### Not available yet
-
-The bulk versions of **unqueue** and **force-run** are not part of this release. They act on queued executions (see [Flow concurrency](../flows/concurrency.md)) and arrive in a later release.
-
 ## Limits and known issues
 
-- Bulk operations cover eight actions; **unqueue** and **force-run** are not available yet (see [Bulk actions](#bulk-actions)).
+- Bulk operations cover ten actions, including **unqueue** and **force-run** (see [Bulk actions](#bulk-actions)).
 - Replay with breakpoints (stopping before chosen tasks) is not available: it is refused with `replay_breakpoints_unsupported`.
-- Not available: force-run.
 - A pause by hand is refused while a `Pause` or `LoopUntil` task waits, and **Resume** takes inputs only for the first waiting `Pause`.
 - A restart cannot be started on a loop iteration, on an execution whose `afterExecution` tasks are still running, or after the pruner deleted its files.
 - **Change state** is not offered for a task run inside a `WorkingDirectory` block. A task-run state change is refused with `after_execution_running` while a task run of the ended execution is still **Paused**.
