@@ -4,6 +4,8 @@ sidebar_position: 3
 
 # Run actions: pause, resume, restart, replay, kill, change state, edit labels and delete
 
+> To act on many executions at once, see [Bulk actions](#bulk-actions).
+
 Actions work on an execution from its page: **Pause** holds a running execution by hand, **Resume** releases a paused run (and can answer questions the flow asks), **Restart** runs the failed tasks again in the same execution (or in a new one, on another version of the flow), **Replay** runs a finished execution again as a new one, from the start or from a task you pick, **Kill** stops one that has not ended, **Change status** and **Change state** set the state of an execution or of one of its task runs by hand, **Edit labels** replaces the labels of an ended execution, and **Delete** removes an ended execution. Each needs the `workflow:manage` permission; `workflow:read` is not enough. A button that does not apply is hidden, or disabled with the reason printed next to it.
 
 | Action | Shown when | Result |
@@ -408,19 +410,81 @@ curl -b cookies.txt -H "X-Egret-CSRF: $CSRF" \
   -X DELETE "http://egret.localtest.me:8080/api/ws/default/workflows/executions/$EXECUTION_ID?deleteStorage=false"
 ```
 
+## Bulk actions
+
+Use bulk actions to apply one action to many executions at once, from the [executions list](./index.md#act-on-many-executions) or the API. There are eight: **restart**, **replay**, **change status**, **kill**, **pause**, **resume**, **edit labels** and **delete**. Each needs `workflow:manage`.
+
+<!-- TODO: screenshot -->
+
+Every action comes in two variants:
+
+- **By ids** acts on the executions you list.
+- **By query** acts on every execution that a filter matches, using the same filter parameters as the executions list (state, namespace, flow, time, child executions), in the query string. There is no id list.
+
+| Action | By ids | By query | Payload |
+|---|---|---|---|
+| Restart | `POST .../restart/by-ids` | `POST .../restart/by-query` | As a single [restart](#restart-a-failed-execution). |
+| Replay | `POST .../replay/by-ids` | `POST .../replay/by-query` | Each execution is replayed whole with its own inputs. `revision` or `latestRevision` apply to the whole batch. |
+| Change status | `POST .../change-status/by-ids` | `POST .../change-status/by-query` | The target `state`. |
+| Kill | `DELETE .../kill/by-ids` | `DELETE .../kill/by-query` | None. |
+| Pause | `POST .../pause/by-ids` | `POST .../pause/by-query` | None. |
+| Resume | `POST .../resume/by-ids` | `POST .../resume/by-query` | The `onResume` inputs, applied to every execution. |
+| Edit labels | `POST .../labels/by-ids` | `POST .../labels/by-query` | The labels to set. |
+| Delete | `DELETE .../by-ids` | `DELETE .../by-query` | `deleteStorage` and `deleteLogs` apply to the whole batch. `deleteLogs=false` is refused. |
+
+All routes live under `/api/ws/{workspace}/workflows/executions`. Delete uses the bare executions path, with no action name.
+
+A by-ids body is `{ "ids": ["<uuid>", ...] }` plus the payload of the action:
+
+```bash
+curl -b cookies.txt -H "X-Egret-CSRF: $CSRF" -H "Content-Type: application/json" \
+  -X POST "http://egret.localtest.me:8080/api/ws/default/workflows/executions/change-status/by-ids" \
+  -d '{"ids": ["<uuid-1>", "<uuid-2>"], "state": "WARNING"}'
+```
+
+A by-query call has no id list; the filter goes in the query string:
+
+```bash
+curl -b cookies.txt -H "X-Egret-CSRF: $CSRF" \
+  -X DELETE "http://egret.localtest.me:8080/api/ws/default/workflows/executions/kill/by-query?state=RUNNING&namespace=company.team"
+```
+
+### All or nothing
+
+The server checks every target first. If any one is invalid, nothing is applied and the answer is `400`:
+
+```json
+{
+  "message": "Some executions cannot be changed",
+  "invalids": [
+    { "id": "<uuid>", "reason": "..." }
+  ]
+}
+```
+
+An execution is invalid when it is not found, is in a state the action does not accept, or is not permitted. An execution of another workspace, or one you may not see, is reported as not found, so the answer never shows that it exists. When every target is valid, the answer is `200` with `{ "count": N }`.
+
+### The limit
+
+A bulk call acts on at most 1000 executions: the length of the id list, or the number of executions the filter matches. Above that the call is refused with `400`. Narrow the filter, or split the ids, and call again.
+
+### Not available yet
+
+The bulk versions of **unqueue** and **force-run** are not part of this release. They act on queued executions and arrive with the concurrency feature.
+
 ## Limits and known issues
 
-- No bulk actions: each execution is acted on from its own page.
+- Bulk operations cover eight actions; **unqueue** and **force-run** are not available yet (see [Bulk actions](#bulk-actions)).
 - Replay with breakpoints (stopping before chosen tasks) is not available: it is refused with `replay_breakpoints_unsupported`.
-- Not available: force-run, and pause or resume many executions at once.
+- Not available: force-run.
 - A pause by hand is refused while a `Pause` or `LoopUntil` task waits, and **Resume** takes inputs only for the first waiting `Pause`.
 - A restart cannot be started on a loop iteration, on an execution whose `afterExecution` tasks are still running, or after the pruner deleted its files.
 - **Change state** is not offered for a task run inside a `WorkingDirectory` block. A task-run state change is refused with `after_execution_running` while a task run of the ended execution is still **Paused**.
 - A `Subflow` inside a `LoopUntil` is matched to its earlier child by position only, so a restarted iteration starts a new child. A restarted `Subflow` whose child is still running waits for it.
-- Restart and the state changes act on one execution; there is no bulk version.
+- Restart and the status change of an execution also have a [bulk version](#bulk-actions); the state change of a single task run does not.
 - A replay or a restart on another version is refused when the retention pruner deleted the files of the execution, or of one it was replayed from, with `files_pruned`. The check follows the replay chain only: a source whose files were deleted behind a retry's parent link is not refused.
 - A task run inside a `Loop` iteration cannot be picked: replay from the `Loop` task.
-- **Delete** is refused until the whole execution has ended, and it does not kill anything. It cannot be used on a loop iteration or a retry, only on the root. There is no delete of many executions or of every execution of a flow.
+- **Delete** is refused until the whole execution has ended, and it does not kill anything. It cannot be used on a loop iteration or a retry, only on the root. To delete many at once, use the [bulk delete](#bulk-actions).
 - A delete detaches the executions that a Flow trigger started from the deleted one, a running one included. It loses read access to the deleted execution's files, which the retention pruner would have kept while it ran.
 - A delete runs its file-store calls while it holds the rows' locks and sets no timeout, so a slow store can hold back writers to those rows, the execution's log writers among them.
 - **Edit labels** saves at most 50 labels, while the `Labels` task allows 100. An execution with 51 to 100 labels cannot be saved without removing some.
