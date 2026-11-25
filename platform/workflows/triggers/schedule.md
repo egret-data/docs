@@ -107,12 +107,12 @@ A schedule fires from the flow's saved draft, with or without a version. In test
 ## Limits and known issues
 
 - The scheduler fires with up to a second of delay. **Last evaluated** is the tick that was processed, which can be earlier than when the execution started.
-- A schedule's `trigger.date` is not readable in the flow's tasks. The execution's **Overview** shows it under **Trigger**.
 - Only one execution per tick is created, and `allowConcurrent` is ignored: a slow run does not stop the next tick.
 - Schedule `when` conditions and `lateMaximumDelay` are refused.
 
 ## Further reading
 
 - [Backfill](./backfill.md)
+- [The `trigger` variable in task expressions](../flows/expressions.md#the-trigger-variable)
 - [Triggers](./index.md)
 - [Runtime and operations](../runtime.md)
