@@ -84,7 +84,7 @@ A `SECRET` input is masked in the run form, and stays masked after the run start
 - Executions stored before this masking existed are masked at the first start of the upgraded server, together with the log lines they wrote.
 - A server without `secrets.master_key` cannot store the value, so a start that would store one is refused with 400: *the flow declares SECRET input(s) …, and this deployment cannot store a secret value: set secrets.master_key*. See [Configuration keys](../../reference/configuration-keys.md).
 
-What is **not** masked, the same rule as for `secret()` values: the outputs of a task (for example a `Return` of the input), the rendered values of a task, and a value the flow passes on into a non-`SECRET` input of another flow. Do not copy a secret input into an output. The `secret()` function that reads workspace secrets resolves only on Kestra plugin tasks; see [Expressions](./expressions.md).
+What is **not** masked, the same rule as for `secret()` values: the outputs of a task (for example a `Return` of the input), the rendered values of a task, and a value the flow passes on into a non-`SECRET` input of another flow. Do not copy a secret input into an output. The `secret()` function that reads workspace secrets resolves on Kestra plugin tasks, `Log` messages, `runIf`, input defaults (sealed like a `SECRET` input) and trigger inputs, and is refused elsewhere; see [Where `secret()` works](./expressions.md#where-secret-works).
 
 ## Start with inputs
 

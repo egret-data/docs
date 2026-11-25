@@ -75,7 +75,7 @@ An execution and each of its task runs move through these states. The first thre
 
 ## Permissions
 
-Workflows use two permissions in each workspace: `workflow:read` to see flows and executions, and `workflow:manage` to create, edit, run, kill, restart and replay executions and change their state. A third, `workflow:use_secrets`, is needed to save a flow that calls `secret()`. The [Runtime and operations](./runtime.md) page lists what each role gets.
+Workflows use two permissions in each workspace: `workflow:read` to see flows and executions, and `workflow:manage` to create, edit, run, kill, restart and replay executions and change their state. A third, `workflow:use_secrets`, is needed to save a flow that calls `secret()`, wherever it calls it. The [Runtime and operations](./runtime.md) page lists what each role gets.
 
 ## Further reading
 

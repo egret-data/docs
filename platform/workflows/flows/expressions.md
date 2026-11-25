@@ -110,7 +110,24 @@ Date patterns follow Java's `DateTimeFormatter`, so `yyyy-MM-dd HH:mm:ss` and `E
 | Storage and files | `read`, `fileSize`, `fileExists`, `isFileEmpty`, `fileURI` (these read execution files) |
 | Store | `kv('key')` |
 
-The time, identifier, parsing and `kv` functions were run on a demo instance. `fileExists` and its siblings answer for files an execution wrote, and refuse other URIs. Not supported yet: `max`, `min`, `currentEachOutput`, `render` and `errorLogs` (each answers *not implemented yet* and fails the task). `http()` is refused on purpose, because an expression renders inside the control plane and a request from there would leave from the server's own network. `secret()` is refused everywhere except on Kestra plugin tasks; the editor reports `secret_outside_plugin_task` and a flow that calls it also needs the `workflow:use_secrets` permission to be saved.
+The time, identifier, parsing and `kv` functions were run on a demo instance. `fileExists` and its siblings answer for files an execution wrote, and refuse other URIs. Not supported yet: `max`, `min`, `currentEachOutput`, `render` and `errorLogs` (each answers *not implemented yet* and fails the task). `http()` is refused on purpose, because an expression renders inside the control plane and a request from there would leave from the server's own network. `secret()` resolves on Kestra plugin tasks and on the surfaces listed in [Where `secret()` works](#where-secret-works) below; everywhere else the editor reports `secret_outside_plugin_task`. A flow that calls it also needs the `workflow:use_secrets` permission to be saved, on every surface.
+
+## Where `secret()` works
+
+`secret('name')` reads a workspace secret. It resolves in these places, and a value it hands out is masked (`******`) in the execution's logs and in a failed run's message:
+
+- the properties of a Kestra plugin task;
+- the `message:` of a `Log`;
+- a task's `runIf:` (only the true or false verdict is stored, never the rendered text);
+- a flow input's `defaults:`. The value is **sealed** like a [`SECRET` input](./inputs-and-outputs.md#secret-inputs): stored encrypted, shown as `******`, and revealed only to the execution's own expressions;
+- the `inputs:` of a Webhook trigger, and the `inputs:` and `when:` of a Flow trigger (inputs are sealed, `when` stores only its verdict).
+
+It is still **refused** in these places, because each would write the value where a reader without `workflow:use_secrets` could read it: a KV `Set` or `Put` value or key, a flow or task output `value:`, `Return.format`, a script task's `commands`, a Webhook's `key:`, a Schedule trigger's templated `inputs:`, and a `dependsOn` condition's `when:`. A Pause's `onResume` input defaults are refused too. The editor reports `secret_outside_plugin_task` for them when you save.
+
+Known limits:
+
+- A `secret()` in an input default resolves only when a run starts from the scheduler, the API or a Schedule trigger. On a `Subflow` child, a **Replay** with replaced inputs, a Pause `onResume` and a Flow-trigger fire, the default stays raw and the run fails at render with the `secret()` refusal. Nothing leaks (KI-363).
+- If the secret store is unavailable, a Flow trigger whose `when:` calls `secret()` cannot render, and the event is skipped instead of retried. Nothing leaks (KI-364).
 
 ## How rendering behaves
 
