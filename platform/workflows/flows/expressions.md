@@ -120,12 +120,36 @@ The time, identifier, parsing and `kv` functions were run on a demo instance. `f
 - the `message:` of a `Log`;
 - a task's `runIf:` (only the true or false verdict is stored, never the rendered text);
 - a flow input's `defaults:`. The value is **sealed** like a [`SECRET` input](./inputs-and-outputs.md#secret-inputs): stored encrypted, shown as `******`, and revealed only to the execution's own expressions;
-- the `inputs:` of a Webhook trigger, and the `inputs:` and `when:` of a Flow trigger (inputs are sealed, `when` stores only its verdict).
+- the `inputs:` of a Webhook trigger, and the `inputs:` and `when:` of a Flow trigger (inputs are sealed, `when` stores only its verdict);
+- the **`env:` map of a script task** (a shell, script or commands task such as `io.kestra.plugin.scripts.*`, `egret.container` or `egret.script.python`). See [Secrets in a script task](#secrets-in-a-script-task).
 
-It is still **refused** in these places, because each would write the value where a reader without `workflow:use_secrets` could read it: a KV `Set` or `Put` value or key, a flow or task output `value:`, `Return.format`, a script task's `commands`, a Webhook's `key:`, a Schedule trigger's templated `inputs:`, and a `dependsOn` condition's `when:`. A Pause's `onResume` input defaults are refused too. The editor reports `secret_outside_plugin_task` for them when you save.
+It is still **refused** in these places, because each would write the value where a reader without `workflow:use_secrets` could read it: a KV `Set` or `Put` value or key, a flow or task output `value:`, `Return.format`, a script task's `commands`, `script`, `beforeCommands` and `inputFiles` (only its `env:` is allowed), a Webhook's `key:`, a Schedule trigger's templated `inputs:`, and a `dependsOn` condition's `when:`. A Pause's `onResume` input defaults are refused too. The editor reports `secret_outside_plugin_task` for them when you save.
 
 :::caution
 Do not build a `secret()` name from request data a caller controls. In a Webhook trigger's `inputs:`, `{{ secret(body.name) }}` lets whoever calls the webhook choose which workspace secret is read into the (sealed) input. The value stays sealed and masked, but name the secret literally, as in `secret('NAME')`.
+:::
+
+## Secrets in a script task
+
+A script task takes a secret through its `env:` map only. Put the secret in `env:` and read the environment variable in your command. `secret()` stays refused inside `commands:`, `script:`, `beforeCommands:`, `inputFiles:` and the other fields of the task.
+
+```yaml
+- id: call-api
+  type: io.kestra.plugin.scripts.shell.Commands
+  containerImage: curlimages/curl:8.10.1
+  env:
+    API_TOKEN: "{{ secret('API_TOKEN') }}"
+  commands:
+    - curl -sf -H "Authorization: Bearer $API_TOKEN" https://api.example.com/v1/health
+```
+
+The value is masked (`******`) in the task's stdout and stderr logs. How it reaches the container depends on the runner:
+
+- **Kubernetes runner:** Egret creates a per-task Kubernetes `Secret` and the pod refers to it with `secretKeyRef`, so the pod spec (`kubectl get pod -o yaml`) shows a reference, not the value. The `Secret` is owned by the pod and is garbage-collected with it. The engine's service account needs the `create` right on Secrets in the task namespace; see [Kubernetes](../../deploy-operate/kubernetes.md#task-runner-permissions).
+- **Docker runner:** the value goes through `--env-file`, so it stays off the host's process list.
+
+:::caution
+On the Docker runner the value **is still visible with `docker inspect`** on the container, to anyone who can reach the Docker daemon (KI-365). A secret value that contains a newline is **refused** on the Docker runner. Use the Kubernetes runner for multi-line secrets such as PEM keys or JSON credentials.
 :::
 
 Known limits:
