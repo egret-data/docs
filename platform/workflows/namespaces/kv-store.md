@@ -119,7 +119,7 @@ The type is inferred from the body: `3` became a `NUMBER` and `P7D` a `DURATION`
 
 - A key name is at most 350 bytes. A `NUMBER` has at most 1 000 digits. A TTL is at most 1 000 years.
 - The most that is read into an expression is `workflow.storage.max_read_bytes` (10 MiB by default).
-- `secret()` inside the value of `Set` or `Put` is refused when you save, so a secret is never stored in clear.
+- `secret()` inside the value of `Set` or `Put` is refused when you save, so a secret is never stored in clear. This stays refused even though `secret()` now works in `Log` messages, `runIf`, input defaults and trigger inputs; see [Where `secret()` works](../flows/expressions.md#where-secret-works).
 - A flow writes only to its own namespace; it can read the keys of any namespace in the workspace.
 
 ## Further reading
