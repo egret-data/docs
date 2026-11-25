@@ -86,9 +86,9 @@ The route accepts `GET`, `POST` and `PUT`. A request with a multipart body is re
 
 ## Limits and known issues
 
-- Task expressions cannot read `trigger.*`; pass what you need through `inputs:`.
+- Task expressions read `trigger.*` (body, headers, parameters; see [The `trigger` variable](../flows/expressions.md#the-trigger-variable)). A Flow trigger's own `when:` and `inputs:` do not.
 - Flow triggers fire from saved drafts; a draft with a Flow trigger listens at once.
-- `{{ trigger.outputs }}` holds the triggering execution's [flow outputs](../flows/inputs-and-outputs.md#flow-outputs) and can be used in a Flow trigger's `inputs:`; it is not yet available in the fired flow's tasks. For a `dependsOn` trigger, the event's outputs are merged with the window's. If the merged outputs would pass 16 MiB the trigger does not fire on that event, the window is kept and the log names the sizes.
+- `{{ trigger.outputs }}` holds the triggering execution's [flow outputs](../flows/inputs-and-outputs.md#flow-outputs) and can be used in a Flow trigger's `inputs:` and in the fired flow's tasks. For a `dependsOn` trigger, the event's outputs are merged with the window's. If the merged outputs would pass 16 MiB the trigger does not fire on that event, the window is kept and the log names the sizes.
 
 ## Further reading
 

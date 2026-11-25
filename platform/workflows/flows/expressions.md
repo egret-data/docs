@@ -61,10 +61,55 @@ These names are available when a task renders. All of them were confirmed in a r
 | `item` | In a `Loop`: `value`, `index`, and `key` for a map. | `{{ item.value }}` |
 | `parent`, `parents` | The enclosing task run or runs, inside nested tasks. | |
 | `kv('key')` | A value from the namespace's KV store. | `{{ kv('support_email') }}` |
+| `trigger` | The trigger that started the run. Absent when no trigger did. See [The `trigger` variable](#the-trigger-variable). | `{{ trigger.date }}` |
 
-A name that does not exist stops the task with an *undefined value* error unless you give a fallback with `??`. Two reasons you might hit it: the task you read has not finished yet, or the name is not provided. These are **not** provided today: `trigger` (so `{{ trigger.date }}` fails in a scheduled run), `envs`, `globals`, `execution.originalId` and `flow.revision`.
+A name that does not exist stops the task with an *undefined value* error unless you give a fallback with `??`. Two reasons you might hit it: the task you read has not finished yet, or the name is not provided. `trigger` exists only in a run a trigger started. These are **not** provided today: `envs`, `globals`, `execution.originalId` and `flow.revision`.
 
 An id with a dash needs brackets: `{{ outputs['first-task'].value }}`. The editor refuses the dotted form.
+
+## The `trigger` variable
+
+When a trigger starts a flow, the flow's tasks can read `{{ trigger.* }}`. The fields depend on the trigger type.
+
+| Trigger | Fields |
+|---|---|
+| Schedule | `trigger.date`, `trigger.next`, `trigger.previous` (RFC 3339 timestamps) |
+| Webhook | `trigger.body` (the posted body; absent for a `GET` or an empty body), `trigger.headers.<name>` and `trigger.parameters.<name>` (each a list of values) |
+| Flow | `trigger.outputs.<x>`, `trigger.executionId`, `trigger.namespace`, `trigger.flowId`, `trigger.state`, `trigger.startDate`, `trigger.endDate`, `trigger.executionLabels`, and the other fields of the triggering execution |
+
+Every trigger type also sets `trigger._context.id` (the trigger's id) and `trigger._context.type` (the trigger's class name).
+
+```yaml
+id: nightly-report
+namespace: docs.demo
+tasks:
+  - id: say-when
+    type: io.kestra.plugin.core.log.Log
+    message: "Fired for {{ trigger.date }}, next at {{ trigger.next }}"
+triggers:
+  - id: nightly
+    type: io.kestra.plugin.core.trigger.Schedule
+    cron: "0 2 * * *"
+```
+
+```yaml
+id: order-intake
+namespace: docs.demo
+tasks:
+  - id: show-body
+    type: io.kestra.plugin.core.log.Log
+    message: "Received {{ trigger.body }} from {{ trigger.headers['user-agent'][0] }}"
+triggers:
+  - id: incoming
+    type: io.kestra.plugin.core.trigger.Webhook
+    key: orders-demo-key
+```
+
+Rules:
+
+- `trigger` is **absent** in a run that no trigger started: a manual or API start, or a `Subflow` child. Reading `{{ trigger.x }}` there fails to render. Guard it with `??` if the flow can start both ways.
+- A **Replay** of a run a trigger started keeps `trigger.*`, with the same values as the original.
+- A Flow trigger's own `when:` and `inputs:` are evaluated before the fired run exists, so they do **not** see `trigger.*`. The variable is for the fired flow's tasks. Inside a Flow trigger's `inputs:`, `{{ trigger.outputs }}` still works as described in [Flow and webhook triggers](../triggers/flow-and-webhook.md).
 
 ## Filters
 
@@ -171,7 +216,6 @@ Test an expression before you build on it: put it in a `Log` task with `allowFai
 
 ## Limits and known issues
 
-- `trigger.*` is not available in task expressions, so a scheduled or webhook flow cannot read the trigger's date or body. The execution's **Overview** tab shows the trigger's variables.
 - `YAML` inputs are text in expressions.
 - `errorLogs()`, `render()`, `max()` and `min()` fail. See [Retries, errors and timeouts](./error-handling.md) for how to react to a failure without `errorLogs()`.
 
