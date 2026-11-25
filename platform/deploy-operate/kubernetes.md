@@ -196,6 +196,10 @@ For Egret to provision an engine, its service account needs the rights the chart
 `deploy/starrocks-operator/`). Trino is provisioned as plain Deployments with no operator. See [Engines and Ranger
 setup](./engines-and-ranger) and [Query engines](../control-plane/query-engines).
 
+### Task runner permissions
+
+With `workflow.containerRunner=kubernetes`, a script task that puts `secret('NAME')` in its `env:` gets the value through a per-task Kubernetes `Secret` that the pod references with `secretKeyRef`, so the value never appears in the pod spec. For that, Egret's service account must be allowed to **`create` Secrets** in the task namespace (`workflow.tasks.namespace`, `egret-tasks` by default). Only `create` is needed: no update, patch or delete, because the `Secret` is owned by the pod and is garbage-collected with it. The chart's `egret-task-runner` Role carries this right; if you manage the RBAC yourself, add it. See [Secrets in a script task](../workflows/flows/expressions.md#secrets-in-a-script-task).
+
 ### Engine network policy
 
 An engine answers anyone who can reach its ports and has a login: StarRocks also serves an HTTP SQL API on 8030 and Trino
