@@ -124,6 +124,10 @@ The time, identifier, parsing and `kv` functions were run on a demo instance. `f
 
 It is still **refused** in these places, because each would write the value where a reader without `workflow:use_secrets` could read it: a KV `Set` or `Put` value or key, a flow or task output `value:`, `Return.format`, a script task's `commands`, a Webhook's `key:`, a Schedule trigger's templated `inputs:`, and a `dependsOn` condition's `when:`. A Pause's `onResume` input defaults are refused too. The editor reports `secret_outside_plugin_task` for them when you save.
 
+:::caution
+Do not build a `secret()` name from request data a caller controls. In a Webhook trigger's `inputs:`, `{{ secret(body.name) }}` lets whoever calls the webhook choose which workspace secret is read into the (sealed) input. The value stays sealed and masked, but name the secret literally, as in `secret('NAME')`.
+:::
+
 Known limits:
 
 - A `secret()` in an input default resolves only when a run starts from the scheduler, the API or a Schedule trigger. On a `Subflow` child, a **Replay** with replaced inputs, a Pause `onResume` and a Flow-trigger fire, the default stays raw and the run fails at render with the `secret()` refusal. Nothing leaks (KI-363).
