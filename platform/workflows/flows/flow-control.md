@@ -279,6 +279,21 @@ tasks:
 
 The run ends in the **Warning** state, with `may_fail` failed and `after` successful. For one task use `allowFailure: true` on the task instead; see [Retries, errors and timeouts](./error-handling.md).
 
+A `retry:` on an `AllowFailure` block is supported. Like any flowable, the block itself is never retried as a unit — the retry is inherited by the failing child, which runs its attempts while the block stays `RUNNING`; the block's own `errors:` run between attempts. If the child succeeds on a later attempt the block ends `SUCCESS`; if it exhausts the policy the block maps the still-failed child to a **Warning**, the same as a failure without a retry. See [Retries, errors and timeouts](./error-handling.md#retry-a-task).
+
+```yaml
+- id: retry_block
+  type: io.kestra.plugin.core.flow.AllowFailure
+  tasks:
+    - id: flaky
+      type: io.kestra.plugin.core.execution.Fail
+      errorMessage: retried
+  retry:
+    type: constant
+    interval: PT1S
+    maxAttempts: 3
+```
+
 ## Pause
 
 `Pause` stops the execution in the **Paused** state until a person resumes it or a timer ends. It can also ask the person who resumes it a few questions with `onResume`.
