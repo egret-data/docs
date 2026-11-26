@@ -76,13 +76,100 @@ Webhooks are disabled unless the operator sets `EGRET_WORKFLOW__WEBHOOKS_ENABLED
 The route lives on the backend under `/workflows/v1/`, and neither the frontend's web server nor the Helm ingress forwards that path to the backend: on the demo stack a `POST` to the URL is answered by the web server with 405. Before you switch webhooks on, add a route for `/workflows/v1/` to the backend service in your ingress or proxy.
 :::
 
-| Property | What it does |
-|---|---|
-| `key` | The secret in the URL. It may be an expression such as `"{{ flow.id }}"`. |
-| `inputs` | Values for the flow's inputs. They may read the request as `{{ trigger.body }}`, `{{ trigger.headers }}` and `{{ trigger.parameters }}`. |
-| `fetchType` | What to do with the body. Storing it in internal storage (`STORE`) is not supported. |
+| Property | What it does | Default |
+|---|---|---|
+| `key` | The secret in the URL. It may be an expression such as `"{{ flow.id }}"`. | required |
+| `inputs` | Values for the flow's inputs. They may read the request as `{{ trigger.body }}`, `{{ trigger.headers }}` and `{{ trigger.parameters }}`. | none |
+| `when` | A condition checked per request. See [Ignore some requests](#ignore-some-requests-when). | `"true"` |
+| `labels` | Labels added to the fired execution. See [Labels](#labels). | none |
+| `stopAfter` | End states that switch the trigger off. See [Stop after a failure](#stop-after-a-failure-stopafter). | none |
+| `wait`, `returnOutputs`, `responseCode`, `responseContentType` | Answer the request with the execution's result. See [Synchronous response](#synchronous-response). | `wait: false` |
+| `fetchType` | What to do with the body. Storing it in internal storage (`STORE`) is not supported. | none |
 
-The route accepts `GET`, `POST` and `PUT`. A request with a multipart body is refused with a message, and `wait`, `returnOutputs`, `responseCode` and `responseContentType` are refused when the webhook is called. A switched-off webhook answers 409 and starts nothing.
+The route accepts `GET`, `POST` and `PUT`. A request with a multipart body is refused with a message. A switched-off webhook answers 409 and starts nothing.
+
+### Labels
+
+The trigger's own `labels` are added to the execution a request fires. Values are rendered against the request: `{{ trigger.body }}`, `{{ trigger.headers.* }}` and `{{ trigger.parameters.* }}`. The effective order is the flow's labels, then the trigger's. A label whose template fails to render is left out; the execution still starts.
+
+```yaml
+triggers:
+  - id: incoming
+    type: io.kestra.plugin.core.trigger.Webhook
+    key: orders-demo-key
+    labels:
+      - key: source
+        value: "{{ trigger.headers['x-source'] }}"
+      - key: tier
+        value: gold
+```
+
+### Ignore some requests (`when`)
+
+`when` is a condition evaluated when the request arrives, before `inputs:` are rendered. If it renders falsy, or fails to render, the call returns **HTTP 204 No Content** and no execution is created. A truthy or absent `when` fires normally.
+
+```yaml
+triggers:
+  - id: incoming
+    type: io.kestra.plugin.core.trigger.Webhook
+    key: orders-demo-key
+    when: "{{ trigger.body.event == 'order.created' }}"
+```
+
+### Stop after a failure (`stopAfter`)
+
+`stopAfter` is a list of execution end states. When an execution this webhook started ends in one of them, the trigger is disabled, and later calls to its key answer 409 *the trigger is disabled* until you switch it on again.
+
+```yaml
+triggers:
+  - id: incoming
+    type: io.kestra.plugin.core.trigger.Webhook
+    key: orders-demo-key
+    stopAfter: [FAILED]
+```
+
+egret enforces the disable at the webhook route.
+
+### Synchronous response
+
+By default a call returns at once with the new execution in state `CREATED`. Set `wait: true` to hold the response open until the execution ends.
+
+| Property | What it does | Default |
+|---|---|---|
+| `wait` | `true` holds the response until the execution ends. | `false` |
+| `returnOutputs` | `true` makes the response body the flow's outputs map. | `false` |
+| `responseCode` | The HTTP status. A template is rendered against the ended execution, so `{{ outputs.<task>.<field> }}` works. An invalid code yields 500. | 500 if the execution `FAILED`, otherwise 200 |
+| `responseContentType` | The response `Content-Type` header. | JSON |
+
+```yaml
+tasks:
+  - id: compute
+    type: io.kestra.plugin.core.output.OutputValues
+    values:
+      status: "201"
+      total: "42"
+outputs:
+  - id: total
+    type: STRING
+    value: "{{ outputs.compute.values.total }}"
+triggers:
+  - id: incoming
+    type: io.kestra.plugin.core.trigger.Webhook
+    key: orders-demo-key
+    wait: true
+    returnOutputs: true
+    responseCode: "{{ outputs.compute.values.status }}"
+    responseContentType: application/json
+```
+
+#### Differences from Kestra
+
+- The wait is capped at **55 seconds**; Kestra waits indefinitely. If the execution has not ended by then, egret returns the current, non-terminal execution with HTTP 200.
+- egret polls the execution about once a second instead of subscribing to a stream, so a waited response can lag the real end by up to that interval.
+- `responseContentType` sets the header. With `returnOutputs` the body is the JSON of the outputs map; egret does not re-serialise it into another text form.
+- `responseCode` templates see `outputs` and `execution`, not Kestra's full run context.
+- A task id used in `{{ outputs.<id> }}` must have no hyphen: the template engine reads `outputs.my-task` as a subtraction.
+- `fetchType: STORE` and `multipart/form-data` bodies are still refused.
 
 ## Limits and known issues
 
