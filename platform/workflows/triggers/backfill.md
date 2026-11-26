@@ -26,6 +26,8 @@ On the Docker demo stack, a backfill of the last five days on `docs.demo.sales/d
 
 ![A backfilled execution: the Trigger section with the Backfill badge and the tick's date](/img/platform/workflows/execution-scheduled.png)
 
+During a backfill the schedule's `when` and `lateMaximumDelay` are ignored: every tick in the window fires. The trigger's own `labels` are added before the backfill's labels.
+
 While the backfill runs, the schedule's regular ticks wait. When it ends the schedule resumes from where it was, and the missed-run rule of `recoverMissedSchedules` applies to what fell due.
 
 | State | Where you see it |

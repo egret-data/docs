@@ -40,12 +40,94 @@ The screenshot is a run of `docs.demo.sales/daily-revenue`, whose `every_morning
 | `cron` | A cron expression: five fields (minute, hour, day of month, month, day of week). | required |
 | `withSeconds` | `true` to read a sixth, leading field with seconds precision. | `false` |
 | `timezone` | An IANA zone such as `Asia/Ho_Chi_Minh`. | `UTC` |
-| `recoverMissedSchedules` | What to do with ticks missed while the schedule was off: `ALL`, `LAST` or `NONE`. | `ALL` |
+| `when` | A condition rendered for each candidate tick; only ticks where it is truthy fire. See [Fire only on some ticks](#fire-only-on-some-ticks-when). | none |
+| `lateMaximumDelay` | An ISO-8601 duration; a tick that is already later than this is skipped. See [Skip late ticks](#skip-late-ticks-latemaximumdelay). | none |
+| `recoverMissedSchedules` | What to do with ticks missed while the scheduler was down or the schedule was off: `ALL`, `LAST` or `NONE`. See [Recover missed ticks](#recover-missed-ticks-recovermissedschedules). | `ALL` |
+| `labels` | Labels added to every execution the trigger fires. See [Labels](#labels). | none |
+| `stopAfter` | End states that switch the trigger off. See [Stop after a failure](#stop-after-a-failure-stopafter). | none |
 | `inputs` | Input values for each run, as a map of plain values. | none |
 | `description` | Free text. | none |
 | `disabled` | `true` switches the trigger off in the YAML. | `false` |
 
-Not supported: `when` and `lateMaximumDelay` are refused (the editor warns `schedule_not_resolvable` when you save, and the trigger never fires), and `stopAfter`, `labels` and `allowConcurrent` are accepted and ignored (the editor warns `ignored_property`).
+Not supported: `allowConcurrent` is accepted and ignored (the editor warns `ignored_property`).
+
+### Fire only on some ticks (`when`)
+
+`when` is a condition evaluated for each candidate tick. Only ticks where it renders truthy fire; the others are walked past and the scheduler moves on to the next tick. It is rendered with the candidate's `{{ trigger.date }}`, `{{ trigger.next }}` and `{{ trigger.previous }}` (also available as `schedule.*`), and the date helpers `isWeekend`, `isLastWorkingDay` and `isDayWeekInMonth` are available.
+
+```yaml
+triggers:
+  - id: month_end
+    type: io.kestra.plugin.core.trigger.Schedule
+    cron: "0 18 * * *"
+    when: "{{ isLastWorkingDay(trigger.date) }}"
+```
+
+A `when` that fails to render does not fire the tick, and the error is recorded on the trigger (the **Last error** in the drawer).
+
+:::note
+During a [backfill](./backfill.md) `when` is ignored: every tick in the backfill window fires, whatever `when` says.
+:::
+
+### Skip late ticks (`lateMaximumDelay`)
+
+`lateMaximumDelay` is an ISO-8601 duration. A tick whose scheduled date plus this delay is already in the past is skipped, and the scheduler advances to the first tick still within its delay. Use it so that a scheduler that was down does not fire a stale tick hours late. It is bypassed during a backfill.
+
+```yaml
+triggers:
+  - id: hourly
+    type: io.kestra.plugin.core.trigger.Schedule
+    cron: "0 * * * *"
+    lateMaximumDelay: PT1H
+```
+
+The accepted form is `P[nD][T[nH][nM][nS]]`: whole numbers only (no fractional seconds), no sign, and at most 366 days. Any other value is refused.
+
+### Recover missed ticks (`recoverMissedSchedules`)
+
+When the scheduler starts, a schedule whose next tick was missed during the downtime is recovered once, as `recoverMissedSchedules` says:
+
+| Value | What happens |
+|---|---|
+| `ALL` | Every missed tick runs. This is the default. |
+| `LAST` | Only the most recent missed tick runs. |
+| `NONE` | No missed tick runs; the schedule resumes at the next future tick. |
+
+```yaml
+triggers:
+  - id: nightly
+    type: io.kestra.plugin.core.trigger.Schedule
+    cron: "0 2 * * *"
+    recoverMissedSchedules: NONE
+```
+
+### Labels
+
+The trigger's own `labels` are added to every execution it fires. Values are rendered with `{{ trigger.* }}`. They come before any labels given to a [backfill](./backfill.md), and the flow's own labels are not affected.
+
+```yaml
+triggers:
+  - id: nightly
+    type: io.kestra.plugin.core.trigger.Schedule
+    cron: "0 2 * * *"
+    labels:
+      - key: tier
+        value: gold
+      - key: firedAt
+        value: "{{ trigger.date }}"
+```
+
+### Stop after a failure (`stopAfter`)
+
+`stopAfter` is a list of execution end states. When an execution started by this trigger ends in one of them, the trigger is switched off and fires no more until you switch it on again. The valid states are `SUCCESS`, `FAILED`, `WARNING`, `KILLED` and `CANCELLED`.
+
+```yaml
+triggers:
+  - id: nightly
+    type: io.kestra.plugin.core.trigger.Schedule
+    cron: "0 2 * * *"
+    stopAfter: [FAILED, WARNING]
+```
 
 ### Cron expressions
 
@@ -60,7 +142,7 @@ The expressions below were accepted and their next run was computed by a demo in
 | `@hourly`, `@daily` | Macros | next hour, next midnight |
 | `*/10 * * * * *` with `withSeconds: true` | Every 10 seconds | the next tenth second |
 
-A bad expression saves, with a warning in the editor's **Problems** panel: `schedule_not_resolvable`, *trigger 'every_minute' will never fire: invalid cron: …*. The same check covers an unknown time zone, `when` and `lateMaximumDelay`. If you save it anyway, the trigger goes off the queue and the **Triggers** drawer shows the **Last error**, for `cron: "60 * * * *"` `invalid cron: minutes: value 60 not in range [0, 59]`. Fix the flow and save it again.
+A bad expression saves, with a warning in the editor's **Problems** panel: `schedule_not_resolvable`, *trigger 'every_minute' will never fire: invalid cron: …*. The same check covers an unknown time zone and an invalid `lateMaximumDelay`. If you save it anyway, the trigger goes off the queue and the **Triggers** drawer shows the **Last error**, for `cron: "60 * * * *"` `invalid cron: minutes: value 60 not in range [0, 59]`. Fix the flow and save it again.
 
 ### Time zones
 
@@ -108,7 +190,7 @@ A schedule fires from the flow's saved draft, with or without a version. In test
 
 - The scheduler fires with up to a second of delay. **Last evaluated** is the tick that was processed, which can be earlier than when the execution started.
 - Only one execution per tick is created, and `allowConcurrent` is ignored: a slow run does not stop the next tick.
-- Schedule `when` conditions and `lateMaximumDelay` are refused.
+- `when` and `lateMaximumDelay` do not apply to backfilled ticks.
 
 ## Further reading
 
