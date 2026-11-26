@@ -182,6 +182,28 @@ triggers:
 
 A schedule that omits an input with no default fails the save check `schedule_missing_inputs`.
 
+## Fire on an explicit date list (ScheduleOnDates)
+
+When you want a flow to run on specific dates rather than a recurring cron, use `io.kestra.plugin.core.trigger.ScheduleOnDates`. It fires once at each date in its `dates` list, in time order; once the last date has passed it goes off the queue and fires no more.
+
+```yaml
+triggers:
+  - id: on_dates
+    type: io.kestra.plugin.core.trigger.ScheduleOnDates
+    timezone: UTC
+    dates:
+      - "2026-12-01T09:00:00Z"
+      - "2026-12-24T09:00:00Z"
+      - "2027-01-01T09:00:00Z"
+    inputs:
+      run_kind: holiday
+```
+
+- The list is sorted, so the dates need not be in order. A date whose time has arrived fires; the next evaluation moves to the first date strictly after it.
+- `timezone`, `inputs`, `labels`, `when`, `stopAfter`, `allowConcurrent` and `recoverMissedSchedules` all work exactly as they do for a cron [Schedule](#properties).
+- It is managed like a Schedule on the **Triggers** page: you can switch it off and on, and the next date shows as **Next evaluation**. Backfill does not apply (there is no cron window to replay).
+- **Divergence from Kestra:** when the list is exhausted egret takes the trigger off the queue (no next evaluation); upstream Kestra schedules a placeholder a year out.
+
 ## Switch a schedule off and on
 
 Use the **Enabled** switch on the [Triggers](./index.md) page or a flow's **Triggers** tab. While a schedule is off its **Missed ticks** count grows, up to 1 000 (*1000+*).
