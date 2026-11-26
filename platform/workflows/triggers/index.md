@@ -13,10 +13,12 @@ A trigger starts a flow without a person pressing **Run**: on a schedule, when a
 | Kind | Starts the flow when | Page |
 |---|---|---|
 | **Schedule** | The time matches a cron expression. | [Schedule triggers](./schedule.md) |
+| **ScheduleOnDates** | The time matches one of an explicit list of dates. | [Schedule triggers](./schedule.md#fire-on-an-explicit-date-list-scheduleondates) |
 | **Flow** | Another flow's execution ends in a state you chose, optionally after several flows have each ended. | [Flow and webhook triggers](./flow-and-webhook.md) |
 | **Webhook** | An HTTP request reaches the webhook's URL. Off by default on the server. | [Flow and webhook triggers](./flow-and-webhook.md) |
+| **http.Trigger** | A polled HTTP endpoint's response matches a condition. | [HTTP trigger](./http-trigger.md) |
 
-Other Kestra trigger types (`ScheduleOnDates`, `http.Trigger`, plugin triggers) are not fired. A trigger of any other type appears in the flow as *Not run by egret* with no switch.
+Plugin trigger types (and realtime triggers) are not fired. A trigger of such a type appears in the flow as *Not run by egret* with no switch.
 
 ```yaml
 triggers:
@@ -49,7 +51,7 @@ Go to **Workflows → Triggers**.
 |---|---|
 | Search | Matches the trigger id, the flow and the namespace (*Search trigger id, flow or namespace…*). |
 | **Namespace**, **Flow** | Narrow to a namespace or a flow. |
-| **Kind** | **Schedule**, **Webhook**, **Flow** or **Other**. |
+| **Kind** | **Schedule**, **ScheduleOnDates**, **Webhook**, **Flow**, **http.Trigger** or **Other**. |
 | **Backfill** | **Running**, **Paused** or **Any** backfill. |
 | **State** | **Enabled** or **Disabled**. |
 | Refresh | The button at the top right. |
