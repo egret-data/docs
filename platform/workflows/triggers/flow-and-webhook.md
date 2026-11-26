@@ -45,6 +45,20 @@ Upstream flows that live in the same workspace are resolved when you save. A flo
 
 ![The details drawer of a flow trigger: states heard, listening, mode, window and the dependsOn condition](/img/platform/workflows/trigger-flow-details.png) The **Dependencies** tab of a namespace draws the link as a dashed arrow ([Namespaces](../namespaces/index.md)).
 
+### Stop after a failure (`stopAfter`)
+
+A Flow trigger also honours `stopAfter`: a list of execution end states that switches the trigger off. When an execution the Flow trigger started ends in one of them, the trigger is disabled and listens no more until you switch it on again.
+
+```yaml
+triggers:
+  - id: after-heartbeat
+    type: io.kestra.plugin.core.trigger.Flow
+    states: [SUCCESS]
+    stopAfter: [FAILED]
+```
+
+This is an egret extension: upstream Kestra does not act on `stopAfter` for Flow (or webhook) triggers, while egret honours it for every trigger type.
+
 ## Webhook triggers
 
 ```yaml
