@@ -138,29 +138,33 @@ By default a call returns at once with the new execution in state `CREATED`. Set
 |---|---|---|
 | `wait` | `true` holds the response until the execution ends. | `false` |
 | `returnOutputs` | `true` makes the response body the flow's outputs map. | `false` |
-| `responseCode` | The HTTP status. A template is rendered against the ended execution, so `{{ outputs.<task>.<field> }}` works. An invalid code yields 500. | 500 if the execution `FAILED`, otherwise 200 |
+| `responseCode` | The HTTP status. A template is rendered against the ended execution, so `{{ execution.outputs.<id> }}` and `{{ outputs.<task>.<field> }}` work. An invalid code yields 500. | 500 if the execution `FAILED`, otherwise 200 |
 | `responseContentType` | The response `Content-Type` header. | JSON |
 
 ```yaml
+id: order-hook
+namespace: company.team
 tasks:
-  - id: compute
-    type: io.kestra.plugin.core.output.OutputValues
-    values:
-      status: "201"
-      total: "42"
+  - id: handle
+    type: io.kestra.plugin.core.log.Log
+    message: "received {{ trigger.body }}"
 outputs:
-  - id: total
+  - id: status
     type: STRING
-    value: "{{ outputs.compute.values.total }}"
+    value: "201"
+  - id: echo
+    type: STRING
+    value: "{{ trigger.body }}"
 triggers:
-  - id: incoming
+  - id: hook
     type: io.kestra.plugin.core.trigger.Webhook
-    key: orders-demo-key
+    key: order-key
     wait: true
     returnOutputs: true
-    responseCode: "{{ outputs.compute.values.status }}"
-    responseContentType: application/json
+    responseCode: "{{ execution.outputs.status }}"
 ```
+
+The call waits for the run, then answers HTTP 201 with the body `{"status": "201", "echo": ...}`. The body comes from the flow's `outputs:` block. `responseCode` is rendered against the ended execution: `outputs` holds each task's outputs, and `execution` holds `{id, state, outputs}`, so flow outputs are read as `{{ execution.outputs.<id> }}`. A literal such as `responseCode: 201` also works.
 
 #### Differences from Kestra
 
