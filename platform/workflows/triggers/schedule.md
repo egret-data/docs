@@ -45,11 +45,12 @@ The screenshot is a run of `docs.demo.sales/daily-revenue`, whose `every_morning
 | `recoverMissedSchedules` | What to do with ticks missed while the scheduler was down or the schedule was off: `ALL`, `LAST` or `NONE`. See [Recover missed ticks](#recover-missed-ticks-recovermissedschedules). | `ALL` |
 | `labels` | Labels added to every execution the trigger fires. See [Labels](#labels). | none |
 | `stopAfter` | End states that switch the trigger off. See [Stop after a failure](#stop-after-a-failure-stopafter). | none |
+| `allowConcurrent` | `false` serialises the trigger's executions; `true` allows a new run to start while the previous one is still running. See [Serialise executions](#serialise-executions-allowconcurrent). | `false` |
 | `inputs` | Input values for each run, as a map of plain values. | none |
 | `description` | Free text. | none |
 | `disabled` | `true` switches the trigger off in the YAML. | `false` |
 
-Not supported: `allowConcurrent` is accepted and ignored (the editor warns `ignored_property`).
+Accepted but inert: `failOnTriggerError` is accepted and not acted on — the engine consults it only for polling triggers, which a schedule is not (the editor warns `not_honoured`).
 
 ### Fire only on some ticks (`when`)
 
@@ -129,6 +130,22 @@ triggers:
     stopAfter: [FAILED, WARNING]
 ```
 
+### Serialise executions (`allowConcurrent`)
+
+By default a schedule does **not** overlap its own executions: `allowConcurrent` defaults to `false`, so when a tick comes due while the trigger's previous execution is still running, that tick is **held** — it is not dropped, and it fires once the running execution reaches a terminal state. A long run therefore delays, but never skips, the next tick.
+
+Set `allowConcurrent: true` to lift the hold and let a new execution start while the previous one is still running.
+
+```yaml
+triggers:
+  - id: poll
+    type: io.kestra.plugin.core.trigger.Schedule
+    cron: "*/5 * * * *"
+    allowConcurrent: false   # the default — ticks never overlap
+```
+
+The hold is derived from live execution state, so a restart of the engine never leaves a trigger stuck.
+
 ### Cron expressions
 
 The expressions below were accepted and their next run was computed by a demo instance on 19 October 2026 at about 17:03 UTC.
@@ -189,7 +206,7 @@ A schedule fires from the flow's saved draft, with or without a version. In test
 ## Limits and known issues
 
 - The scheduler fires with up to a second of delay. **Last evaluated** is the tick that was processed, which can be earlier than when the execution started.
-- Only one execution per tick is created, and `allowConcurrent` is ignored: a slow run does not stop the next tick.
+- Only one execution per tick is created. By default (`allowConcurrent: false`) a tick is held while the trigger's previous execution is still running; set `allowConcurrent: true` to let a slow run overlap the next tick.
 - `when` and `lateMaximumDelay` do not apply to backfilled ticks.
 
 ## Further reading
