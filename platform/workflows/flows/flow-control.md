@@ -244,6 +244,31 @@ This run logged `Check number 1`, `2` and `3` and then succeeded. `checkFrequenc
 
 The subflow's id and namespace must exist in the workspace. A subflow that calls itself is refused (`self_subflow`). The task's outputs are `executionId`, `state` and `outputs`. With `wait: true`, `outputs` is the called flow's [flow-level outputs](./inputs-and-outputs.md#flow-outputs), so `{{ outputs.sub.outputs.total }}` reads them. A called flow that declares outputs which were not stored (it ended before it ran, or its outputs failed) fails the `Subflow` run with `Failed to extract outputs with the error: …`. A `retry:` on the `Subflow` or on an ancestor applies to it. With `transmitFailed: true` (default) a failed subflow fails the parent. A Subflow appears in the topology as a node you can expand.
 
+### More Subflow options
+
+| Property | What it does | Default |
+|---|---|---|
+| `revision` | Run a specific published revision of the subflow instead of its latest. A revision that does not exist fails the run. | latest |
+| `labels` | Labels added to the child execution. Keys and values are rendered against the parent's context. | none |
+| `inheritLabels` | `true` also copies the parent execution's labels onto the child (the subflow's own keys win); `false` copies only the parent's `system.*` labels. | `false` |
+| `restartBehavior` | On a **parent restart**, `RETRY_FAILED` restarts the existing child in place; `NEW_EXECUTION` starts a fresh child instead and leaves the old one as it was. | `RETRY_FAILED` |
+
+```yaml
+- id: add
+  type: io.kestra.plugin.core.flow.Subflow
+  namespace: docs.demo
+  flowId: add-numbers
+  revision: 3
+  inheritLabels: true
+  labels:
+    stage: "{{ trigger.code }}"
+  restartBehavior: NEW_EXECUTION
+```
+
+A `Subflow` used as the body of a [LoopUntil](#loopuntil) is matched to the right iteration's child when the parent restarts.
+
+`scheduleDate` (delaying the child's start to a future time) is not yet honoured; it is accepted with a warning and comes in a later release.
+
 The called flow:
 
 ```yaml
