@@ -252,6 +252,7 @@ The subflow's id and namespace must exist in the workspace. A subflow that calls
 | `labels` | Labels added to the child execution. Keys and values are rendered against the parent's context. | none |
 | `inheritLabels` | `true` also copies the parent execution's labels onto the child (the subflow's own keys win); `false` copies only the parent's `system.*` labels. | `false` |
 | `restartBehavior` | On a **parent restart**, `RETRY_FAILED` restarts the existing child in place; `NEW_EXECUTION` starts a fresh child instead and leaves the old one as it was. | `RETRY_FAILED` |
+| `scheduleDate` | Delay the child's start until an RFC3339 datetime: the child is created and waits in `CREATED` until the instant, then runs. A past datetime starts it immediately. A `wait: true` parent waits across the delay. | start now |
 
 ```yaml
 - id: add
@@ -267,7 +268,7 @@ The subflow's id and namespace must exist in the workspace. A subflow that calls
 
 A `Subflow` used as the body of a [LoopUntil](#loopuntil) is matched to the right iteration's child when the parent restarts.
 
-`scheduleDate` (delaying the child's start to a future time) is not yet honoured; it is accepted with a warning and comes in a later release.
+A deferred child (`scheduleDate` in the future) is started by the workflow worker's poll loop, so its start may lag the exact instant by up to one poll interval. `scheduleDate` is parsed as RFC3339 (for example `2026-12-01T09:00:00Z`).
 
 The called flow:
 
